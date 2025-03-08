@@ -8,10 +8,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class InMemoryUserRepository implements UserRepository {
 
-    private final Map<String, User> repository = new ConcurrentHashMap<>();
+    private final Map<Long, User> repository = new ConcurrentHashMap<>();
+
+    private final AtomicLong currentId = new AtomicLong(1);
 
     @Override
     public List<User> getAll() {
@@ -19,8 +22,8 @@ public class InMemoryUserRepository implements UserRepository {
     }
 
     @Override
-    public Optional<User> getByEmail(String email) {
-        User user = repository.get(email);
+    public Optional<User> getById(Long id) {
+        User user = repository.get(id);
         if (user == null) {
             return Optional.empty();
         }
@@ -29,17 +32,40 @@ public class InMemoryUserRepository implements UserRepository {
 
     @Override
     public User save(User user) {
-        repository.put(user.getEmail(), user);
+        Long id = currentId.getAndIncrement();
+        user.setId(id);
+        repository.put(id, user);
         return user;
     }
 
     @Override
-    public User update(User entity) {
-        return null;
+    public User update(User user) {
+        repository.put(user.getId(), user);
+        return user;
     }
 
     @Override
-    public boolean deleteByEmail(String email) {
+    public boolean deleteById(Long id) {
+        if (getById(id).isPresent()) {
+            repository.remove(id);
+            return true;
+        }
         return false;
+    }
+
+    @Override
+    public boolean isPresentByEmail(String email) {
+        return getAll().stream().anyMatch(u -> u.getEmail().equalsIgnoreCase(email));
+    }
+
+    @Override
+    public Optional<User> getByEmailAndPassword(String email, String password) {
+        for (User u : getAll()) {
+            if (u.getEmail().equalsIgnoreCase(email)
+                    && u.getPassword().equals(password)) {
+                return Optional.of(u);
+            }
+        }
+        return Optional.empty();
     }
 }

@@ -6,11 +6,11 @@ import java.util.Optional;
 public interface BaseRepository<T> {
     List<T> getAll();
 
-    Optional<T> getByEmail(String email);
+    Optional<T> getById(Long id);
 
     T save(T entity);
 
     T update(T entity);
 
-    boolean deleteByEmail(String email);
+    boolean deleteById(Long id);
 }
