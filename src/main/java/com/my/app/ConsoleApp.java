@@ -62,12 +62,33 @@ public class ConsoleApp {
             case 13 -> addCategory();
             case 14 -> editCategory();
             case 15 -> deleteCategory();
+            case 16 -> displayBudget();
+            case 17 -> editBudget();
             case 0 -> {
                 return exit();
             }
             default -> ConsoleOutputHandler.displayMsg("Неверный выбор!\n");
         }
         return true;
+    }
+
+    private void editBudget() {
+        ConsoleOutputHandler.displayMsg("\nРедактирование бюджета");
+        String msg = currentUser.getBudget() == null ? "Установить бюджет: " : "Бюджет - " + currentUser.getBudget() + ", изменить на: ";
+        BigDecimal budget = ConsoleInputHandler.getUserBigDecimalInput(msg);
+        currentUser.setBudget(budget);
+        User updated = userService.update(currentUser.getId(), currentUser);
+        if (updated != null) {
+            ConsoleOutputHandler.displayMsg("Бюджет успешно обновлен на " + budget);
+        } else {
+            ConsoleOutputHandler.displayMsg("Не удалось обновить бюджет.");
+        }
+    }
+
+    private void displayBudget() {
+        BigDecimal budget = currentUser.getBudget();
+        String msg = budget == null ? "Бюджет не установлен" : "Ваш бюджет: " + budget;
+        ConsoleOutputHandler.displayMsg(msg);
     }
 
     private void deleteTransaction() {
@@ -124,6 +145,17 @@ public class ConsoleApp {
         transaction.setUser(currentUser);
 
         transactionService.save(transaction);
+
+        checkBudgetExceeded();
+    }
+
+    private void checkBudgetExceeded() {
+        if (transactionService.isBudgetExceeded(currentUser.getId(), currentUser.getBudget())) {
+            BigDecimal monthExpense = transactionService.getMonthExpense(currentUser.getId());
+            ConsoleOutputHandler.displayMsg(
+                    "Перерасход бюджета! Ваши расходы: " + monthExpense +
+                            ", установленный бюджет: " + currentUser.getBudget());
+        }
     }
 
     private void displayAllTransactions() {

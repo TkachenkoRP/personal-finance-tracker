@@ -1,5 +1,6 @@
 package com.my.model;
 
+import java.math.BigDecimal;
 import java.util.Objects;
 
 public class User {
@@ -7,6 +8,7 @@ public class User {
     private String email;
     private String password;
     private String name;
+    private BigDecimal budget;
 
     public User(String email, String password, String name) {
         this.email = email;
@@ -44,6 +46,14 @@ public class User {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public BigDecimal getBudget() {
+        return budget;
+    }
+
+    public void setBudget(BigDecimal budget) {
+        this.budget = budget;
     }
 
     @Override

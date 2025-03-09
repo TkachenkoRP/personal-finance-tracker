@@ -3,9 +3,12 @@ package com.my.service.impl;
 import com.my.mapper.TransactionMapper;
 import com.my.model.Transaction;
 import com.my.model.TransactionFilter;
+import com.my.model.TransactionType;
 import com.my.repository.TransactionRepository;
 import com.my.service.TransactionService;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 public class TransactionServiceImpl implements TransactionService {
@@ -56,5 +59,21 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     public boolean deleteById(Long id) {
         return transactionRepository.deleteById(id);
+    }
+
+    @Override
+    public BigDecimal getMonthExpense(Long userId) {
+        TransactionFilter filter = new TransactionFilter(userId, null, null, TransactionType.EXPENSE);
+        List<Transaction> transactions = getAll(filter);
+        return transactions.stream()
+                .filter(t -> t.getDate().getMonth() == LocalDate.now().getMonth() && t.getDate().getYear() == LocalDate.now().getYear())
+                .map(Transaction::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    @Override
+    public boolean isBudgetExceeded(Long userId, BigDecimal budget) {
+        BigDecimal monthExpense = getMonthExpense(userId);
+        return monthExpense.compareTo(budget) > 0;
     }
 }
