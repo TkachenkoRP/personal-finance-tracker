@@ -28,7 +28,7 @@ public class TransactionServiceImpl implements TransactionService {
 
         return transactions.stream()
                 .filter(t -> filter.userId() == null || t.getUser().getId().equals(filter.userId()))
-                .filter(t -> filter.category() == null || t.getCategory().equals(filter.category()))
+                .filter(t -> filter.categoryId() == null || t.getCategory().getId().equals(filter.categoryId()))
                 .filter(t -> filter.date() == null || t.getDate().equals(filter.date()))
                 .filter(t -> filter.type() == null || t.getType().equals(filter.type()))
                 .toList();
@@ -75,5 +75,18 @@ public class TransactionServiceImpl implements TransactionService {
     public boolean isBudgetExceeded(Long userId, BigDecimal budget) {
         BigDecimal monthExpense = getMonthExpense(userId);
         return monthExpense.compareTo(budget) > 0;
+    }
+
+    @Override
+    public boolean isGoalIncome(Long userId, BigDecimal goal, Long transactionCategoryId) {
+        BigDecimal goalExceeded = getGoalExceeded(userId, transactionCategoryId);
+        return goalExceeded.compareTo(goal) > 0;
+    }
+
+    private BigDecimal getGoalExceeded(Long userId, Long transactionCategoryId) {
+        TransactionFilter transactionFilter = new TransactionFilter(userId, null, transactionCategoryId, TransactionType.INCOME);
+        return getAll(transactionFilter).stream()
+                .map(Transaction::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }

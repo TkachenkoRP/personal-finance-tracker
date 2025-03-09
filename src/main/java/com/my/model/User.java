@@ -1,6 +1,8 @@
 package com.my.model;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public class User {
@@ -9,6 +11,7 @@ public class User {
     private String password;
     private String name;
     private BigDecimal budget;
+    private Map<Long, BigDecimal> goals = new HashMap<>();
 
     public User(String email, String password, String name) {
         this.email = email;
@@ -54,6 +57,14 @@ public class User {
 
     public void setBudget(BigDecimal budget) {
         this.budget = budget;
+    }
+
+    public Map<Long, BigDecimal> getGoals() {
+        return goals;
+    }
+
+    public void setGoals(Map<Long, BigDecimal> goals) {
+        this.goals = goals;
     }
 
     @Override

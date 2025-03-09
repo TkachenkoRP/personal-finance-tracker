@@ -14,6 +14,7 @@ import com.my.service.UserService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class ConsoleApp {
@@ -21,7 +22,7 @@ public class ConsoleApp {
     private final UserService userService;
     private final TransactionService transactionService;
     private final TransactionCategoryService transactionCategoryService;
-    private static final Set<Integer> UNAUTHENTICATED_CHOICES = Set.of(3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
+    private static final Set<Integer> UNAUTHENTICATED_CHOICES = Set.of(3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19);
     private static final Set<Integer> AUTHENTICATED_CHOICES = Set.of(1, 2);
 
     public ConsoleApp(UserService userService, TransactionService transactionService, TransactionCategoryService transactionCategoryService) {
@@ -64,12 +65,44 @@ public class ConsoleApp {
             case 15 -> deleteCategory();
             case 16 -> displayBudget();
             case 17 -> editBudget();
+            case 18 -> displayGoal();
+            case 19 -> editGoal();
             case 0 -> {
                 return exit();
             }
             default -> ConsoleOutputHandler.displayMsg("Неверный выбор!\n");
         }
         return true;
+    }
+
+    private void editGoal() {
+        ConsoleOutputHandler.displayMsg("\nРедактирование цели накопления");
+        Map<Long, BigDecimal> goals = currentUser.getGoals();
+        List<TransactionCategory> transactionCategories = transactionCategoryService.getAll();
+
+        if (!goals.isEmpty()) {
+            ConsoleOutputHandler.displayMapWithCategories(goals, transactionCategories);
+        } else {
+            ConsoleOutputHandler.displayTransactionCategoryList(transactionCategories);
+        }
+        long goalId = ConsoleInputHandler.getUserIntegerInput("Выберите цель: ");
+        BigDecimal goalAmount = ConsoleInputHandler.getUserBigDecimalInput("Какова новая цель?");
+        currentUser.getGoals().put(goalId, goalAmount);
+        User updated = userService.update(currentUser.getId(), currentUser);
+        if (updated != null) {
+            ConsoleOutputHandler.displayMsg("Цель успешно установлена на " + goalAmount);
+        } else {
+            ConsoleOutputHandler.displayMsg("Не удалось установить цель.");
+        }
+    }
+
+    private void displayGoal() {
+        if (!currentUser.getGoals().isEmpty()) {
+            List<TransactionCategory> transactionCategories = transactionCategoryService.getAll();
+            ConsoleOutputHandler.displayMapWithCategories(currentUser.getGoals(), transactionCategories);
+        } else {
+            ConsoleOutputHandler.displayMsg("Цели не установлены.");
+        }
     }
 
     private void editBudget() {
@@ -79,7 +112,7 @@ public class ConsoleApp {
         currentUser.setBudget(budget);
         User updated = userService.update(currentUser.getId(), currentUser);
         if (updated != null) {
-            ConsoleOutputHandler.displayMsg("Бюджет успешно обновлен на " + budget);
+            ConsoleOutputHandler.displayMsg("Бюджет успешно установлен на " + budget);
         } else {
             ConsoleOutputHandler.displayMsg("Не удалось обновить бюджет.");
         }
@@ -146,7 +179,22 @@ public class ConsoleApp {
 
         transactionService.save(transaction);
 
-        checkBudgetExceeded();
+        if (transaction.getType() == TransactionType.EXPENSE) {
+            checkBudgetExceeded();
+        } else {
+            checkGoalIncome(transactionCategory.getId());
+        }
+    }
+
+    private void checkGoalIncome(Long transactionCategoryId) {
+        if (currentUser.getGoals() != null && currentUser.getGoals().get(transactionCategoryId) != null && transactionService.isGoalIncome(currentUser.getId(), currentUser.getGoals().get(transactionCategoryId), transactionCategoryId)) {
+            TransactionCategory transactionCategory = transactionCategoryService.getById(transactionCategoryId);
+            ConsoleOutputHandler.displayMsg(
+                    "Выполнена цель " + currentUser.getGoals().get(transactionCategoryId) + " для " + transactionCategory.getCategoryName()
+            );
+            currentUser.getGoals().remove(transactionCategoryId);
+            userService.update(currentUser.getId(), currentUser);
+        }
     }
 
     private void checkBudgetExceeded() {
@@ -155,6 +203,8 @@ public class ConsoleApp {
             ConsoleOutputHandler.displayMsg(
                     "Перерасход бюджета! Ваши расходы: " + monthExpense +
                             ", установленный бюджет: " + currentUser.getBudget());
+            currentUser.setBudget(null);
+            userService.update(currentUser.getId(), currentUser);
         }
     }
 
@@ -162,11 +212,10 @@ public class ConsoleApp {
         ConsoleOutputHandler.displayMsg("\nЗадайте параметры фильтра: ");
 
         boolean useCategory = ConsoleInputHandler.getUserBooleanInput("Использовать фильтр по категории? ('y'/'n' или 'д'/'н'.)");
-        TransactionCategory transactionCategory = null;
+        Long transactionCategoryId = null;
         if (useCategory) {
             displayAllCategories();
-            int categoryId = ConsoleInputHandler.getUserIntegerInput("Введите id категории (или 0 для игнорирования): ");
-            transactionCategory = transactionCategoryService.getById((long) categoryId);
+            transactionCategoryId = (long) ConsoleInputHandler.getUserIntegerInput("Введите id категории (или 0 для игнорирования): ");
         }
 
         boolean useDate = ConsoleInputHandler.getUserBooleanInput("Использовать фильтр по дате? ('y'/'n' или 'д'/'н'.)");
@@ -195,7 +244,7 @@ public class ConsoleApp {
             userId = ConsoleInputHandler.getUserIntegerInput("Введите id пользователя: ");
         }
 
-        TransactionFilter filter = new TransactionFilter(userId, date, transactionCategory, transactionType);
+        TransactionFilter filter = new TransactionFilter(userId, date, transactionCategoryId, transactionType);
         displayTransactions(filter);
     }
 

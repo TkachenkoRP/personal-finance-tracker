@@ -1,5 +1,6 @@
 package com.my.repository.impl;
 
+import com.my.mapper.UserMapper;
 import com.my.model.User;
 import com.my.repository.UserRepository;
 
@@ -27,7 +28,7 @@ public class InMemoryUserRepository implements UserRepository {
         if (user == null) {
             return Optional.empty();
         }
-        return Optional.of(user);
+        return Optional.of(UserMapper.INSTANCE.copyUser(user));
     }
 
     @Override

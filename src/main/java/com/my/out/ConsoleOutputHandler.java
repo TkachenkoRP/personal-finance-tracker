@@ -4,8 +4,11 @@ import com.my.model.Transaction;
 import com.my.model.TransactionCategory;
 import com.my.model.User;
 
+import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ConsoleOutputHandler {
 
@@ -33,6 +36,10 @@ public class ConsoleOutputHandler {
             System.out.println("13 - добавить категорию.");
             System.out.println("14 - редактировать категорию.");
             System.out.println("15 - удалить категорию.");
+            System.out.println("16 - отобразить бюджет.");
+            System.out.println("17 - отредактировать бюджет.");
+            System.out.println("18 - отобразить цель.");
+            System.out.println("19 - отредактировать цель.");
             System.out.println("0 - выход.");
         }
     }
@@ -68,5 +75,27 @@ public class ConsoleOutputHandler {
         for (Enum<?> constant : enumConstants) {
             System.out.println(constant.ordinal() + " - " + constant);
         }
+    }
+
+    public static void displayMapWithCategories(Map<Long, BigDecimal> map, List<TransactionCategory> categories) {
+        Map<Long, String> categoryMap = categories.stream()
+                .collect(Collectors.toMap(TransactionCategory::getId, TransactionCategory::getCategoryName));
+
+        map.forEach((key, value) -> {
+                    String categoryName = categoryMap.get(key);
+                    if (categoryName != null) {
+                        System.out.println(key + " - " + categoryName + " - " + value);
+                    } else {
+                        System.out.println(key + " - Категория не найдена - " + value);
+                    }
+                }
+        );
+
+        System.out.println("\nНеиспользуемые категории:");
+        categoryMap.forEach((id, name) -> {
+            if (!map.containsKey(id)) {
+                System.out.println(id + " - " + name);
+            }
+        });
     }
 }

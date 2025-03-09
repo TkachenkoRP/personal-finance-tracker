@@ -20,4 +20,6 @@ public interface TransactionService {
     BigDecimal getMonthExpense(Long userId);
 
     boolean isBudgetExceeded(Long userId, BigDecimal budget);
+
+    boolean isGoalIncome(Long userId, BigDecimal goal, Long transactionCategoryId);
 }

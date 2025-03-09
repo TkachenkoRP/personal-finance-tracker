@@ -5,6 +5,6 @@ import java.time.LocalDate;
 public record TransactionFilter(
         Long userId,
         LocalDate date,
-        TransactionCategory category,
+        Long categoryId,
         TransactionType type) {
 }
