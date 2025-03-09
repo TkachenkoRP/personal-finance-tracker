@@ -12,4 +12,6 @@ public interface UserMapper {
 
     @Mapping(target = "id", ignore = true)
     void updateUser(User sourceUser, @MappingTarget User targetUser);
+
+    User copyUser(User sourceUser);
 }
