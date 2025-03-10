@@ -40,6 +40,12 @@ public class ConsoleOutputHandler {
             System.out.println("17 - отредактировать бюджет.");
             System.out.println("18 - отобразить цель.");
             System.out.println("19 - отредактировать цель.");
+            System.out.println("20 - отобразить баланс.");
+            System.out.println("21 - отобразить баланс в периоде.");
+            System.out.println("22 - отобразить доход в периоде.");
+            System.out.println("23 - отобразить расход в периоде.");
+            System.out.println("24 - отобразить расход по категориям.");
+            System.out.println("25 - отобразить финансовый отчет.");
             System.out.println("0 - выход.");
         }
     }
@@ -97,5 +103,9 @@ public class ConsoleOutputHandler {
                 System.out.println(id + " - " + name);
             }
         });
+    }
+
+    public static void displayMap(Map<String, BigDecimal> map) {
+        map.forEach((key, value) -> System.out.println(key + " - " + value));
     }
 }

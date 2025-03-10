@@ -22,7 +22,7 @@ public class ConsoleApp {
     private final UserService userService;
     private final TransactionService transactionService;
     private final TransactionCategoryService transactionCategoryService;
-    private static final Set<Integer> UNAUTHENTICATED_CHOICES = Set.of(3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19);
+    private static final Set<Integer> UNAUTHENTICATED_CHOICES = Set.of(3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25);
     private static final Set<Integer> AUTHENTICATED_CHOICES = Set.of(1, 2);
 
     public ConsoleApp(UserService userService, TransactionService transactionService, TransactionCategoryService transactionCategoryService) {
@@ -33,11 +33,40 @@ public class ConsoleApp {
 
     public void start() {
         boolean working = true;
+        addTestData();
         while (working) {
             ConsoleOutputHandler.displayMenu(currentUser);
             int choice = ConsoleInputHandler.getUserIntegerInput("Ваш выбор: ");
             working = handleUserChoice(choice);
         }
+    }
+
+    private void addTestData() {
+        User registration = userService.registration("qwe", "rty", "qwe");
+        User registration1 = userService.registration("asd", "fgh", "asd");
+
+        TransactionCategory transactionCategory = new TransactionCategory("cat1");
+        TransactionCategory transactionCategory2 = new TransactionCategory("cat2");
+
+        TransactionCategory saved = transactionCategoryService.save(transactionCategory);
+        TransactionCategory saved2 = transactionCategoryService.save(transactionCategory2);
+
+        Transaction transaction1 = new Transaction(LocalDate.now().minusDays(1), TransactionType.INCOME, new BigDecimal("100.01"), "Descr", saved);
+        transaction1.setUser(registration);
+        Transaction transaction2 = new Transaction(LocalDate.now(), TransactionType.EXPENSE, new BigDecimal("50.55"), "Descr2", saved);
+        transaction2.setUser(registration);
+        Transaction transaction3 = new Transaction(LocalDate.now(), TransactionType.INCOME, new BigDecimal("10.22"), "Descr3", saved2);
+        transaction3.setUser(registration);
+        Transaction transaction4 = new Transaction(LocalDate.now(), TransactionType.INCOME, new BigDecimal("20.11"), "Descr4", saved2);
+        transaction4.setUser(registration);
+        Transaction transaction5 = new Transaction(LocalDate.now(), TransactionType.EXPENSE, new BigDecimal("14.55"), "Descr5", saved);
+        transaction5.setUser(registration1);
+
+        transactionService.save(transaction1);
+        transactionService.save(transaction2);
+        transactionService.save(transaction3);
+        transactionService.save(transaction4);
+        transactionService.save(transaction5);
     }
 
     private boolean handleUserChoice(int choice) {
@@ -67,12 +96,61 @@ public class ConsoleApp {
             case 17 -> editBudget();
             case 18 -> displayGoal();
             case 19 -> editGoal();
+            case 20 -> displayBalance();
+            case 21 -> displayBalanceByDate();
+            case 22 -> displayTotalIncome();
+            case 23 -> displayTotalExpenses();
+            case 24 -> displayAnalyzeExpensesByCategory();
+            case 25 -> displayFinancialReport();
             case 0 -> {
                 return exit();
             }
             default -> ConsoleOutputHandler.displayMsg("Неверный выбор!\n");
         }
         return true;
+    }
+
+    private void displayFinancialReport() {
+        LocalDate from = ConsoleInputHandler.getUserDateInput("Введите дату начала периода");
+        LocalDate to = ConsoleInputHandler.getUserDateInput("Введите дату конца периода");
+        Map<String, BigDecimal> report = transactionService.generateFinancialReport(currentUser.getId(), from, to);
+        ConsoleOutputHandler.displayMap(report);
+    }
+
+    private void displayAnalyzeExpensesByCategory() {
+        LocalDate from = ConsoleInputHandler.getUserDateInput("Введите дату начала периода");
+        LocalDate to = ConsoleInputHandler.getUserDateInput("Введите дату конца периода");
+        Map<String, BigDecimal> analyzed = transactionService.analyzeExpensesByCategory(currentUser.getId(), from, to);
+        ConsoleOutputHandler.displayMap(analyzed);
+    }
+
+    private void displayTotalExpenses() {
+        LocalDate from = ConsoleInputHandler.getUserDateInput("Введите дату начала периода");
+        LocalDate to = ConsoleInputHandler.getUserDateInput("Введите дату конца периода");
+        BigDecimal expenses = transactionService.calculateTotalExpenses(currentUser.getId(), from, to);
+        ConsoleOutputHandler.displayMsg("Расходы с " + from + " до " + to + ": " + expenses);
+    }
+
+    private void displayTotalIncome() {
+        LocalDate from = ConsoleInputHandler.getUserDateInput("Введите дату начала периода");
+        LocalDate to = ConsoleInputHandler.getUserDateInput("Введите дату конца периода");
+        BigDecimal income = transactionService.calculateTotalIncome(currentUser.getId(), from, to);
+        ConsoleOutputHandler.displayMsg("Доход с " + from + " до " + to + ": " + income);
+    }
+
+    private void displayBalanceByDate() {
+        LocalDate from = ConsoleInputHandler.getUserDateInput("Введите дату начала периода");
+        LocalDate to = ConsoleInputHandler.getUserDateInput("Введите дату конца периода");
+
+        BigDecimal income = transactionService.calculateTotalIncome(currentUser.getId(), from, to);
+        BigDecimal expenses = transactionService.calculateTotalExpenses(currentUser.getId(), from, to);
+
+        ConsoleOutputHandler.displayMsg("Баланс c " + from + " по " + to + ": " + income.subtract(expenses));
+    }
+
+    private void displayBalance() {
+        BigDecimal balance = transactionService.checkBalance(currentUser.getId());
+        ConsoleOutputHandler.displayMsg("Баланс: " + balance);
     }
 
     private void editGoal() {
@@ -126,7 +204,7 @@ public class ConsoleApp {
 
     private void deleteTransaction() {
         ConsoleOutputHandler.displayMsg("\nУдаление транзакции");
-        List<Transaction> transactions = transactionService.getAll(new TransactionFilter(currentUser.getId(), null, null, null));
+        List<Transaction> transactions = transactionService.getAll(new TransactionFilter(currentUser.getId(), null, null, null, null, null));
         ConsoleOutputHandler.displayTransactionList(transactions);
         long transactionId = ConsoleInputHandler.getUserIntegerInput("Введите id транзакции: ");
         if (transactionService.deleteById(transactionId)) {
@@ -138,7 +216,7 @@ public class ConsoleApp {
 
     private void editTransaction() {
         ConsoleOutputHandler.displayMsg("\nРедактирование транзакции");
-        List<Transaction> transactions = transactionService.getAll(new TransactionFilter(currentUser.getId(), null, null, null));
+        List<Transaction> transactions = transactionService.getAll(new TransactionFilter(currentUser.getId(), null, null, null, null, null));
         ConsoleOutputHandler.displayTransactionList(transactions);
         long transactionId = ConsoleInputHandler.getUserIntegerInput("Введите id транзакции: ");
         Transaction transaction = transactionService.getById(transactionId);
@@ -164,7 +242,7 @@ public class ConsoleApp {
 
     private void addTransaction() {
         ConsoleOutputHandler.displayMsg("\nСоздание транзакции");
-        LocalDate date = ConsoleInputHandler.getUserDateInput("Введите дату: ");
+        LocalDate date = ConsoleInputHandler.getUserDateInput("Введите дату");
         ConsoleOutputHandler.displayEnum(TransactionType.class);
         int transactionType = ConsoleInputHandler.getUserIntegerInput("Выберите тип транзакции: ");
         BigDecimal amount = ConsoleInputHandler.getUserBigDecimalInput("Введите сумму: ");
@@ -221,7 +299,7 @@ public class ConsoleApp {
         boolean useDate = ConsoleInputHandler.getUserBooleanInput("Использовать фильтр по дате? ('y'/'n' или 'д'/'н'.)");
         LocalDate date = null;
         if (useDate) {
-            date = ConsoleInputHandler.getUserDateInput("Введите дату: ");
+            date = ConsoleInputHandler.getUserDateInput("Введите дату");
         }
 
         boolean useType = ConsoleInputHandler.getUserBooleanInput("Использовать фильтр по типу транзакции? ('y'/'n' или 'д'/'н'.)");
@@ -244,7 +322,7 @@ public class ConsoleApp {
             userId = ConsoleInputHandler.getUserIntegerInput("Введите id пользователя: ");
         }
 
-        TransactionFilter filter = new TransactionFilter(userId, date, transactionCategoryId, transactionType);
+        TransactionFilter filter = new TransactionFilter(userId, date, null, null, transactionCategoryId, transactionType);
         displayTransactions(filter);
     }
 
