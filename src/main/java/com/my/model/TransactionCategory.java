@@ -6,6 +6,9 @@ public class TransactionCategory {
     private Long id;
     private String categoryName;
 
+    public TransactionCategory() {
+    }
+
     public TransactionCategory(String categoryName) {
         this.categoryName = categoryName;
     }
