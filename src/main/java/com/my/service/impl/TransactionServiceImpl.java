@@ -68,8 +68,7 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public BigDecimal getMonthExpense(Long userId) {
-        TransactionFilter filter = new TransactionFilter(userId, null, null, null, null, TransactionType.EXPENSE);
-        List<Transaction> transactions = getAll(filter);
+        List<Transaction> transactions = getAll(new TransactionFilter(userId, null, null, null, null, TransactionType.EXPENSE));
         return transactions.stream()
                 .filter(t -> t.getDate().getMonth() == LocalDate.now().getMonth() && t.getDate().getYear() == LocalDate.now().getYear())
                 .map(Transaction::getAmount)

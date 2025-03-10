@@ -17,13 +17,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User registration(String email, String name, String password) {
-
-        boolean isEmailAvailable = isEmailAvailable(email);
-
-        if (isEmailAvailable) {
+        if (isEmailAvailable(email)) {
             return null;
         }
-
         return userRepository.save(new User(email, password, name));
     }
 
@@ -39,18 +35,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User update(Long id, User sourceUser) {
-        if (!isEmailAvailable(sourceUser.getEmail())) {
-            return null;
-        }
-
         User updatedUser = getById(id);
-
-        if (updatedUser == null) {
+        if (updatedUser == null || (!updatedUser.getEmail().equals(sourceUser.getEmail()) && !isEmailAvailable(sourceUser.getEmail()))) {
             return null;
         }
-
         UserMapper.INSTANCE.updateUser(sourceUser, updatedUser);
-
         return userRepository.update(updatedUser);
     }
 
@@ -69,6 +58,6 @@ public class UserServiceImpl implements UserService {
     }
 
     private boolean isEmailAvailable(String email) {
-        return userRepository.isPresentByEmail(email);
+        return !userRepository.isPresentByEmail(email);
     }
 }

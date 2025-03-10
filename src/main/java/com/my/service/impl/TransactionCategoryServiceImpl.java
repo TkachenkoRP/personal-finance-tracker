@@ -27,8 +27,7 @@ public class TransactionCategoryServiceImpl implements TransactionCategoryServic
 
     @Override
     public TransactionCategory save(TransactionCategory transactionCategory) {
-        if (getAll().stream().anyMatch(
-                t -> t.getCategoryName().equalsIgnoreCase(transactionCategory.getCategoryName()))) {
+        if (transactionCategoryRepository.existsByCategoryNameIgnoreCase(transactionCategory.getCategoryName())) {
             return null;
         }
         return transactionCategoryRepository.save(transactionCategory);

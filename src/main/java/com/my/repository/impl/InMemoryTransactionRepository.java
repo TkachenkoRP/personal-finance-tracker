@@ -24,11 +24,8 @@ public class InMemoryTransactionRepository implements TransactionRepository {
 
     @Override
     public Optional<Transaction> getById(Long id) {
-        Transaction transaction = repository.get(id);
-        if (transaction == null) {
-            return Optional.empty();
-        }
-        return Optional.of(TransactionMapper.INSTANCE.copyTransaction(transaction));
+        return Optional.ofNullable(repository.get(id))
+                       .map(TransactionMapper.INSTANCE::copyTransaction);
     }
 
     @Override

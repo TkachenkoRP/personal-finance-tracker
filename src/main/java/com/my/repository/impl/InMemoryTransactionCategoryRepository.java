@@ -24,11 +24,8 @@ public class InMemoryTransactionCategoryRepository implements TransactionCategor
 
     @Override
     public Optional<TransactionCategory> getById(Long id) {
-        TransactionCategory transactionCategory = repository.get(id);
-        if (transactionCategory == null) {
-            return Optional.empty();
-        }
-        return Optional.of(TransactionCategoryMapper.INSTANCE.copyTransactionCategory(transactionCategory));
+        return Optional.ofNullable(repository.get(id))
+                .map(TransactionCategoryMapper.INSTANCE::copyTransactionCategory);
     }
 
     @Override
@@ -52,5 +49,11 @@ public class InMemoryTransactionCategoryRepository implements TransactionCategor
             return true;
         }
         return false;
+    }
+
+    @Override
+    public boolean existsByCategoryNameIgnoreCase(String categoryName) {
+        return repository.values().stream().anyMatch(
+                t -> t.getCategoryName().equalsIgnoreCase(categoryName)); // Избегаем вызова getAll()
     }
 }

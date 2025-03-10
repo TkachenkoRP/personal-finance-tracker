@@ -24,11 +24,8 @@ public class InMemoryUserRepository implements UserRepository {
 
     @Override
     public Optional<User> getById(Long id) {
-        User user = repository.get(id);
-        if (user == null) {
-            return Optional.empty();
-        }
-        return Optional.of(UserMapper.INSTANCE.copyUser(user));
+        return Optional.ofNullable(repository.get(id))
+                .map(UserMapper.INSTANCE::copyUser);
     }
 
     @Override
@@ -56,7 +53,7 @@ public class InMemoryUserRepository implements UserRepository {
 
     @Override
     public boolean isPresentByEmail(String email) {
-        return getAll().stream().anyMatch(u -> u.getEmail().equalsIgnoreCase(email));
+        return repository.values().stream().anyMatch(u -> u.getEmail().equalsIgnoreCase(email)); // Используем значения карты
     }
 
     @Override
