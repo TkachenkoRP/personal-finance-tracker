@@ -2,6 +2,7 @@ package com.my.service.impl;
 
 import com.my.mapper.UserMapper;
 import com.my.model.User;
+import com.my.model.UserRole;
 import com.my.repository.UserRepository;
 import com.my.service.UserService;
 
@@ -17,10 +18,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User registration(String email, String name, String password) {
-        if (isEmailAvailable(email)) {
+        if (!isEmailAvailable(email)) {
             return null;
         }
-        return userRepository.save(new User(email, password, name));
+        return userRepository.save(new User(email, password, name, UserRole.ROLE_USER));
     }
 
     @Override
@@ -59,5 +60,15 @@ public class UserServiceImpl implements UserService {
 
     private boolean isEmailAvailable(String email) {
         return !userRepository.isPresentByEmail(email);
+    }
+
+    public boolean blockUser(Long userId) {
+        User user = getById(userId);
+        if (user != null) {
+            user.setBlocked(true);
+            update(userId, user);
+            return true;
+        }
+        return false;
     }
 }

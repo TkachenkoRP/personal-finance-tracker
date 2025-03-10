@@ -6,6 +6,7 @@ import com.my.model.TransactionCategory;
 import com.my.model.TransactionFilter;
 import com.my.model.TransactionType;
 import com.my.model.User;
+import com.my.model.UserRole;
 import com.my.out.ConsoleOutputHandler;
 import com.my.service.NotificationService;
 import com.my.service.TransactionCategoryService;
@@ -25,8 +26,9 @@ public class ConsoleApp {
     private final TransactionCategoryService transactionCategoryService;
     private final NotificationService notificationService;
     private final NotificationService emailNotificationService;
-    private static final Set<Integer> UNAUTHENTICATED_CHOICES = Set.of(3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25);
+    private static final Set<Integer> UNAUTHENTICATED_CHOICES = Set.of(3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22);
     private static final Set<Integer> AUTHENTICATED_CHOICES = Set.of(1, 2);
+    private static final Set<Integer> ADMIN_CHOICES = Set.of(22, 23, 24, 25, 26);
 
     public ConsoleApp(UserService userService, TransactionService transactionService,
                       TransactionCategoryService transactionCategoryService, NotificationService notificationService,
@@ -49,31 +51,56 @@ public class ConsoleApp {
     }
 
     private void addTestData() {
-        User registration = userService.registration("qwe", "rty", "qwe");
-        User registration1 = userService.registration("asd", "fgh", "asd");
+        User user1 = userService.registration("qwe", "rty", "qwe");
+        User user2 = userService.registration("asd", "fgh", "asd");
+        User user3 = userService.registration("zxc", "vbn", "zxc");
 
-        TransactionCategory transactionCategory = new TransactionCategory("cat1");
-        TransactionCategory transactionCategory2 = new TransactionCategory("cat2");
+        TransactionCategory category1 = new TransactionCategory("Food");
+        TransactionCategory category2 = new TransactionCategory("Transport");
+        TransactionCategory category3 = new TransactionCategory("Entertainment");
+        TransactionCategory category4 = new TransactionCategory("Utilities");
 
-        TransactionCategory saved = transactionCategoryService.save(transactionCategory);
-        TransactionCategory saved2 = transactionCategoryService.save(transactionCategory2);
+        TransactionCategory savedCategory1 = transactionCategoryService.save(category1);
+        TransactionCategory savedCategory2 = transactionCategoryService.save(category2);
+        TransactionCategory savedCategory3 = transactionCategoryService.save(category3);
+        TransactionCategory savedCategory4 = transactionCategoryService.save(category4);
 
-        Transaction transaction1 = new Transaction(LocalDate.now().minusDays(1), TransactionType.INCOME, new BigDecimal("100.01"), "Descr", saved);
-        transaction1.setUser(registration);
-        Transaction transaction2 = new Transaction(LocalDate.now(), TransactionType.EXPENSE, new BigDecimal("50.55"), "Descr2", saved);
-        transaction2.setUser(registration);
-        Transaction transaction3 = new Transaction(LocalDate.now(), TransactionType.INCOME, new BigDecimal("10.22"), "Descr3", saved2);
-        transaction3.setUser(registration);
-        Transaction transaction4 = new Transaction(LocalDate.now(), TransactionType.INCOME, new BigDecimal("20.11"), "Descr4", saved2);
-        transaction4.setUser(registration);
-        Transaction transaction5 = new Transaction(LocalDate.now(), TransactionType.EXPENSE, new BigDecimal("14.55"), "Descr5", saved);
-        transaction5.setUser(registration1);
+        Transaction transaction1 = new Transaction(LocalDate.now().minusDays(1), TransactionType.INCOME, new BigDecimal("100.01"), "Salary", savedCategory1);
+        transaction1.setUser(user1);
+
+        Transaction transaction2 = new Transaction(LocalDate.now(), TransactionType.EXPENSE, new BigDecimal("50.55"), "Grocery", savedCategory1);
+        transaction2.setUser(user1);
+
+        Transaction transaction3 = new Transaction(LocalDate.now(), TransactionType.EXPENSE, new BigDecimal("20.00"), "Bus Ticket", savedCategory2);
+        transaction3.setUser(user1);
+
+        Transaction transaction4 = new Transaction(LocalDate.now(), TransactionType.INCOME, new BigDecimal("200.00"), "Freelance Work", savedCategory3);
+        transaction4.setUser(user1);
+
+        Transaction transaction5 = new Transaction(LocalDate.now(), TransactionType.EXPENSE, new BigDecimal("14.55"), "Movie Ticket", savedCategory3);
+        transaction5.setUser(user2);
+
+        Transaction transaction6 = new Transaction(LocalDate.now(), TransactionType.EXPENSE, new BigDecimal("30.00"), "Electricity Bill", savedCategory4);
+        transaction6.setUser(user2);
+
+        Transaction transaction7 = new Transaction(LocalDate.now().minusDays(2), TransactionType.INCOME, new BigDecimal("150.00"), "Bonus", savedCategory1);
+        transaction7.setUser(user3);
+
+        Transaction transaction8 = new Transaction(LocalDate.now(), TransactionType.EXPENSE, new BigDecimal("25.00"), "Internet Bill", savedCategory4);
+        transaction8.setUser(user3);
+
+        Transaction transaction9 = new Transaction(LocalDate.now().minusDays(3), TransactionType.EXPENSE, new BigDecimal("40.00"), "Taxi", savedCategory2);
+        transaction9.setUser(user3);
 
         transactionService.save(transaction1);
         transactionService.save(transaction2);
         transactionService.save(transaction3);
         transactionService.save(transaction4);
         transactionService.save(transaction5);
+        transactionService.save(transaction6);
+        transactionService.save(transaction7);
+        transactionService.save(transaction8);
+        transactionService.save(transaction9);
     }
 
     private boolean handleUserChoice(int choice) {
@@ -83,38 +110,55 @@ public class ConsoleApp {
         if (currentUser != null && AUTHENTICATED_CHOICES.contains(choice)) {
             choice = -1;
         }
+        if (currentUser != null && !currentUser.getRole().equals(UserRole.ROLE_ADMIN) && ADMIN_CHOICES.contains(choice)) {
+            choice = -1;
+        }
         switch (choice) {
             case 1 -> registrationUser();
             case 2 -> loginUser();
+
             case 3 -> editCurrentUserData();
-            case 4 -> editUserData();
-            case 5 -> deleteCurrentUser();
-            case 6 -> deleteUser();
-            case 7 -> displayAllUsers();
+            case 4 -> deleteCurrentUser();
+            case 5 -> displayAllCategories();
+            case 6 -> addCategory();
+            case 7 -> editCategory();
             case 8 -> displayAllTransactions();
             case 9 -> addTransaction();
             case 10 -> editTransaction();
             case 11 -> deleteTransaction();
-            case 12 -> displayAllCategories();
-            case 13 -> addCategory();
-            case 14 -> editCategory();
-            case 15 -> deleteCategory();
-            case 16 -> displayBudget();
-            case 17 -> editBudget();
-            case 18 -> displayGoal();
-            case 19 -> editGoal();
-            case 20 -> displayBalance();
-            case 21 -> displayBalanceByDate();
-            case 22 -> displayTotalIncome();
-            case 23 -> displayTotalExpenses();
-            case 24 -> displayAnalyzeExpensesByCategory();
-            case 25 -> displayFinancialReport();
+            case 12 -> displayBudget();
+            case 13 -> editBudget();
+            case 14 -> displayGoal();
+            case 15 -> editGoal();
+            case 16 -> displayBalance();
+            case 17 -> displayBalanceByDate();
+            case 18 -> displayTotalIncome();
+            case 19 -> displayTotalExpenses();
+            case 20 -> displayAnalyzeExpensesByCategory();
+            case 21 -> displayFinancialReport();
+
+            case 22 -> displayAllUsers();
+            case 23 -> editUserData();
+            case 24 -> deleteUser();
+            case 25 -> deleteCategory();
+            case 26 -> blockUser();
+
             case 0 -> {
                 return exit();
             }
             default -> ConsoleOutputHandler.displayMsg("Неверный выбор!\n");
         }
         return true;
+    }
+
+    private void blockUser() {
+        displayAllUsers();
+        long userId = ConsoleInputHandler.getUserIntegerInput("Введите id пользователя для блокировки: ");
+        if (userService.blockUser(userId)) {
+            ConsoleOutputHandler.displayMsg("Пользователь заблокирован.");
+        } else {
+            ConsoleOutputHandler.displayMsg("Ошибка: пользователь не найден.");
+        }
     }
 
     private void displayFinancialReport() {
@@ -320,16 +364,17 @@ public class ConsoleApp {
             transactionType = TransactionType.values()[transactionTypeOrdinal];
         }
 
-        long userId;
-        int choice;
-        do {
-            choice = ConsoleInputHandler.getUserIntegerInput("1 - Свои транзакции, 2 - Транзакции другого пользователя");
-        } while (choice < 1 || choice > 2);
-        if (choice == 1) {
-            userId = currentUser.getId();
-        } else {
-            displayAllUsers();
-            userId = ConsoleInputHandler.getUserIntegerInput("Введите id пользователя: ");
+        long userId = currentUser.getId();
+
+        if (isAdmin()) {
+            int choice;
+            do {
+                choice = ConsoleInputHandler.getUserIntegerInput("1 - Свои транзакции, 2 - Транзакции другого пользователя");
+            } while (choice < 1 || choice > 2);
+            if (choice == 2) {
+                displayAllUsers();
+                userId = ConsoleInputHandler.getUserIntegerInput("Введите id пользователя: ");
+            }
         }
 
         TransactionFilter filter = new TransactionFilter(userId, date, null, null, transactionCategoryId, transactionType);
@@ -397,7 +442,7 @@ public class ConsoleApp {
         String userEmail = ConsoleInputHandler.getUserTextInput("Измените email " + user.getEmail() + " на: ");
         String userName = ConsoleInputHandler.getUserTextInput("Измените имя " + user.getName() + " на: ");
         String password = ConsoleInputHandler.getUserTextInput("Введите новый пароль: ");
-        return new User(userEmail, password, userName);
+        return new User(userEmail, password, userName, user.getRole());
     }
 
     private void displayAllUsers() {
@@ -467,5 +512,9 @@ public class ConsoleApp {
         ConsoleOutputHandler.displayMsg("\nСписок категорий");
         List<TransactionCategory> transactionCategories = transactionCategoryService.getAll();
         ConsoleOutputHandler.displayTransactionCategoryList(transactionCategories);
+    }
+
+    private boolean isAdmin() {
+        return currentUser.getRole() == UserRole.ROLE_ADMIN;
     }
 }

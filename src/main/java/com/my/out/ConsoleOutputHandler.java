@@ -3,6 +3,7 @@ package com.my.out;
 import com.my.model.Transaction;
 import com.my.model.TransactionCategory;
 import com.my.model.User;
+import com.my.model.UserRole;
 
 import java.math.BigDecimal;
 import java.text.MessageFormat;
@@ -24,29 +25,34 @@ public class ConsoleOutputHandler {
         } else {
             System.out.println(currentUser.getName());
             System.out.println("3 - редактировать профиль.");
-            System.out.println("4 - редактировать пользователя.");
-            System.out.println("5 - удалить текущего пользователя.");
-            System.out.println("6 - удалить пользователя.");
-            System.out.println("7 - отобразить всех пользователей.");
+            System.out.println("4 - удалить текущего пользователя.");
+            System.out.println("5 - отобразить все категории.");
+            System.out.println("6 - добавить категорию.");
+            System.out.println("7 - редактировать категорию.");
             System.out.println("8 - отобразить все транзакции.");
             System.out.println("9 - добавить транзакцию.");
             System.out.println("10 - редактировать транзакцию.");
             System.out.println("11 - удалить транзакцию.");
-            System.out.println("12 - отобразить все категории.");
-            System.out.println("13 - добавить категорию.");
-            System.out.println("14 - редактировать категорию.");
-            System.out.println("15 - удалить категорию.");
-            System.out.println("16 - отобразить бюджет.");
-            System.out.println("17 - отредактировать бюджет.");
-            System.out.println("18 - отобразить цель.");
-            System.out.println("19 - отредактировать цель.");
-            System.out.println("20 - отобразить баланс.");
-            System.out.println("21 - отобразить баланс в периоде.");
-            System.out.println("22 - отобразить доход в периоде.");
-            System.out.println("23 - отобразить расход в периоде.");
-            System.out.println("24 - отобразить расход по категориям.");
-            System.out.println("25 - отобразить финансовый отчет.");
+            System.out.println("12 - отобразить бюджет.");
+            System.out.println("13 - отредактировать бюджет.");
+            System.out.println("14 - отобразить цель.");
+            System.out.println("15 - отредактировать цель.");
+            System.out.println("16 - отобразить баланс.");
+            System.out.println("17 - отобразить баланс в периоде.");
+            System.out.println("18 - отобразить доход в периоде.");
+            System.out.println("19 - отобразить расход в периоде.");
+            System.out.println("20 - отобразить расход по категориям.");
+            System.out.println("21 - отобразить финансовый отчет.");
             System.out.println("0 - выход.");
+        }
+
+        if (currentUser != null && currentUser.getRole().equals(UserRole.ROLE_ADMIN)) {
+            System.out.println("\nПанель управления для администратора:");
+            System.out.println("22 - отобразить всех пользователей.");
+            System.out.println("23 - редактировать пользователя.");
+            System.out.println("24 - удалить пользователя.");
+            System.out.println("25 - удалить категорию.");
+            System.out.println("26 - заблокировать пользователя.");
         }
     }
 

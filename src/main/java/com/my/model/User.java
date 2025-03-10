@@ -12,11 +12,31 @@ public class User {
     private String name;
     private BigDecimal budget;
     private Map<Long, BigDecimal> goals = new HashMap<>();
+    private UserRole role;
+    private boolean blocked;
 
-    public User(String email, String password, String name) {
+    public User(String email, String password, String name, UserRole role) {
         this.email = email;
         this.password = password;
         this.name = name;
+        this.role = role;
+        this.blocked = false;
+    }
+
+    public boolean isBlocked() {
+        return blocked;
+    }
+
+    public void setBlocked(boolean blocked) {
+        this.blocked = blocked;
+    }
+
+    public UserRole getRole() {
+        return role;
+    }
+
+    public void setRole(UserRole role) {
+        this.role = role;
     }
 
     public String getEmail() {
@@ -85,6 +105,7 @@ public class User {
                 "id=" + id +
                 ", email='" + email + '\'' +
                 ", name='" + name + '\'' +
+                ", role=" + role +
                 '}';
     }
 }

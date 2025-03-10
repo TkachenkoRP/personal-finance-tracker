@@ -2,6 +2,7 @@ package com.my.repository.impl;
 
 import com.my.mapper.UserMapper;
 import com.my.model.User;
+import com.my.model.UserRole;
 import com.my.repository.UserRepository;
 
 import java.util.ArrayList;
@@ -16,6 +17,10 @@ public class InMemoryUserRepository implements UserRepository {
     private final Map<Long, User> repository = new ConcurrentHashMap<>();
 
     private final AtomicLong currentId = new AtomicLong(1);
+
+    public InMemoryUserRepository() {
+        save(new User("Admin", "aDmIn", "Administrator", UserRole.ROLE_ADMIN));
+    }
 
     @Override
     public List<User> getAll() {
@@ -60,7 +65,7 @@ public class InMemoryUserRepository implements UserRepository {
     public Optional<User> getByEmailAndPassword(String email, String password) {
         for (User u : getAll()) {
             if (u.getEmail().equalsIgnoreCase(email)
-                    && u.getPassword().equals(password)) {
+                    && u.getPassword().equals(password) && !u.isBlocked()) {
                 return Optional.of(u);
             }
         }

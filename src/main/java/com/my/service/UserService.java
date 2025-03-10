@@ -16,4 +16,6 @@ public interface UserService {
     boolean delete(Long id);
 
     List<User> getAll();
+
+    boolean blockUser(Long userId);
 }
