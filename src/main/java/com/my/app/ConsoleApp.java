@@ -7,6 +7,7 @@ import com.my.model.TransactionFilter;
 import com.my.model.TransactionType;
 import com.my.model.User;
 import com.my.out.ConsoleOutputHandler;
+import com.my.service.NotificationService;
 import com.my.service.TransactionCategoryService;
 import com.my.service.TransactionService;
 import com.my.service.UserService;
@@ -22,13 +23,19 @@ public class ConsoleApp {
     private final UserService userService;
     private final TransactionService transactionService;
     private final TransactionCategoryService transactionCategoryService;
+    private final NotificationService notificationService;
+    private final NotificationService emailNotificationService;
     private static final Set<Integer> UNAUTHENTICATED_CHOICES = Set.of(3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25);
     private static final Set<Integer> AUTHENTICATED_CHOICES = Set.of(1, 2);
 
-    public ConsoleApp(UserService userService, TransactionService transactionService, TransactionCategoryService transactionCategoryService) {
+    public ConsoleApp(UserService userService, TransactionService transactionService,
+                      TransactionCategoryService transactionCategoryService, NotificationService notificationService,
+                      NotificationService emailNotificationService) {
         this.userService = userService;
         this.transactionService = transactionService;
         this.transactionCategoryService = transactionCategoryService;
+        this.notificationService = notificationService;
+        this.emailNotificationService = emailNotificationService;
     }
 
     public void start() {
@@ -267,9 +274,10 @@ public class ConsoleApp {
     private void checkGoalIncome(Long transactionCategoryId) {
         if (currentUser.getGoals() != null && currentUser.getGoals().get(transactionCategoryId) != null && transactionService.isGoalIncome(currentUser.getId(), currentUser.getGoals().get(transactionCategoryId), transactionCategoryId)) {
             TransactionCategory transactionCategory = transactionCategoryService.getById(transactionCategoryId);
-            ConsoleOutputHandler.displayMsg(
-                    "Выполнена цель " + currentUser.getGoals().get(transactionCategoryId) + " для " + transactionCategory.getCategoryName()
-            );
+            String msg = "Выполнена цель " + currentUser.getGoals().get(transactionCategoryId) + " для " + transactionCategory.getCategoryName();
+            ConsoleOutputHandler.displayMsg(msg);
+            notificationService.sendNotification(msg);
+            emailNotificationService.sendNotification(msg);
             currentUser.getGoals().remove(transactionCategoryId);
             userService.update(currentUser.getId(), currentUser);
         }
@@ -278,9 +286,11 @@ public class ConsoleApp {
     private void checkBudgetExceeded() {
         if (transactionService.isBudgetExceeded(currentUser.getId(), currentUser.getBudget())) {
             BigDecimal monthExpense = transactionService.getMonthExpense(currentUser.getId());
-            ConsoleOutputHandler.displayMsg(
-                    "Перерасход бюджета! Ваши расходы: " + monthExpense +
-                            ", установленный бюджет: " + currentUser.getBudget());
+            String msg = "Перерасход бюджета! Ваши расходы: " + monthExpense +
+                    ", установленный бюджет: " + currentUser.getBudget();
+            ConsoleOutputHandler.displayMsg(msg);
+            notificationService.sendNotification(msg);
+            emailNotificationService.sendNotification(msg);
             currentUser.setBudget(null);
             userService.update(currentUser.getId(), currentUser);
         }
