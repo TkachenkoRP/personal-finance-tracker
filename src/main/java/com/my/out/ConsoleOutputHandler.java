@@ -17,43 +17,52 @@ public class ConsoleOutputHandler {
     }
 
     public static void displayMenu(User currentUser) {
-        System.out.println("Доступные команды:");
+        StringBuilder menu = new StringBuilder("Доступные команды:\n");
+
         if (currentUser == null) {
-            System.out.println("1 - регистрация пользователя;");
-            System.out.println("2 - авторизация пользователя;");
-            System.out.println("0 - завершить работу.\n");
+            menu.append("""
+                    1 - регистрация пользователя;
+                    2 - авторизация пользователя;
+                    0 - завершить работу.
+                    """);
         } else {
-            System.out.println(currentUser.getName());
-            System.out.println("3 - редактировать профиль.");
-            System.out.println("4 - удалить текущего пользователя.");
-            System.out.println("5 - отобразить все категории.");
-            System.out.println("6 - добавить категорию.");
-            System.out.println("7 - редактировать категорию.");
-            System.out.println("8 - отобразить все транзакции.");
-            System.out.println("9 - добавить транзакцию.");
-            System.out.println("10 - редактировать транзакцию.");
-            System.out.println("11 - удалить транзакцию.");
-            System.out.println("12 - отобразить бюджет.");
-            System.out.println("13 - отредактировать бюджет.");
-            System.out.println("14 - отобразить цель.");
-            System.out.println("15 - отредактировать цель.");
-            System.out.println("16 - отобразить баланс.");
-            System.out.println("17 - отобразить баланс в периоде.");
-            System.out.println("18 - отобразить доход в периоде.");
-            System.out.println("19 - отобразить расход в периоде.");
-            System.out.println("20 - отобразить расход по категориям.");
-            System.out.println("21 - отобразить финансовый отчет.");
-            System.out.println("0 - выход.");
+            menu.append(currentUser.getName()).append("\n")
+                    .append("""
+                            3 - редактировать профиль.
+                            4 - удалить текущего пользователя.
+                            5 - отобразить все категории.
+                            6 - добавить категорию.
+                            7 - редактировать категорию.
+                            8 - отобразить все транзакции.
+                            9 - добавить транзакцию.
+                            10 - редактировать транзакцию.
+                            11 - удалить транзакцию.
+                            12 - отобразить бюджет.
+                            13 - отредактировать бюджет.
+                            14 - отобразить цель.
+                            15 - отредактировать цель.
+                            16 - отобразить баланс.
+                            17 - отобразить баланс в периоде.
+                            18 - отобразить доход в периоде.
+                            19 - отобразить расход в периоде.
+                            20 - отобразить расход по категориям.
+                            21 - отобразить финансовый отчет.
+                            0 - выход.
+                            """);
         }
 
         if (currentUser != null && currentUser.getRole().equals(UserRole.ROLE_ADMIN)) {
-            System.out.println("\nПанель управления для администратора:");
-            System.out.println("22 - отобразить всех пользователей.");
-            System.out.println("23 - редактировать пользователя.");
-            System.out.println("24 - удалить пользователя.");
-            System.out.println("25 - удалить категорию.");
-            System.out.println("26 - заблокировать пользователя.");
+            menu.append("""
+                    \nПанель управления для администратора:
+                    22 - отобразить всех пользователей.
+                    23 - редактировать пользователя.
+                    24 - удалить пользователя.
+                    25 - удалить категорию.
+                    26 - заблокировать пользователя.
+                    """);
         }
+
+        System.out.println(menu);
     }
 
     public static void displayMsg(String msg) {

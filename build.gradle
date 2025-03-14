@@ -9,13 +9,24 @@ repositories {
     mavenCentral()
 }
 
+ext {
+    mapstructVersion = '1.6.3'
+    junitVersion = '5.10.0'
+    assertjVersion = '3.27.3'
+    mockitoVersion = '5.16.0'
+    postgresqlVersion = '42.7.5'
+    liquibaseVersion= '4.31.1'
+}
+
 dependencies {
-    implementation 'org.mapstruct:mapstruct:1.6.3'
-    annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
-    testImplementation platform('org.junit:junit-bom:5.10.0')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
-    testImplementation 'org.assertj:assertj-core:3.27.3'
-    testImplementation 'org.mockito:mockito-core:5.16.0'
+    implementation "org.postgresql:postgresql:${postgresqlVersion}"
+    implementation "org.liquibase:liquibase-core:${liquibaseVersion}"
+    implementation "org.mapstruct:mapstruct:${mapstructVersion}"
+    annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
+    testImplementation platform("org.junit:junit-bom:${junitVersion}")
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testImplementation "org.assertj:assertj-core:${assertjVersion}"
+    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
 }
 
 test {

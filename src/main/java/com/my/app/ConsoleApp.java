@@ -8,10 +8,12 @@ import com.my.model.TransactionType;
 import com.my.model.User;
 import com.my.model.UserRole;
 import com.my.out.ConsoleOutputHandler;
+import com.my.service.JdbcDataService;
 import com.my.service.NotificationService;
 import com.my.service.TransactionCategoryService;
 import com.my.service.TransactionService;
 import com.my.service.UserService;
+import liquibase.exception.LiquibaseException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -26,21 +28,29 @@ public class ConsoleApp {
     private final TransactionCategoryService transactionCategoryService;
     private final NotificationService notificationService;
     private final NotificationService emailNotificationService;
+    private final JdbcDataService jdbcDataService;
     private static final Set<Integer> UNAUTHENTICATED_CHOICES = Set.of(3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22);
     private static final Set<Integer> AUTHENTICATED_CHOICES = Set.of(1, 2);
     private static final Set<Integer> ADMIN_CHOICES = Set.of(22, 23, 24, 25, 26);
 
     public ConsoleApp(UserService userService, TransactionService transactionService,
                       TransactionCategoryService transactionCategoryService, NotificationService notificationService,
-                      NotificationService emailNotificationService) {
+                      NotificationService emailNotificationService, JdbcDataService jdbcDataService) {
         this.userService = userService;
         this.transactionService = transactionService;
         this.transactionCategoryService = transactionCategoryService;
         this.notificationService = notificationService;
         this.emailNotificationService = emailNotificationService;
+        this.jdbcDataService = jdbcDataService;
     }
 
     public void start() {
+        try {
+            jdbcDataService.initDb();
+        } catch (LiquibaseException e) {
+            ConsoleOutputHandler.displayMsg("Ошибка инициализации БД!");
+        }
+
         boolean working = true;
         while (working) {
             ConsoleOutputHandler.displayMenu(currentUser);
