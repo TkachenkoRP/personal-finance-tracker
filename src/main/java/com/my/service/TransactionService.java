@@ -87,7 +87,7 @@ public interface TransactionService {
      * @param userId идентификатор пользователя
      * @return текущий баланс пользователя
      */
-    BigDecimal checkBalance(Long userId) throws SQLException;
+    BigDecimal getBalance(Long userId) throws SQLException;
 
     /**
      * Расчет общего дохода пользователя за указанный период.
@@ -97,7 +97,7 @@ public interface TransactionService {
      * @param to дата окончания периода
      * @return общая сумма доходов за указанный период
      */
-    BigDecimal calculateTotalIncome(Long userId, LocalDate from, LocalDate to) throws SQLException;
+    BigDecimal getTotalIncome(Long userId, LocalDate from, LocalDate to) throws SQLException;
 
     /**
      * Расчет общих расходов пользователя за указанный период.
@@ -107,7 +107,7 @@ public interface TransactionService {
      * @param to дата окончания периода
      * @return общая сумма расходов за указанный период
      */
-    BigDecimal calculateTotalExpenses(Long userId, LocalDate from, LocalDate to) throws SQLException;
+    BigDecimal getTotalExpenses(Long userId, LocalDate from, LocalDate to) throws SQLException;
 
     /**
      * Анализ расходов пользователя по категориям за указанный период.

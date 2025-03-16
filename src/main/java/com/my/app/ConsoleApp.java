@@ -153,7 +153,7 @@ public class ConsoleApp {
     private void displayTotalExpenses() {
         LocalDate[] dates = getInputDates();
         try {
-            BigDecimal expenses = transactionService.calculateTotalExpenses(currentUser.getId(), dates[0], dates[1]);
+            BigDecimal expenses = transactionService.getTotalExpenses(currentUser.getId(), dates[0], dates[1]);
             ConsoleOutputHandler.displayMsg("Расходы с " + dates[0] + " до " + dates[1] + ": " + expenses);
         } catch (SQLException e) {
             ConsoleOutputHandler.displayMsg("Ошибка запроса расходов.");
@@ -164,7 +164,7 @@ public class ConsoleApp {
     private void displayTotalIncome() {
         LocalDate[] dates = getInputDates();
         try {
-            BigDecimal income = transactionService.calculateTotalIncome(currentUser.getId(), dates[0], dates[1]);
+            BigDecimal income = transactionService.getTotalIncome(currentUser.getId(), dates[0], dates[1]);
             ConsoleOutputHandler.displayMsg("Доход с " + dates[0] + " до " + dates[1] + ": " + income);
         } catch (SQLException e) {
             ConsoleOutputHandler.displayMsg("Ошибка запроса доходов.");
@@ -176,8 +176,8 @@ public class ConsoleApp {
         LocalDate[] dates = getInputDates();
 
         try {
-            BigDecimal income = transactionService.calculateTotalIncome(currentUser.getId(), dates[0], dates[1]);
-            BigDecimal expenses = transactionService.calculateTotalExpenses(currentUser.getId(), dates[0], dates[1]);
+            BigDecimal income = transactionService.getTotalIncome(currentUser.getId(), dates[0], dates[1]);
+            BigDecimal expenses = transactionService.getTotalExpenses(currentUser.getId(), dates[0], dates[1]);
             ConsoleOutputHandler.displayMsg("Баланс c " + dates[0] + " по " + dates[1] + ": " + income.subtract(expenses));
         } catch (SQLException e) {
             ConsoleOutputHandler.displayMsg("Ошибка запроса баланса.");
@@ -193,7 +193,7 @@ public class ConsoleApp {
 
     private void displayBalance() {
         try {
-            BigDecimal balance = transactionService.checkBalance(currentUser.getId());
+            BigDecimal balance = transactionService.getBalance(currentUser.getId());
             ConsoleOutputHandler.displayMsg("Баланс: " + balance);
         } catch (SQLException e) {
             ConsoleOutputHandler.displayMsg("Ошибка запроса баланса.");

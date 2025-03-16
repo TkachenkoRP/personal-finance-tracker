@@ -35,7 +35,7 @@ class TransactionServiceImplTest {
     }
 
     @Test
-    void testGetAll_WithFilter() {
+    void testGetAll_WithFilter() throws Exception {
         User user = new User("user1@example.com", "password", "User One", UserRole.ROLE_USER);
         user.setId(1L);
         Transaction transaction1 = new Transaction();
@@ -59,7 +59,7 @@ class TransactionServiceImplTest {
     }
 
     @Test
-    void testGetById_ExistingId() {
+    void testGetById_ExistingId() throws Exception {
         Transaction transaction = new Transaction();
         transaction.setId(1L);
         transaction.setAmount(new BigDecimal("100.00"));
@@ -74,7 +74,7 @@ class TransactionServiceImplTest {
     }
 
     @Test
-    void testGetById_NonExistingId() {
+    void testGetById_NonExistingId() throws Exception {
         when(transactionRepository.getById(999L)).thenReturn(Optional.empty());
 
         Transaction result = transactionService.getById(999L);
@@ -83,7 +83,7 @@ class TransactionServiceImplTest {
     }
 
     @Test
-    void testSave() {
+    void testSave() throws Exception {
         Transaction transaction = new Transaction();
         transaction.setAmount(new BigDecimal("100.00"));
 
@@ -96,7 +96,7 @@ class TransactionServiceImplTest {
     }
 
     @Test
-    void testUpdate_ExistingId() {
+    void testUpdate_ExistingId() throws Exception {
         Transaction existingTransaction = new Transaction();
         existingTransaction.setId(1L);
         existingTransaction.setAmount(new BigDecimal("100.00"));
@@ -116,7 +116,7 @@ class TransactionServiceImplTest {
     }
 
     @Test
-    void testUpdate_NonExistingId() {
+    void testUpdate_NonExistingId() throws Exception {
         Transaction updatedTransaction = new Transaction();
         updatedTransaction.setId(999L);
         updatedTransaction.setAmount(new BigDecimal("150.00"));
@@ -129,7 +129,7 @@ class TransactionServiceImplTest {
     }
 
     @Test
-    void testDeleteById_ExistingId() {
+    void testDeleteById_ExistingId() throws Exception {
         Transaction transaction = new Transaction();
         transaction.setId(1L);
 
@@ -143,7 +143,7 @@ class TransactionServiceImplTest {
     }
 
     @Test
-    void testDeleteById_NonExistingId() {
+    void testDeleteById_NonExistingId() throws Exception {
         when(transactionRepository.getById(999L)).thenReturn(Optional.empty());
 
         boolean isDeleted = transactionService.deleteById(999L);
@@ -152,7 +152,7 @@ class TransactionServiceImplTest {
     }
 
     @Test
-    void testGetMonthExpense() {
+    void testGetMonthExpense() throws Exception {
         User user = new User("user1@example.com", "password", "User One", UserRole.ROLE_USER);
         user.setId(1L);
         Transaction transaction1 = new Transaction();
@@ -175,7 +175,7 @@ class TransactionServiceImplTest {
     }
 
     @Test
-    void testCalculateTotalIncome() {
+    void testGetTotalIncome() throws Exception {
         User user = new User("user1@example.com", "password", "User One", UserRole.ROLE_USER);
         user.setId(1L);
         Transaction transaction1 = new Transaction();
@@ -192,13 +192,13 @@ class TransactionServiceImplTest {
 
         when(transactionRepository.getAll()).thenReturn(Arrays.asList(transaction1, transaction2));
 
-        BigDecimal totalIncome = transactionService.calculateTotalIncome(1L, LocalDate.now().minusDays(1), LocalDate.now());
+        BigDecimal totalIncome = transactionService.getTotalIncome(1L, LocalDate.now().minusDays(1), LocalDate.now());
 
         assertThat(totalIncome).isEqualTo(new BigDecimal("300.00"));
     }
 
     @Test
-    void testCalculateTotalExpenses() {
+    void testGetTotalExpenses() throws Exception {
         User user = new User("user1@example.com", "password", "User One", UserRole.ROLE_USER);
         user.setId(1L);
         Transaction transaction1 = new Transaction();
@@ -215,7 +215,7 @@ class TransactionServiceImplTest {
 
         when(transactionRepository.getAll()).thenReturn(Arrays.asList(transaction1, transaction2));
 
-        BigDecimal totalExpenses = transactionService.calculateTotalExpenses(1L, LocalDate.now().minusDays(1), LocalDate.now());
+        BigDecimal totalExpenses = transactionService.getTotalExpenses(1L, LocalDate.now().minusDays(1), LocalDate.now());
 
         assertThat(totalExpenses).isEqualTo(new BigDecimal("150.00"));
     }
