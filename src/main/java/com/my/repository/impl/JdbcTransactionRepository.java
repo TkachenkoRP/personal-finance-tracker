@@ -109,7 +109,7 @@ public class JdbcTransactionRepository implements TransactionRepository {
     public Optional<Transaction> getById(Long id) throws SQLException {
         String query = "SELECT t.id, t.amount, t.description, t.date, t.type, tc.id AS category_id, u.id AS user_id " +
                 "FROM " + schema + ".transaction t " +
-                "JOIN " + schema + ".transaction_category tc ON t.type = tc.id " +
+                "JOIN " + schema + ".transaction_category tc ON t.category_id = tc.id " +
                 "JOIN " + schema + ".user u ON t.user_id = u.id " +
                 "WHERE t.id = ?";
         try (PreparedStatement statement = connection.prepareStatement(query)) {

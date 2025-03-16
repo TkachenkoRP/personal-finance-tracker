@@ -1,7 +1,6 @@
 package com.my.repository.impl;
 
 import com.my.model.Transaction;
-import com.my.repository.TransactionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -12,7 +11,7 @@ import java.util.Optional;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 class InMemoryTransactionRepositoryTest {
-    private TransactionRepository transactionRepository;
+    private InMemoryTransactionRepository transactionRepository;
 
     @BeforeEach
     void setUp() {

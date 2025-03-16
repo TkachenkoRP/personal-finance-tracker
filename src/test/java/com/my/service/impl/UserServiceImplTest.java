@@ -33,7 +33,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void registration_ShouldReturnUser_WhenEmailIsAvailable() {
+    void registration_ShouldReturnUser_WhenEmailIsAvailable() throws Exception {
         when(userRepository.isPresentByEmail(user.getEmail())).thenReturn(false);
         when(userRepository.save(any(User.class))).thenReturn(user);
 
@@ -44,7 +44,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void registration_ShouldReturnNull_WhenEmailIsNotAvailable() {
+    void registration_ShouldReturnNull_WhenEmailIsNotAvailable() throws Exception {
         when(userRepository.isPresentByEmail(user.getEmail())).thenReturn(true);
 
         User registeredUser = userService.registration(user.getEmail(), user.getName(), user.getPassword());
@@ -53,7 +53,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void login_ShouldReturnUser_WhenCredentialsAreCorrect() {
+    void login_ShouldReturnUser_WhenCredentialsAreCorrect() throws Exception {
         when(userRepository.getByEmailAndPassword(user.getEmail(), user.getPassword())).thenReturn(Optional.of(user));
 
         User loggedInUser = userService.login(user.getEmail(), user.getPassword());
@@ -63,7 +63,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void login_ShouldReturnNull_WhenCredentialsAreIncorrect() {
+    void login_ShouldReturnNull_WhenCredentialsAreIncorrect() throws Exception {
         when(userRepository.getByEmailAndPassword(user.getEmail(), "wrongPassword")).thenReturn(Optional.empty());
 
         User loggedInUser = userService.login(user.getEmail(), "wrongPassword");
@@ -72,7 +72,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void getById_ShouldReturnUser_WhenUserExists() {
+    void getById_ShouldReturnUser_WhenUserExists() throws Exception {
         when(userRepository.getById(1L)).thenReturn(Optional.of(user));
 
         User foundUser = userService.getById(1L);
@@ -82,7 +82,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void getById_ShouldReturnNull_WhenUserDoesNotExist() {
+    void getById_ShouldReturnNull_WhenUserDoesNotExist() throws Exception {
         when(userRepository.getById(1L)).thenReturn(Optional.empty());
 
         User foundUser = userService.getById(1L);
@@ -91,7 +91,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void update_ShouldReturnUpdatedUser_WhenEmailIsAvailable() {
+    void update_ShouldReturnUpdatedUser_WhenEmailIsAvailable() throws Exception {
         User sourceUser = new User("new@example.com", "newPassword", "New User", UserRole.ROLE_USER);
         when(userRepository.getById(1L)).thenReturn(Optional.of(user));
         when(userRepository.isPresentByEmail(sourceUser.getEmail())).thenReturn(false);
@@ -104,7 +104,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void update_ShouldReturnNull_WhenEmailIsNotAvailable() {
+    void update_ShouldReturnNull_WhenEmailIsNotAvailable() throws Exception {
         User sourceUser = new User("test@example.com", "newPassword", "New User", UserRole.ROLE_USER);
         when(userRepository.getById(1L)).thenReturn(Optional.of(user));
         when(userRepository.isPresentByEmail(sourceUser.getEmail())).thenReturn(true);
@@ -115,7 +115,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void delete_ShouldReturnTrue_WhenUserDeletedSuccessfully() {
+    void delete_ShouldReturnTrue_WhenUserDeletedSuccessfully() throws Exception {
         when(userRepository.deleteById(1L)).thenReturn(true);
 
         boolean result = userService.delete(1L);
@@ -124,7 +124,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void delete_ShouldReturnFalse_WhenUserNotDeleted() {
+    void delete_ShouldReturnFalse_WhenUserNotDeleted() throws Exception {
         when(userRepository.deleteById(1L)).thenReturn(false);
 
         boolean result = userService.delete(1L);
@@ -133,7 +133,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void getAll_ShouldReturnListOfUsers() {
+    void getAll_ShouldReturnListOfUsers() throws Exception {
         when(userRepository.getAll()).thenReturn(List.of(user));
 
         List<User> users = userService.getAll();
@@ -142,7 +142,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void blockUser_ShouldReturnTrue_WhenUserExists() {
+    void blockUser_ShouldReturnTrue_WhenUserExists() throws Exception {
         when(userRepository.getById(1L)).thenReturn(Optional.of(user));
 
         boolean result = userService.blockUser(1L);
@@ -152,7 +152,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void blockUser_ShouldReturnFalse_WhenUserDoesNotExist() {
+    void blockUser_ShouldReturnFalse_WhenUserDoesNotExist() throws Exception {
         when(userRepository.getById(1L)).thenReturn(Optional.empty());
 
         boolean result = userService.blockUser(1L);

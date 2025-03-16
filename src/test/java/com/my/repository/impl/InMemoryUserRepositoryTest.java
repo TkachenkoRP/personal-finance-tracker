@@ -2,7 +2,6 @@ package com.my.repository.impl;
 
 import com.my.model.User;
 import com.my.model.UserRole;
-import com.my.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -13,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class InMemoryUserRepositoryTest {
 
-    private UserRepository userRepository;
+    private InMemoryUserRepository userRepository;
 
     @BeforeEach
     void setUp() {
@@ -101,5 +100,4 @@ class InMemoryUserRepositoryTest {
         Optional<User> foundUser = userRepository.getByEmailAndPassword("Admin", "aDmIn");
         assertThat(foundUser).isNotPresent();
     }
-
 }

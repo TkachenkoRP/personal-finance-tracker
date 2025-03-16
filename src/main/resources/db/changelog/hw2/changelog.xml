@@ -12,4 +12,5 @@
     <include file="004-create-table-goal.xml" relativeToChangelogFile="true"/>
     <include file="005-change-budget-nullability.xml" relativeToChangelogFile="true"/>
     <include file="006-add-user-admin.xml" relativeToChangelogFile="true"/>
+    <include file="007-add-data-for-test.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

@@ -2,10 +2,7 @@ package com.my.service.impl;
 
 import com.my.model.Transaction;
 import com.my.model.TransactionFilter;
-import com.my.model.TransactionType;
-import com.my.model.User;
-import com.my.model.UserRole;
-import com.my.repository.TransactionRepository;
+import com.my.repository.impl.JdbcTransactionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -14,8 +11,8 @@ import org.mockito.MockitoAnnotations;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,60 +21,44 @@ import static org.mockito.Mockito.when;
 
 class TransactionServiceImplTest {
     @Mock
-    private TransactionRepository transactionRepository;
+    private JdbcTransactionRepository transactionRepository;
 
     @InjectMocks
     private TransactionServiceImpl transactionService;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         MockitoAnnotations.openMocks(this);
     }
 
     @Test
     void testGetAll_WithFilter() throws Exception {
-        User user = new User("user1@example.com", "password", "User One", UserRole.ROLE_USER);
-        user.setId(1L);
-        Transaction transaction1 = new Transaction();
-        transaction1.setUser(user);
-        transaction1.setType(TransactionType.EXPENSE);
-        transaction1.setAmount(new BigDecimal("50.00"));
-        transaction1.setDate(LocalDate.now());
+        TransactionFilter filter = new TransactionFilter();
+        Transaction transaction = new Transaction();
+        when(transactionRepository.getAll(filter)).thenReturn(List.of(transaction));
 
-        Transaction transaction2 = new Transaction();
-        transaction2.setUser(user);
-        transaction2.setType(TransactionType.INCOME);
-        transaction2.setAmount(new BigDecimal("100.00"));
-        transaction2.setDate(LocalDate.now());
+        List<Transaction> transactions = transactionService.getAll(filter);
 
-        when(transactionRepository.getAll()).thenReturn(Arrays.asList(transaction1, transaction2));
-
-        TransactionFilter filter = new TransactionFilter(1L, null, null, null, null, null);
-        List<Transaction> result = transactionService.getAll(filter);
-
-        assertThat(result).hasSize(2);
+        assertThat(transactions).isNotNull().hasSize(1);
     }
 
     @Test
     void testGetById_ExistingId() throws Exception {
+        Long id = 1L;
         Transaction transaction = new Transaction();
-        transaction.setId(1L);
-        transaction.setAmount(new BigDecimal("100.00"));
+        when(transactionRepository.getById(id)).thenReturn(Optional.of(transaction));
 
-        when(transactionRepository.getById(1L)).thenReturn(Optional.of(transaction));
-
-        Transaction result = transactionService.getById(1L);
+        Transaction result = transactionService.getById(id);
 
         assertThat(result).isNotNull();
-        assertThat(result.getId()).isEqualTo(1L);
-        assertThat(result.getAmount()).isEqualTo(new BigDecimal("100.00"));
     }
 
     @Test
     void testGetById_NonExistingId() throws Exception {
-        when(transactionRepository.getById(999L)).thenReturn(Optional.empty());
+        Long id = 1L;
+        when(transactionRepository.getById(id)).thenReturn(Optional.empty());
 
-        Transaction result = transactionService.getById(999L);
+        Transaction result = transactionService.getById(id);
 
         assertThat(result).isNull();
     }
@@ -85,138 +66,131 @@ class TransactionServiceImplTest {
     @Test
     void testSave() throws Exception {
         Transaction transaction = new Transaction();
-        transaction.setAmount(new BigDecimal("100.00"));
-
         when(transactionRepository.save(transaction)).thenReturn(transaction);
 
         Transaction result = transactionService.save(transaction);
 
         assertThat(result).isNotNull();
-        assertThat(result.getAmount()).isEqualTo(new BigDecimal("100.00"));
     }
 
     @Test
     void testUpdate_ExistingId() throws Exception {
-        Transaction existingTransaction = new Transaction();
-        existingTransaction.setId(1L);
-        existingTransaction.setAmount(new BigDecimal("100.00"));
-
-        when(transactionRepository.getById(1L)).thenReturn(Optional.of(existingTransaction));
-        when(transactionRepository.update(existingTransaction)).thenReturn(existingTransaction);
-
-
+        Long id = 1L;
+        Transaction sourceTransaction = new Transaction();
         Transaction updatedTransaction = new Transaction();
-        updatedTransaction.setId(1L);
-        updatedTransaction.setAmount(new BigDecimal("150.00"));
+        when(transactionRepository.getById(id)).thenReturn(Optional.of(updatedTransaction));
+        when(transactionRepository.update(updatedTransaction)).thenReturn(updatedTransaction);
 
-        Transaction result = transactionService.update(1L, updatedTransaction);
+        Transaction result = transactionService.update(id, sourceTransaction);
 
         assertThat(result).isNotNull();
-        assertThat(result.getAmount()).isEqualTo(new BigDecimal("150.00"));
     }
 
     @Test
     void testUpdate_NonExistingId() throws Exception {
-        Transaction updatedTransaction = new Transaction();
-        updatedTransaction.setId(999L);
-        updatedTransaction.setAmount(new BigDecimal("150.00"));
+        Long id = 1L;
+        Transaction sourceTransaction = new Transaction();
+        when(transactionRepository.getById(id)).thenReturn(Optional.empty());
 
-        when(transactionRepository.getById(999L)).thenReturn(Optional.empty());
-
-        Transaction result = transactionService.update(999L, updatedTransaction);
+        Transaction result = transactionService.update(id, sourceTransaction);
 
         assertThat(result).isNull();
     }
 
     @Test
     void testDeleteById_ExistingId() throws Exception {
-        Transaction transaction = new Transaction();
-        transaction.setId(1L);
+        Long id = 1L;
+        when(transactionRepository.deleteById(id)).thenReturn(true);
 
-        when(transactionRepository.getById(1L)).thenReturn(Optional.of(transaction));
-        when(transactionRepository.deleteById(1L)).thenReturn(true);
+        boolean result = transactionService.deleteById(id);
 
-        boolean isDeleted = transactionService.deleteById(1L);
-
-        assertThat(isDeleted).isTrue();
+        assertThat(result).isTrue();
         verify(transactionRepository).deleteById(1L);
     }
 
     @Test
     void testDeleteById_NonExistingId() throws Exception {
-        when(transactionRepository.getById(999L)).thenReturn(Optional.empty());
+        Long id = 1L;
+        when(transactionRepository.deleteById(id)).thenReturn(false);
 
-        boolean isDeleted = transactionService.deleteById(999L);
+        boolean result = transactionService.deleteById(id);
 
-        assertThat(isDeleted).isFalse();
+        assertThat(result).isFalse();
+        verify(transactionRepository).deleteById(1L);
     }
 
     @Test
     void testGetMonthExpense() throws Exception {
-        User user = new User("user1@example.com", "password", "User One", UserRole.ROLE_USER);
-        user.setId(1L);
-        Transaction transaction1 = new Transaction();
-        transaction1.setUser(user);
-        transaction1.setType(TransactionType.EXPENSE);
-        transaction1.setAmount(new BigDecimal("50.00"));
-        transaction1.setDate(LocalDate.now());
+        Long userId = 1L;
+        BigDecimal expectedExpense = BigDecimal.valueOf(100);
+        when(transactionRepository.getMonthExpense(userId)).thenReturn(expectedExpense);
 
-        Transaction transaction2 = new Transaction();
-        transaction2.setUser(user);
-        transaction2.setType(TransactionType.EXPENSE);
-        transaction2.setAmount(new BigDecimal("100.00"));
-        transaction2.setDate(LocalDate.now());
+        BigDecimal result = transactionService.getMonthExpense(userId);
 
-        when(transactionRepository.getAll()).thenReturn(Arrays.asList(transaction1, transaction2));
+        assertThat(result).isEqualTo(new BigDecimal("100"));
+    }
 
-        BigDecimal monthExpense = transactionService.getMonthExpense(1L);
+    @Test
+    void testIsBudgetExceeded() throws Exception {
+        Long userId = 1L;
+        BigDecimal budget = BigDecimal.valueOf(100);
+        when(transactionRepository.getMonthExpense(userId)).thenReturn(BigDecimal.valueOf(150));
 
-        assertThat(monthExpense).isEqualTo(new BigDecimal("150.00"));
+        boolean result = transactionService.isBudgetExceeded(userId, budget);
+
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    void testGetBalance() throws Exception {
+        Long userId = 1L;
+        BigDecimal expectedBalance = BigDecimal.valueOf(200);
+        when(transactionRepository.getBalance(userId)).thenReturn(expectedBalance);
+
+        BigDecimal result = transactionService.getBalance(userId);
+
+        assertThat(result).isEqualTo(expectedBalance);
+    }
+
+    @Test
+    void testGenerateFinancialReport() throws Exception {
+        Long userId = 1L;
+        LocalDate from = LocalDate.now().minusMonths(1);
+        LocalDate to = LocalDate.now();
+        when(transactionRepository.getTotalIncome(userId, from, to)).thenReturn(BigDecimal.valueOf(1000));
+        when(transactionRepository.getTotalExpenses(userId, from, to)).thenReturn(BigDecimal.valueOf(500));
+
+        Map<String, BigDecimal> report = transactionService.generateFinancialReport(userId, from, to);
+        assertThat(report.get("income")).isEqualByComparingTo(BigDecimal.valueOf(1000));
+        assertThat(report.get("expenses")).isEqualByComparingTo(BigDecimal.valueOf(500));
+        assertThat(report.get("balance")).isEqualByComparingTo(BigDecimal.valueOf(500));
     }
 
     @Test
     void testGetTotalIncome() throws Exception {
-        User user = new User("user1@example.com", "password", "User One", UserRole.ROLE_USER);
-        user.setId(1L);
-        Transaction transaction1 = new Transaction();
-        transaction1.setUser(user);
-        transaction1.setType(TransactionType.INCOME);
-        transaction1.setAmount(new BigDecimal("100.00"));
-        transaction1.setDate(LocalDate.now());
+        Long userId = 1L;
+        LocalDate from = LocalDate.of(2023, 1, 1);
+        LocalDate to = LocalDate.of(2023, 1, 31);
+        BigDecimal expectedIncome = new BigDecimal("1000.00");
 
-        Transaction transaction2 = new Transaction();
-        transaction2.setUser(user);
-        transaction2.setType(TransactionType.INCOME);
-        transaction2.setAmount(new BigDecimal("200.00"));
-        transaction2.setDate(LocalDate.now());
+        when(transactionRepository.getTotalIncome(userId, from, to)).thenReturn(expectedIncome);
 
-        when(transactionRepository.getAll()).thenReturn(Arrays.asList(transaction1, transaction2));
+        BigDecimal actualIncome = transactionService.getTotalIncome(userId, from, to);
 
-        BigDecimal totalIncome = transactionService.getTotalIncome(1L, LocalDate.now().minusDays(1), LocalDate.now());
-
-        assertThat(totalIncome).isEqualTo(new BigDecimal("300.00"));
+        assertThat(actualIncome).isEqualTo(expectedIncome);
     }
 
     @Test
     void testGetTotalExpenses() throws Exception {
-        User user = new User("user1@example.com", "password", "User One", UserRole.ROLE_USER);
-        user.setId(1L);
-        Transaction transaction1 = new Transaction();
-        transaction1.setUser(user);
-        transaction1.setType(TransactionType.EXPENSE);
-        transaction1.setAmount(new BigDecimal("50.00"));
-        transaction1.setDate(LocalDate.now());
+        Long userId = 1L;
+        LocalDate from = LocalDate.of(2023, 1, 1);
+        LocalDate to = LocalDate.of(2023, 1, 31);
+        BigDecimal expectedExpenses = new BigDecimal("500.00");
 
-        Transaction transaction2 = new Transaction();
-        transaction2.setUser(user);
-        transaction2.setType(TransactionType.EXPENSE);
-        transaction2.setAmount(new BigDecimal("100.00"));
-        transaction2.setDate(LocalDate.now());
+        when(transactionRepository.getTotalExpenses(userId, from, to)).thenReturn(expectedExpenses);
 
-        when(transactionRepository.getAll()).thenReturn(Arrays.asList(transaction1, transaction2));
+        BigDecimal actualExpenses = transactionService.getTotalExpenses(userId, from, to);
 
-        BigDecimal totalExpenses = transactionService.getTotalExpenses(1L, LocalDate.now().minusDays(1), LocalDate.now());
-
-        assertThat(totalExpenses).isEqualTo(new BigDecimal("150.00"));
+        assertThat(actualExpenses).isEqualTo(expectedExpenses);
     }
 }

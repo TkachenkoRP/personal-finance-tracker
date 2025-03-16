@@ -29,6 +29,6 @@ public class JdbcDataServiceImpl implements JdbcDataService {
     public void initDb() throws LiquibaseException {
         Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(connection));
         Liquibase liquibase = new Liquibase(AppConfiguration.getProperty("liquibase.change-log"), new ClassLoaderResourceAccessor(), database);
-        liquibase.update();
+        liquibase.update("dev");
     }
 }

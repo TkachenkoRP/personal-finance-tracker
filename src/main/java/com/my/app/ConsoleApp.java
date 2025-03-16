@@ -269,7 +269,7 @@ public class ConsoleApp {
 
     private void deleteTransaction() {
         ConsoleOutputHandler.displayMsg("\nУдаление транзакции");
-        displayTransactions(new TransactionFilter(currentUser.getId(), null, null, null, null, null));
+        displayTransactions(new TransactionFilter(currentUser.getId()));
         long transactionId = ConsoleInputHandler.getUserIntegerInput("Введите id транзакции: ");
         try {
             if (transactionService.deleteById(transactionId)) {
@@ -285,7 +285,7 @@ public class ConsoleApp {
 
     private void editTransaction() {
         ConsoleOutputHandler.displayMsg("\nРедактирование транзакции");
-        displayTransactions(new TransactionFilter(currentUser.getId(), null, null, null, null, null));
+        displayTransactions(new TransactionFilter(currentUser.getId()));
         long transactionId = ConsoleInputHandler.getUserIntegerInput("Введите id транзакции: ");
         try {
             Transaction transaction = transactionService.getById(transactionId);

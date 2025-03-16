@@ -31,7 +31,7 @@ class TransactionCategoryServiceImplTest {
     }
 
     @Test
-    void testGetAll() {
+    void testGetAll() throws Exception {
         TransactionCategory category1 = new TransactionCategory();
         TransactionCategory category2 = new TransactionCategory();
         when(transactionCategoryRepository.getAll()).thenReturn(Arrays.asList(category1, category2));
@@ -43,7 +43,7 @@ class TransactionCategoryServiceImplTest {
     }
 
     @Test
-    void testGetById_Exists() {
+    void testGetById_Exists() throws Exception {
         TransactionCategory category = new TransactionCategory();
         when(transactionCategoryRepository.getById(1L)).thenReturn(Optional.of(category));
 
@@ -54,7 +54,7 @@ class TransactionCategoryServiceImplTest {
     }
 
     @Test
-    void testGetById_NotExists() {
+    void testGetById_NotExists() throws Exception {
         when(transactionCategoryRepository.getById(1L)).thenReturn(Optional.empty());
 
         var result = transactionCategoryService.getById(1L);
@@ -63,7 +63,7 @@ class TransactionCategoryServiceImplTest {
     }
 
     @Test
-    void testSave_NewCategory() {
+    void testSave_NewCategory() throws Exception {
         TransactionCategory category = new TransactionCategory();
         category.setCategoryName("New Category");
         when(transactionCategoryRepository.existsByCategoryNameIgnoreCase("New Category")).thenReturn(false);
@@ -77,7 +77,7 @@ class TransactionCategoryServiceImplTest {
     }
 
     @Test
-    void testSave_ExistingCategory() {
+    void testSave_ExistingCategory() throws Exception {
         TransactionCategory category = new TransactionCategory();
         category.setCategoryName("Existing Category");
         when(transactionCategoryRepository.existsByCategoryNameIgnoreCase("Existing Category")).thenReturn(true);
@@ -89,7 +89,7 @@ class TransactionCategoryServiceImplTest {
     }
 
     @Test
-    void testUpdate_Exists() {
+    void testUpdate_Exists() throws Exception {
         TransactionCategory existingCategory = new TransactionCategory();
         existingCategory.setId(1L);
         existingCategory.setCategoryName("Old Name");
@@ -104,7 +104,7 @@ class TransactionCategoryServiceImplTest {
     }
 
     @Test
-    void testUpdate_NotExists() {
+    void testUpdate_NotExists() throws Exception {
         TransactionCategory sourceCategory = new TransactionCategory();
         when(transactionCategoryRepository.getById(1L)).thenReturn(Optional.empty());
 
@@ -115,7 +115,7 @@ class TransactionCategoryServiceImplTest {
     }
 
     @Test
-    void testDeleteById_Success() {
+    void testDeleteById_Success() throws Exception {
         when(transactionCategoryRepository.deleteById(1L)).thenReturn(true);
 
         boolean result = transactionCategoryService.deleteById(1L);
@@ -125,7 +125,7 @@ class TransactionCategoryServiceImplTest {
     }
 
     @Test
-    void testDeleteById_Failure() {
+    void testDeleteById_Failure() throws Exception {
         when(transactionCategoryRepository.deleteById(1L)).thenReturn(false);
 
         boolean result = transactionCategoryService.deleteById(1L);

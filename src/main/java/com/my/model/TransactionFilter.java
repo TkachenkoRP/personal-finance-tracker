@@ -9,4 +9,12 @@ public record TransactionFilter(
         LocalDate to,
         Long categoryId,
         TransactionType type) {
+
+    public TransactionFilter() {
+        this(null, null, null, null, null, null);
+    }
+
+    public TransactionFilter(Long userId) {
+        this(userId, null, null, null, null, null);
+    }
 }

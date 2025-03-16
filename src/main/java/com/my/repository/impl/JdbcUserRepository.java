@@ -128,7 +128,7 @@ public class JdbcUserRepository implements UserRepository {
 
     @Override
     public boolean isPresentByEmail(String email) throws SQLException {
-        String query = "SELECT COUNT(*) FROM " + schema + ".user WHERE email = ?";
+        String query = "SELECT COUNT(*) FROM " + schema + ".user WHERE LOWER(email) = LOWER(?)";
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setString(1, email);
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -142,7 +142,7 @@ public class JdbcUserRepository implements UserRepository {
 
     @Override
     public Optional<User> getByEmailAndPassword(String email, String password) throws SQLException {
-        String query = "SELECT * FROM " + schema + ".user WHERE email = ? AND password = ?";
+        String query = "SELECT * FROM " + schema + ".user WHERE LOWER(email) = LOWER(?) AND password = ?";
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setString(1, email);
             statement.setString(2, password);

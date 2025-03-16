@@ -16,6 +16,7 @@ ext {
     mockitoVersion = '5.16.0'
     postgresqlVersion = '42.7.5'
     liquibaseVersion= '4.31.1'
+    testContainerVersion= '1.20.6'
 }
 
 dependencies {
@@ -27,6 +28,9 @@ dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter"
     testImplementation "org.assertj:assertj-core:${assertjVersion}"
     testImplementation "org.mockito:mockito-core:${mockitoVersion}"
+    testImplementation "org.testcontainers:testcontainers:${testContainerVersion}"
+    testImplementation "org.testcontainers:postgresql:${testContainerVersion}"
+    testImplementation "org.testcontainers:junit-jupiter:${testContainerVersion}"
 }
 
 test {
