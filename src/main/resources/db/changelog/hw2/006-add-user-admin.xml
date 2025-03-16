@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
+    <changeSet id="006-add-user-admin" author="Rodion Tkachenko">
+        <insert schemaName="tracker" tableName="user">
+            <column name="id" value="1"/>
+            <column name="email" value="admin@admin"/>
+            <column name="password" value="aDmIn"/>
+            <column name="name" value="Admin"/>
+            <column name="role" value="ROLE_ADMIN"/>
+            <column name="blocked" value="false"/>
+        </insert>
+        <sql>
+            <![CDATA[
+            SELECT setval('tracker.user_id_seq', (SELECT MAX(id) FROM tracker.user));
+            ]]>
+        </sql>
+    </changeSet>
+</databaseChangeLog>
