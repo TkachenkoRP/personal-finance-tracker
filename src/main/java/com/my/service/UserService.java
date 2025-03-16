@@ -2,6 +2,7 @@ package com.my.service;
 
 import com.my.model.User;
 
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -16,7 +17,7 @@ public interface UserService {
      * @param password пароль пользователя
      * @return зарегистрированный пользователь
      */
-    User registration(String email, String name, String password);
+    User registration(String email, String name, String password) throws SQLException;
 
     /**
      * Вход пользователя в систему.
@@ -25,7 +26,7 @@ public interface UserService {
      * @param password пароль пользователя
      * @return пользователь, который вошел в систему
      */
-    User login(String email, String password);
+    User login(String email, String password) throws SQLException;
 
     /**
      * Получение пользователя по его идентификатору.
@@ -33,7 +34,7 @@ public interface UserService {
      * @param id идентификатор пользователя
      * @return пользователь с указанным идентификатором
      */
-    User getById(Long id);
+    User getById(Long id) throws SQLException;
 
     /**
      * Обновление информации о пользователе.
@@ -42,7 +43,7 @@ public interface UserService {
      * @param sourceUser объект пользователя с обновленной информацией
      * @return обновленный пользователь
      */
-    User update(Long id, User sourceUser);
+    User update(Long id, User sourceUser) throws SQLException;
 
     /**
      * Удаление пользователя по его идентификатору.
@@ -50,14 +51,14 @@ public interface UserService {
      * @param id идентификатор пользователя
      * @return true, если пользователь был успешно удален, иначе false
      */
-    boolean delete(Long id);
+    boolean delete(Long id) throws SQLException;
 
     /**
      * Получение списка всех пользователей.
      *
      * @return список всех пользователей
      */
-    List<User> getAll();
+    List<User> getAll() throws SQLException;
 
     /**
      * Блокировка пользователя по его идентификатору.
@@ -65,5 +66,5 @@ public interface UserService {
      * @param userId идентификатор пользователя
      * @return true, если пользователь был успешно заблокирован, иначе false
      */
-    boolean blockUser(Long userId);
+    boolean blockUser(Long userId) throws SQLException;
 }

@@ -2,6 +2,8 @@ package com.my.repository;
 
 import com.my.model.TransactionCategory;
 
+import java.sql.SQLException;
+
 /**
  * Интерфейс репозитория для управления категориями транзакций.
  * Наследует базовый интерфейс {@link BaseRepository} для выполнения основных операций
@@ -14,5 +16,5 @@ public interface TransactionCategoryRepository extends BaseRepository<Transactio
      * @param categoryName имя категории для проверки
      * @return true, если категория с указанным именем существует, иначе false
      */
-    boolean existsByCategoryNameIgnoreCase(String categoryName);
+    boolean existsByCategoryNameIgnoreCase(String categoryName) throws SQLException;
 }

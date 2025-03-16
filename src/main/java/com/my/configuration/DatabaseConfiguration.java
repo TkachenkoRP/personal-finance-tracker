@@ -6,7 +6,7 @@ import java.sql.SQLException;
 
 public class DatabaseConfiguration {
     public static Connection getConnection() throws SQLException {
-        return getConnection("trainings");
+        return getConnection(AppConfiguration.getProperty("database.schema"));
     }
 
     public static Connection getConnection(String schema) throws SQLException {

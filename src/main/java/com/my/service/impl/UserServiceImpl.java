@@ -6,6 +6,7 @@ import com.my.model.UserRole;
 import com.my.repository.UserRepository;
 import com.my.service.UserService;
 
+import java.sql.SQLException;
 import java.util.List;
 
 public class UserServiceImpl implements UserService {
@@ -17,7 +18,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User registration(String email, String name, String password) {
+    public User registration(String email, String name, String password) throws SQLException {
         if (!isEmailAvailable(email)) {
             return null;
         }
@@ -25,17 +26,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User login(String email, String password) {
+    public User login(String email, String password) throws SQLException {
         return getUserByLoginAndPassword(email, password);
     }
 
     @Override
-    public User getById(Long id) {
+    public User getById(Long id) throws SQLException {
         return userRepository.getById(id).orElse(null);
     }
 
     @Override
-    public User update(Long id, User sourceUser) {
+    public User update(Long id, User sourceUser) throws SQLException {
         User updatedUser = getById(id);
         if (updatedUser == null || (!updatedUser.getEmail().equals(sourceUser.getEmail()) && !isEmailAvailable(sourceUser.getEmail()))) {
             return null;
@@ -45,24 +46,24 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean delete(Long id) {
+    public boolean delete(Long id) throws SQLException {
         return userRepository.deleteById(id);
     }
 
     @Override
-    public List<User> getAll() {
+    public List<User> getAll() throws SQLException {
         return userRepository.getAll();
     }
 
-    private User getUserByLoginAndPassword(String email, String password) {
+    private User getUserByLoginAndPassword(String email, String password) throws SQLException {
         return userRepository.getByEmailAndPassword(email, password).orElse(null);
     }
 
-    private boolean isEmailAvailable(String email) {
+    private boolean isEmailAvailable(String email) throws SQLException {
         return !userRepository.isPresentByEmail(email);
     }
 
-    public boolean blockUser(Long userId) {
+    public boolean blockUser(Long userId) throws SQLException {
         User user = getById(userId);
         if (user != null) {
             user.setBlocked(true);

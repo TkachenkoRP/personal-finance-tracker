@@ -15,6 +15,9 @@ public class User {
     private UserRole role;
     private boolean blocked;
 
+    public User() {
+    }
+
     public User(String email, String password, String name, UserRole role) {
         this.email = email;
         this.password = password;

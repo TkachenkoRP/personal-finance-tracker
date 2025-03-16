@@ -1,5 +1,6 @@
 package com.my.repository;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,7 +16,7 @@ public interface BaseRepository<T> {
      *
      * @return список всех сущностей
      */
-    List<T> getAll();
+    List<T> getAll() throws SQLException;
 
     /**
      * Получение сущности по её идентификатору.
@@ -24,7 +25,7 @@ public interface BaseRepository<T> {
      * @return объект Optional, содержащий найденную сущность, или пустой,
      * если сущность с указанным идентификатором не найдена
      */
-    Optional<T> getById(Long id);
+    Optional<T> getById(Long id) throws SQLException;
 
     /**
      * Сохранение новой сущности.
@@ -32,7 +33,7 @@ public interface BaseRepository<T> {
      * @param entity сущность для сохранения
      * @return сохраненная сущность
      */
-    T save(T entity);
+    T save(T entity) throws SQLException;
 
     /**
      * Обновление существующей сущности.
@@ -40,7 +41,7 @@ public interface BaseRepository<T> {
      * @param entity сущность с обновленной информацией
      * @return обновленная сущность
      */
-    T update(T entity);
+    T update(T entity) throws SQLException;
 
     /**
      * Удаление сущности по её идентификатору.
@@ -48,5 +49,5 @@ public interface BaseRepository<T> {
      * @param id идентификатор сущности
      * @return true, если сущность была успешно удалена, иначе false
      */
-    boolean deleteById(Long id);
+    boolean deleteById(Long id) throws SQLException;
 }

@@ -1,6 +1,5 @@
 package com.my.app;
 
-import com.my.service.JdbcDataService;
 import com.my.service.NotificationService;
 import com.my.service.TransactionCategoryService;
 import com.my.service.TransactionService;
@@ -12,6 +11,5 @@ public interface AppFactory {
     TransactionCategoryService createTransactionCategoryService();
     NotificationService createNotificationService();
     NotificationService createEmailNotificationService();
-    JdbcDataService createJdbcDataService();
     ConsoleApp createConsoleApp();
 }

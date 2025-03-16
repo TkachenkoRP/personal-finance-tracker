@@ -19,7 +19,7 @@ public class JdbcDataServiceImpl implements JdbcDataService {
 
     public JdbcDataServiceImpl() {
         try {
-            connection = DatabaseConfiguration.getConnection("service");
+            connection = DatabaseConfiguration.getConnection(AppConfiguration.getProperty("liquibase.schema"));
         } catch (SQLException e) {
             System.err.println("Failed to create connection database: " + e.getMessage());
         }

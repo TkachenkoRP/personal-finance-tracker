@@ -13,9 +13,11 @@ import com.my.service.NotificationService;
 import com.my.service.TransactionCategoryService;
 import com.my.service.TransactionService;
 import com.my.service.UserService;
+import com.my.service.impl.JdbcDataServiceImpl;
 import liquibase.exception.LiquibaseException;
 
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -28,34 +30,37 @@ public class ConsoleApp {
     private final TransactionCategoryService transactionCategoryService;
     private final NotificationService notificationService;
     private final NotificationService emailNotificationService;
-    private final JdbcDataService jdbcDataService;
     private static final Set<Integer> UNAUTHENTICATED_CHOICES = Set.of(3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22);
     private static final Set<Integer> AUTHENTICATED_CHOICES = Set.of(1, 2);
     private static final Set<Integer> ADMIN_CHOICES = Set.of(22, 23, 24, 25, 26);
 
     public ConsoleApp(UserService userService, TransactionService transactionService,
                       TransactionCategoryService transactionCategoryService, NotificationService notificationService,
-                      NotificationService emailNotificationService, JdbcDataService jdbcDataService) {
+                      NotificationService emailNotificationService) {
         this.userService = userService;
         this.transactionService = transactionService;
         this.transactionCategoryService = transactionCategoryService;
         this.notificationService = notificationService;
         this.emailNotificationService = emailNotificationService;
-        this.jdbcDataService = jdbcDataService;
     }
 
     public void start() {
-        try {
-            jdbcDataService.initDb();
-        } catch (LiquibaseException e) {
-            ConsoleOutputHandler.displayMsg("Ошибка инициализации БД!");
-        }
-
+        init();
         boolean working = true;
         while (working) {
             ConsoleOutputHandler.displayMenu(currentUser);
             int choice = ConsoleInputHandler.getUserIntegerInput("Ваш выбор: ");
             working = handleUserChoice(choice);
+        }
+    }
+
+    private void init() {
+        try {
+            JdbcDataService jdbcDataService = new JdbcDataServiceImpl();
+            jdbcDataService.initDb();
+        } catch (LiquibaseException e) {
+            ConsoleOutputHandler.displayMsg("Ошибка инициализации БД!");
+            System.err.println(e.getMessage());
         }
     }
 
@@ -110,44 +115,74 @@ public class ConsoleApp {
     private void blockUser() {
         displayAllUsers();
         long userId = ConsoleInputHandler.getUserIntegerInput("Введите id пользователя для блокировки: ");
-        if (userService.blockUser(userId)) {
-            ConsoleOutputHandler.displayMsg("Пользователь заблокирован.");
-        } else {
-            ConsoleOutputHandler.displayMsg("Ошибка: пользователь не найден.");
+        try {
+            if (userService.blockUser(userId)) {
+                ConsoleOutputHandler.displayMsg("Пользователь заблокирован.");
+            } else {
+                ConsoleOutputHandler.displayMsg("Ошибка: пользователь не найден.");
+            }
+        } catch (SQLException e) {
+            ConsoleOutputHandler.displayMsg("Ошибка запроса блокировки пользователя - " + userId);
+            System.err.println(e.getMessage());
         }
     }
 
     private void displayFinancialReport() {
         LocalDate[] dates = getInputDates();
-        Map<String, BigDecimal> report = transactionService.generateFinancialReport(currentUser.getId(), dates[0], dates[1]);
-        ConsoleOutputHandler.displayMap(report);
+        try {
+            Map<String, BigDecimal> report = transactionService.generateFinancialReport(currentUser.getId(), dates[0], dates[1]);
+            ConsoleOutputHandler.displayMap(report);
+        } catch (SQLException e) {
+            ConsoleOutputHandler.displayMsg("Ошибка запроса финансового отчета.");
+            System.err.println(e.getMessage());
+        }
     }
 
     private void displayAnalyzeExpensesByCategory() {
         LocalDate[] dates = getInputDates();
-        Map<String, BigDecimal> analyzed = transactionService.analyzeExpensesByCategory(currentUser.getId(), dates[0], dates[1]);
-        ConsoleOutputHandler.displayMap(analyzed);
+        try {
+            Map<String, BigDecimal> analyzed = transactionService.analyzeExpensesByCategory(currentUser.getId(), dates[0], dates[1]);
+            ConsoleOutputHandler.displayMap(analyzed);
+        } catch (SQLException e) {
+            ConsoleOutputHandler.displayMsg("Ошибка запроса анализа по категориям.");
+            System.err.println(e.getMessage());
+        }
+
     }
 
     private void displayTotalExpenses() {
         LocalDate[] dates = getInputDates();
-        BigDecimal expenses = transactionService.calculateTotalExpenses(currentUser.getId(), dates[0], dates[1]);
-        ConsoleOutputHandler.displayMsg("Расходы с " + dates[0] + " до " + dates[1] + ": " + expenses);
+        try {
+            BigDecimal expenses = transactionService.calculateTotalExpenses(currentUser.getId(), dates[0], dates[1]);
+            ConsoleOutputHandler.displayMsg("Расходы с " + dates[0] + " до " + dates[1] + ": " + expenses);
+        } catch (SQLException e) {
+            ConsoleOutputHandler.displayMsg("Ошибка запроса расходов.");
+            System.err.println(e.getMessage());
+        }
     }
 
     private void displayTotalIncome() {
         LocalDate[] dates = getInputDates();
-        BigDecimal income = transactionService.calculateTotalIncome(currentUser.getId(), dates[0], dates[1]);
-        ConsoleOutputHandler.displayMsg("Доход с " + dates[0] + " до " + dates[1] + ": " + income);
+        try {
+            BigDecimal income = transactionService.calculateTotalIncome(currentUser.getId(), dates[0], dates[1]);
+            ConsoleOutputHandler.displayMsg("Доход с " + dates[0] + " до " + dates[1] + ": " + income);
+        } catch (SQLException e) {
+            ConsoleOutputHandler.displayMsg("Ошибка запроса доходов.");
+            System.err.println(e.getMessage());
+        }
     }
 
     private void displayBalanceByDate() {
         LocalDate[] dates = getInputDates();
 
-        BigDecimal income = transactionService.calculateTotalIncome(currentUser.getId(), dates[0], dates[1]);
-        BigDecimal expenses = transactionService.calculateTotalExpenses(currentUser.getId(), dates[0], dates[1]);
-
-        ConsoleOutputHandler.displayMsg("Баланс c " + dates[0] + " по " + dates[1] + ": " + income.subtract(expenses));
+        try {
+            BigDecimal income = transactionService.calculateTotalIncome(currentUser.getId(), dates[0], dates[1]);
+            BigDecimal expenses = transactionService.calculateTotalExpenses(currentUser.getId(), dates[0], dates[1]);
+            ConsoleOutputHandler.displayMsg("Баланс c " + dates[0] + " по " + dates[1] + ": " + income.subtract(expenses));
+        } catch (SQLException e) {
+            ConsoleOutputHandler.displayMsg("Ошибка запроса баланса.");
+            System.err.println(e.getMessage());
+        }
     }
 
     private LocalDate[] getInputDates() {
@@ -157,24 +192,35 @@ public class ConsoleApp {
     }
 
     private void displayBalance() {
-        BigDecimal balance = transactionService.checkBalance(currentUser.getId());
-        ConsoleOutputHandler.displayMsg("Баланс: " + balance);
+        try {
+            BigDecimal balance = transactionService.checkBalance(currentUser.getId());
+            ConsoleOutputHandler.displayMsg("Баланс: " + balance);
+        } catch (SQLException e) {
+            ConsoleOutputHandler.displayMsg("Ошибка запроса баланса.");
+            System.err.println(e.getMessage());
+        }
     }
 
     private void editGoal() {
         ConsoleOutputHandler.displayMsg("\nРедактирование цели накопления");
-        Map<Long, BigDecimal> goals = currentUser.getGoals();
-        List<TransactionCategory> transactionCategories = transactionCategoryService.getAll();
-
-        if (!goals.isEmpty()) {
-            ConsoleOutputHandler.displayMapWithCategories(goals, transactionCategories);
-        } else {
-            ConsoleOutputHandler.displayTransactionCategoryList(transactionCategories);
+        User updated = null;
+        BigDecimal goalAmount = null;
+        try {
+            Map<Long, BigDecimal> goals = currentUser.getGoals();
+            List<TransactionCategory> transactionCategories = transactionCategoryService.getAll();
+            if (!goals.isEmpty()) {
+                ConsoleOutputHandler.displayMapWithCategories(goals, transactionCategories);
+            } else {
+                ConsoleOutputHandler.displayTransactionCategoryList(transactionCategories);
+            }
+            long goalId = ConsoleInputHandler.getUserIntegerInput("Выберите цель: ");
+            goalAmount = ConsoleInputHandler.getUserBigDecimalInput("Какова новая цель?");
+            currentUser.getGoals().put(goalId, goalAmount);
+            updated = userService.update(currentUser.getId(), currentUser);
+        } catch (SQLException e) {
+            ConsoleOutputHandler.displayMsg("Ошибка запроса установки цели.");
+            System.err.println(e.getMessage());
         }
-        long goalId = ConsoleInputHandler.getUserIntegerInput("Выберите цель: ");
-        BigDecimal goalAmount = ConsoleInputHandler.getUserBigDecimalInput("Какова новая цель?");
-        currentUser.getGoals().put(goalId, goalAmount);
-        User updated = userService.update(currentUser.getId(), currentUser);
         if (updated != null) {
             ConsoleOutputHandler.displayMsg("Цель успешно установлена на " + goalAmount);
         } else {
@@ -184,8 +230,13 @@ public class ConsoleApp {
 
     private void displayGoal() {
         if (!currentUser.getGoals().isEmpty()) {
-            List<TransactionCategory> transactionCategories = transactionCategoryService.getAll();
-            ConsoleOutputHandler.displayMapWithCategories(currentUser.getGoals(), transactionCategories);
+            try {
+                List<TransactionCategory> transactionCategories = transactionCategoryService.getAll();
+                ConsoleOutputHandler.displayMapWithCategories(currentUser.getGoals(), transactionCategories);
+            } catch (SQLException e) {
+                ConsoleOutputHandler.displayMsg("Ошибка запроса отображения целей.");
+                System.err.println(e.getMessage());
+            }
         } else {
             ConsoleOutputHandler.displayMsg("Цели не установлены.");
         }
@@ -196,7 +247,13 @@ public class ConsoleApp {
         String msg = currentUser.getBudget() == null ? "Установить бюджет: " : "Бюджет - " + currentUser.getBudget() + ", изменить на: ";
         BigDecimal budget = ConsoleInputHandler.getUserBigDecimalInput(msg);
         currentUser.setBudget(budget);
-        User updated = userService.update(currentUser.getId(), currentUser);
+        User updated = null;
+        try {
+            updated = userService.update(currentUser.getId(), currentUser);
+        } catch (SQLException e) {
+            ConsoleOutputHandler.displayMsg("Ошибка запроса установки бюджета.");
+            System.err.println(e.getMessage());
+        }
         if (updated != null) {
             ConsoleOutputHandler.displayMsg("Бюджет успешно установлен на " + budget);
         } else {
@@ -212,40 +269,48 @@ public class ConsoleApp {
 
     private void deleteTransaction() {
         ConsoleOutputHandler.displayMsg("\nУдаление транзакции");
-        List<Transaction> transactions = transactionService.getAll(new TransactionFilter(currentUser.getId(), null, null, null, null, null));
-        ConsoleOutputHandler.displayTransactionList(transactions);
+        displayTransactions(new TransactionFilter(currentUser.getId(), null, null, null, null, null));
         long transactionId = ConsoleInputHandler.getUserIntegerInput("Введите id транзакции: ");
-        if (transactionService.deleteById(transactionId)) {
-            ConsoleOutputHandler.displayMsg("Транзакция удалена!");
-        } else {
-            ConsoleOutputHandler.displayMsg("Удаление не удалось!");
+        try {
+            if (transactionService.deleteById(transactionId)) {
+                ConsoleOutputHandler.displayMsg("Транзакция удалена!");
+            } else {
+                ConsoleOutputHandler.displayMsg("Удаление не удалось!");
+            }
+        } catch (SQLException e) {
+            ConsoleOutputHandler.displayMsg("Ошибка запроса удаления транзакции.");
+            System.err.println(e.getMessage());
         }
     }
 
     private void editTransaction() {
         ConsoleOutputHandler.displayMsg("\nРедактирование транзакции");
-        List<Transaction> transactions = transactionService.getAll(new TransactionFilter(currentUser.getId(), null, null, null, null, null));
-        ConsoleOutputHandler.displayTransactionList(transactions);
+        displayTransactions(new TransactionFilter(currentUser.getId(), null, null, null, null, null));
         long transactionId = ConsoleInputHandler.getUserIntegerInput("Введите id транзакции: ");
-        Transaction transaction = transactionService.getById(transactionId);
-        if (transaction == null) {
-            ConsoleOutputHandler.displayMsg("Ошибка: транзакция не найдена.");
-            return;
+        try {
+            Transaction transaction = transactionService.getById(transactionId);
+            if (transaction == null) {
+                ConsoleOutputHandler.displayMsg("Ошибка: транзакция не найдена.");
+                return;
+            }
+            BigDecimal amount = ConsoleInputHandler.getUserBigDecimalInput("Сумма - " + transaction.getAmount() + ", изменить на: ");
+            String desc = ConsoleInputHandler.getUserTextInput("Описание - " + transaction.getDescription() + ", изменить на: ");
+            displayAllCategories();
+            long categoryId = ConsoleInputHandler.getUserIntegerInput("Выберите категорию: ");
+            TransactionCategory transactionCategory = transactionCategoryService.getById(categoryId);
+            if (transactionCategory == null) {
+                ConsoleOutputHandler.displayMsg("Ошибка: категория не найдена.");
+                return;
+            }
+            Transaction request = new Transaction();
+            request.setAmount(amount);
+            request.setDescription(desc);
+            request.setCategory(transactionCategory);
+            transactionService.update(transactionId, request);
+        } catch (SQLException e) {
+            ConsoleOutputHandler.displayMsg("Ошибка запроса редактирования транзакции.");
+            System.err.println(e.getMessage());
         }
-        BigDecimal amount = ConsoleInputHandler.getUserBigDecimalInput("Сумма - " + transaction.getAmount() + ", изменить на: ");
-        String desc = ConsoleInputHandler.getUserTextInput("Описание - " + transaction.getDescription() + ", изменить на: ");
-        displayAllCategories();
-        long categoryId = ConsoleInputHandler.getUserIntegerInput("Выберите категорию: ");
-        TransactionCategory transactionCategory = transactionCategoryService.getById(categoryId);
-        if (transactionCategory == null) {
-            ConsoleOutputHandler.displayMsg("Ошибка: категория не найдена.");
-            return;
-        }
-        Transaction request = new Transaction();
-        request.setAmount(amount);
-        request.setDescription(desc);
-        request.setCategory(transactionCategory);
-        transactionService.update(transactionId, request);
     }
 
     private void addTransaction() {
@@ -257,43 +322,58 @@ public class ConsoleApp {
         String desc = ConsoleInputHandler.getUserTextInput("Введите описание транзакции: ");
         displayAllCategories();
         long categoryId = ConsoleInputHandler.getUserIntegerInput("Введите id категории: ");
-        TransactionCategory transactionCategory = transactionCategoryService.getById(categoryId);
+        try {
+            TransactionCategory transactionCategory = transactionCategoryService.getById(categoryId);
 
-        Transaction transaction =
-                new Transaction(date, TransactionType.values()[transactionType], amount, desc, transactionCategory);
-        transaction.setUser(currentUser);
+            Transaction transaction =
+                    new Transaction(date, TransactionType.values()[transactionType], amount, desc, transactionCategory);
+            transaction.setUser(currentUser);
 
-        transactionService.save(transaction);
-
-        if (transaction.getType() == TransactionType.EXPENSE) {
-            checkBudgetExceeded();
-        } else {
-            checkGoalIncome(transactionCategory.getId());
+            transactionService.save(transaction);
+            if (transaction.getType() == TransactionType.EXPENSE) {
+                checkBudgetExceeded();
+            } else {
+                checkGoalIncome(transactionCategory.getId());
+            }
+        } catch (SQLException e) {
+            ConsoleOutputHandler.displayMsg("Ошибка запроса добавления транзакции.");
+            System.err.println(e.getMessage());
         }
     }
 
     private void checkGoalIncome(Long transactionCategoryId) {
-        if (currentUser.getGoals() != null && currentUser.getGoals().get(transactionCategoryId) != null && transactionService.isGoalIncome(currentUser.getId(), currentUser.getGoals().get(transactionCategoryId), transactionCategoryId)) {
-            TransactionCategory transactionCategory = transactionCategoryService.getById(transactionCategoryId);
-            String msg = "Выполнена цель " + currentUser.getGoals().get(transactionCategoryId) + " для " + transactionCategory.getCategoryName();
-            ConsoleOutputHandler.displayMsg(msg);
-            notificationService.sendNotification(msg);
-            emailNotificationService.sendNotification(msg);
-            currentUser.getGoals().remove(transactionCategoryId);
-            userService.update(currentUser.getId(), currentUser);
+        try {
+            if (currentUser.getGoals() != null && currentUser.getGoals().get(transactionCategoryId) != null && transactionService.isGoalIncome(currentUser.getId(), currentUser.getGoals().get(transactionCategoryId), transactionCategoryId)) {
+                TransactionCategory transactionCategory = transactionCategoryService.getById(transactionCategoryId);
+                String msg = "Выполнена цель " + currentUser.getGoals().get(transactionCategoryId) + " для " + transactionCategory.getCategoryName();
+                ConsoleOutputHandler.displayMsg(msg);
+                notificationService.sendNotification(msg);
+                emailNotificationService.sendNotification(msg);
+                currentUser.getGoals().remove(transactionCategoryId);
+                userService.update(currentUser.getId(), currentUser);
+            }
+        } catch (SQLException e) {
+            ConsoleOutputHandler.displayMsg("Ошибка запроса проверки цели.");
+            System.err.println(e.getMessage());
         }
     }
 
     private void checkBudgetExceeded() {
-        if (transactionService.isBudgetExceeded(currentUser.getId(), currentUser.getBudget())) {
-            BigDecimal monthExpense = transactionService.getMonthExpense(currentUser.getId());
-            String msg = "Перерасход бюджета! Ваши расходы: " + monthExpense +
-                    ", установленный бюджет: " + currentUser.getBudget();
-            ConsoleOutputHandler.displayMsg(msg);
-            notificationService.sendNotification(msg);
-            emailNotificationService.sendNotification(msg);
-            currentUser.setBudget(null);
-            userService.update(currentUser.getId(), currentUser);
+        try {
+            if (transactionService.isBudgetExceeded(currentUser.getId(), currentUser.getBudget())) {
+                BigDecimal monthExpense = transactionService.getMonthExpense(currentUser.getId());
+                String msg = "Перерасход бюджета! Ваши расходы: " + monthExpense +
+                        ", установленный бюджет: " + currentUser.getBudget();
+                ConsoleOutputHandler.displayMsg(msg);
+                notificationService.sendNotification(msg);
+                emailNotificationService.sendNotification(msg);
+                currentUser.setBudget(null);
+
+                userService.update(currentUser.getId(), currentUser);
+            }
+        } catch (SQLException e) {
+            ConsoleOutputHandler.displayMsg("Ошибка запроса проверки бюджета.");
+            System.err.println(e.getMessage());
         }
     }
 
@@ -340,8 +420,13 @@ public class ConsoleApp {
 
     private void displayTransactions(TransactionFilter filter) {
         ConsoleOutputHandler.displayMsg("\nСписок транзакций");
-        List<Transaction> transactions = transactionService.getAll(filter);
-        ConsoleOutputHandler.displayTransactionList(transactions);
+        try {
+            List<Transaction> transactions = transactionService.getAll(filter);
+            ConsoleOutputHandler.displayTransactionList(transactions);
+        } catch (SQLException e) {
+            ConsoleOutputHandler.displayMsg("Ошибка запроса транзакций.");
+            System.err.println(e.getMessage());
+        }
     }
 
 
@@ -350,7 +435,12 @@ public class ConsoleApp {
         String userEmail = ConsoleInputHandler.getUserTextInput("Введите email пользователя: ");
         String userName = ConsoleInputHandler.getUserTextInput("Введите имя пользователя: ");
         String password = ConsoleInputHandler.getUserTextInput("Введите пароль: ");
-        currentUser = userService.registration(userEmail, userName, password);
+        try {
+            currentUser = userService.registration(userEmail, userName, password);
+        } catch (SQLException e) {
+            ConsoleOutputHandler.displayMsg("Ошибка запроса регистрации пользователя.");
+            System.err.println(e.getMessage());
+        }
         String msg = currentUser != null ?
                 "\nРегистрация " + currentUser.getEmail() + " прошла успешно!\n" :
                 "\nРегистрация не удалась\n";
@@ -361,7 +451,12 @@ public class ConsoleApp {
         ConsoleOutputHandler.displayMsg("\nВход");
         String userEmail = ConsoleInputHandler.getUserTextInput("Введите email пользователя: ");
         String password = ConsoleInputHandler.getUserTextInput("Введите пароль: ");
-        currentUser = userService.login(userEmail, password);
+        try {
+            currentUser = userService.login(userEmail, password);
+        } catch (SQLException e) {
+            ConsoleOutputHandler.displayMsg("Ошибка запроса авторизации пользователя.");
+            System.err.println(e.getMessage());
+        }
         String msg = currentUser != null ?
                 "\nУспешный вход!\n" :
                 "\nНеудачный вход!\n";
@@ -377,7 +472,13 @@ public class ConsoleApp {
         ConsoleOutputHandler.displayMsg("\nРедактирование пользователей");
         displayAllUsers();
         long userId = ConsoleInputHandler.getUserIntegerInput("Введите id пользователя для редактирования: ");
-        User user = userService.getById(userId);
+        User user = null;
+        try {
+            user = userService.getById(userId);
+        } catch (SQLException e) {
+            ConsoleOutputHandler.displayMsg("Ошибка запроса редактирования данных пользователя.");
+            System.err.println(e.getMessage());
+        }
         if (user == null) {
             ConsoleOutputHandler.displayMsg("Ошибка: пользователь не найден.");
             return;
@@ -387,7 +488,13 @@ public class ConsoleApp {
 
     private void editUserData(User user) {
         User userForUpdate = getUserDataForUpdate(user);
-        User updated = userService.update(user.getId(), userForUpdate);
+        User updated = null;
+        try {
+            updated = userService.update(user.getId(), userForUpdate);
+        } catch (SQLException e) {
+            ConsoleOutputHandler.displayMsg("Ошибка запроса редактирования данных пользователя.");
+            System.err.println(e.getMessage());
+        }
         if (updated != null) {
             ConsoleOutputHandler.displayMsg("Данные пользователя успешно обновлены.");
         } else {
@@ -404,7 +511,12 @@ public class ConsoleApp {
 
     private void displayAllUsers() {
         ConsoleOutputHandler.displayMsg("Список пользователей");
-        ConsoleOutputHandler.displayUserList(userService.getAll());
+        try {
+            ConsoleOutputHandler.displayUserList(userService.getAll());
+        } catch (SQLException e) {
+            ConsoleOutputHandler.displayMsg("Ошибка запроса выборки всех пользователей.");
+            System.err.println(e.getMessage());
+        }
     }
 
     private boolean exit() {
@@ -416,28 +528,42 @@ public class ConsoleApp {
     }
 
     private void deleteCurrentUser() {
-        if (userService.delete(currentUser.getId())) {
-            currentUser = null;
+        try {
+            if (userService.delete(currentUser.getId())) {
+                currentUser = null;
+            }
+        } catch (SQLException e) {
+            ConsoleOutputHandler.displayMsg("Ошибка запроса удаления текущего пользователя.");
         }
     }
 
     private void deleteUser() {
         displayAllUsers();
         long userId = ConsoleInputHandler.getUserIntegerInput("Введите id пользователя для удаления: ");
-        if (userService.delete(userId)) {
-            ConsoleOutputHandler.displayMsg("Пользователь удален.");
-        } else {
-            ConsoleOutputHandler.displayMsg("Ошибка: пользователь не найден.");
+        try {
+            if (userService.delete(userId)) {
+                ConsoleOutputHandler.displayMsg("Пользователь удален.");
+            } else {
+                ConsoleOutputHandler.displayMsg("Ошибка: пользователь не найден.");
+            }
+        } catch (SQLException e) {
+            ConsoleOutputHandler.displayMsg("Ошибка запроса удаления пользователя - " + userId);
+            System.err.println(e.getMessage());
         }
     }
 
     private void deleteCategory() {
         displayAllCategories();
         long transactionCategoryId = ConsoleInputHandler.getUserIntegerInput("Введите id категории для удаления: ");
-        if (transactionCategoryService.deleteById(transactionCategoryId)) {
-            ConsoleOutputHandler.displayMsg("Категория удалена!");
-        } else {
-            ConsoleOutputHandler.displayMsg("\nУдаление не удалось!\n");
+        try {
+            if (transactionCategoryService.deleteById(transactionCategoryId)) {
+                ConsoleOutputHandler.displayMsg("Категория удалена!");
+            } else {
+                ConsoleOutputHandler.displayMsg("\nУдаление не удалось!\n");
+            }
+        } catch (SQLException e) {
+            ConsoleOutputHandler.displayMsg("Ошибка запроса удаления категории - " + transactionCategoryId);
+            System.err.println(e.getMessage());
         }
     }
 
@@ -446,7 +572,13 @@ public class ConsoleApp {
         displayAllCategories();
         long transactionCategoryId = ConsoleInputHandler.getUserIntegerInput("Введите id категории для редактирования: ");
         String transactionCategoryName = ConsoleInputHandler.getUserTextInput("Введите название категории: ");
-        TransactionCategory updated = transactionCategoryService.update(transactionCategoryId, new TransactionCategory(transactionCategoryName));
+        TransactionCategory updated = null;
+        try {
+            updated = transactionCategoryService.update(transactionCategoryId, new TransactionCategory(transactionCategoryName));
+        } catch (SQLException e) {
+            ConsoleOutputHandler.displayMsg("Ошибка запроса редактирования категории.");
+            System.err.println(e.getMessage());
+        }
         if (updated == null) {
             ConsoleOutputHandler.displayMsg("Ошибка: категория не найдена.");
         } else {
@@ -458,7 +590,13 @@ public class ConsoleApp {
         ConsoleOutputHandler.displayMsg("\nДобавление категории");
         String transactionCategoryName = ConsoleInputHandler.getUserTextInput("Введите название категории: ");
         TransactionCategory transactionCategoryRequest = new TransactionCategory(transactionCategoryName);
-        TransactionCategory transactionCategory = transactionCategoryService.save(transactionCategoryRequest);
+        TransactionCategory transactionCategory = null;
+        try {
+            transactionCategory = transactionCategoryService.save(transactionCategoryRequest);
+        } catch (SQLException e) {
+            ConsoleOutputHandler.displayMsg("Ошибка запроса добавления категории.");
+            System.err.println(e.getMessage());
+        }
         String msg = transactionCategory != null ?
                 "\nДобавлен новый тип: " + transactionCategory.getCategoryName() + "\n" :
                 "\nДобавление не удалось\n";
@@ -467,8 +605,14 @@ public class ConsoleApp {
 
     private void displayAllCategories() {
         ConsoleOutputHandler.displayMsg("\nСписок категорий");
-        List<TransactionCategory> transactionCategories = transactionCategoryService.getAll();
-        ConsoleOutputHandler.displayTransactionCategoryList(transactionCategories);
+
+        try {
+            List<TransactionCategory> transactionCategories = transactionCategoryService.getAll();
+            ConsoleOutputHandler.displayTransactionCategoryList(transactionCategories);
+        } catch (SQLException e) {
+            ConsoleOutputHandler.displayMsg("Ошибка запроса всех категорий.");
+            System.err.println(e.getMessage());
+        }
     }
 
     private boolean isAdmin() {

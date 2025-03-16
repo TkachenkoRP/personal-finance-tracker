@@ -8,6 +8,7 @@ import com.my.repository.TransactionRepository;
 import com.my.service.TransactionService;
 
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
@@ -23,7 +24,7 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public List<Transaction> getAll(TransactionFilter filter) {
+    public List<Transaction> getAll(TransactionFilter filter) throws SQLException {
         List<Transaction> transactions = transactionRepository.getAll();
         if (filter == null) {
             return transactions;
@@ -40,17 +41,17 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public Transaction getById(Long id) {
+    public Transaction getById(Long id) throws SQLException {
         return transactionRepository.getById(id).orElse(null);
     }
 
     @Override
-    public Transaction save(Transaction transaction) {
+    public Transaction save(Transaction transaction) throws SQLException {
         return transactionRepository.save(transaction);
     }
 
     @Override
-    public Transaction update(Long id, Transaction sourceTransaction) {
+    public Transaction update(Long id, Transaction sourceTransaction) throws SQLException {
         Transaction updatedTransaction = getById(id);
         if (updatedTransaction == null) {
             return null;
@@ -62,12 +63,12 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public boolean deleteById(Long id) {
+    public boolean deleteById(Long id) throws SQLException {
         return transactionRepository.deleteById(id);
     }
 
     @Override
-    public BigDecimal getMonthExpense(Long userId) {
+    public BigDecimal getMonthExpense(Long userId) throws SQLException {
         List<Transaction> transactions = getAll(new TransactionFilter(userId, null, null, null, null, TransactionType.EXPENSE));
         return transactions.stream()
                 .filter(t -> t.getDate().getMonth() == LocalDate.now().getMonth() && t.getDate().getYear() == LocalDate.now().getYear())
@@ -76,19 +77,19 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public boolean isBudgetExceeded(Long userId, BigDecimal budget) {
+    public boolean isBudgetExceeded(Long userId, BigDecimal budget) throws SQLException {
         BigDecimal monthExpense = getMonthExpense(userId);
         return monthExpense.compareTo(budget) > 0;
     }
 
     @Override
-    public boolean isGoalIncome(Long userId, BigDecimal goal, Long transactionCategoryId) {
+    public boolean isGoalIncome(Long userId, BigDecimal goal, Long transactionCategoryId) throws SQLException {
         BigDecimal goalExceeded = getGoalExceeded(userId, transactionCategoryId);
         return goalExceeded.compareTo(goal) > 0;
     }
 
     @Override
-    public BigDecimal checkBalance(Long userId) {
+    public BigDecimal checkBalance(Long userId) throws SQLException {
         List<Transaction> transactions = getAll(new TransactionFilter(userId, null, null, null, null, null));
         BigDecimal result = BigDecimal.ZERO;
         for (Transaction t : transactions) {
@@ -102,7 +103,7 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public BigDecimal calculateTotalIncome(Long userId, LocalDate from, LocalDate to) {
+    public BigDecimal calculateTotalIncome(Long userId, LocalDate from, LocalDate to) throws SQLException {
         List<Transaction> transactions = getAll(new TransactionFilter(userId, null, from, to, null, TransactionType.INCOME));
         return transactions.stream()
                 .filter(t -> t.getType() == TransactionType.INCOME &&
@@ -113,7 +114,7 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public BigDecimal calculateTotalExpenses(Long userId, LocalDate from, LocalDate to) {
+    public BigDecimal calculateTotalExpenses(Long userId, LocalDate from, LocalDate to) throws SQLException {
         List<Transaction> transactions = getAll(new TransactionFilter(userId, null, from, to, null, TransactionType.EXPENSE));
         return transactions.stream()
                 .filter(t -> t.getType() == TransactionType.EXPENSE &&
@@ -124,7 +125,7 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public Map<String, BigDecimal> analyzeExpensesByCategory(Long userId, LocalDate from, LocalDate to) {
+    public Map<String, BigDecimal> analyzeExpensesByCategory(Long userId, LocalDate from, LocalDate to) throws SQLException {
         Map<String, BigDecimal> result = new HashMap<>();
         List<Transaction> transactions = getAll(new TransactionFilter(userId, null, from, to, null, TransactionType.EXPENSE));
         transactions.stream()
@@ -139,7 +140,7 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public Map<String, BigDecimal> generateFinancialReport(Long userId, LocalDate from, LocalDate to) {
+    public Map<String, BigDecimal> generateFinancialReport(Long userId, LocalDate from, LocalDate to) throws SQLException {
         BigDecimal totalIncome = calculateTotalIncome(userId, from, to);
         BigDecimal totalExpenses = calculateTotalExpenses(userId, from, to);
         BigDecimal netBalance = totalIncome.subtract(totalExpenses);
@@ -151,7 +152,7 @@ public class TransactionServiceImpl implements TransactionService {
         return result;
     }
 
-    private BigDecimal getGoalExceeded(Long userId, Long transactionCategoryId) {
+    private BigDecimal getGoalExceeded(Long userId, Long transactionCategoryId) throws SQLException {
         TransactionFilter transactionFilter = new TransactionFilter(userId, null, null, null, transactionCategoryId, TransactionType.INCOME);
         return getAll(transactionFilter).stream()
                 .map(Transaction::getAmount)

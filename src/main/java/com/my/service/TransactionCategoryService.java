@@ -2,6 +2,7 @@ package com.my.service;
 
 import com.my.model.TransactionCategory;
 
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -13,7 +14,7 @@ public interface TransactionCategoryService {
      *
      * @return список всех категорий транзакций
      */
-    List<TransactionCategory> getAll();
+    List<TransactionCategory> getAll() throws SQLException;
 
     /**
      * Получение категории транзакции по её идентификатору.
@@ -21,7 +22,7 @@ public interface TransactionCategoryService {
      * @param id идентификатор категории транзакции
      * @return категория транзакции с указанным идентификатором
      */
-    TransactionCategory getById(Long id);
+    TransactionCategory getById(Long id) throws SQLException;
 
     /**
      * Сохранение новой категории транзакции.
@@ -29,7 +30,7 @@ public interface TransactionCategoryService {
      * @param transactionCategory объект категории транзакции для сохранения
      * @return сохраненная категория транзакции
      */
-    TransactionCategory save(TransactionCategory transactionCategory);
+    TransactionCategory save(TransactionCategory transactionCategory) throws SQLException;
 
     /**
      * Обновление существующей категории транзакции.
@@ -38,7 +39,7 @@ public interface TransactionCategoryService {
      * @param sourceTransactionCategory объект категории транзакции с обновленной информацией
      * @return обновленная категория транзакции
      */
-    TransactionCategory update(Long id, TransactionCategory sourceTransactionCategory);
+    TransactionCategory update(Long id, TransactionCategory sourceTransactionCategory) throws SQLException;
 
     /**
      * Удаление категории транзакции по её идентификатору.
@@ -46,5 +47,5 @@ public interface TransactionCategoryService {
      * @param id идентификатор категории транзакции
      * @return true, если категория транзакции была успешно удалена, иначе false
      */
-    boolean deleteById(Long id);
+    boolean deleteById(Long id) throws SQLException;
 }

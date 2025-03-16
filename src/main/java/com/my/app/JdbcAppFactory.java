@@ -3,9 +3,9 @@ package com.my.app;
 import com.my.repository.TransactionCategoryRepository;
 import com.my.repository.TransactionRepository;
 import com.my.repository.UserRepository;
-import com.my.repository.impl.InMemoryTransactionCategoryRepository;
-import com.my.repository.impl.InMemoryTransactionRepository;
-import com.my.repository.impl.InMemoryUserRepository;
+import com.my.repository.impl.JdbcTransactionCategoryRepository;
+import com.my.repository.impl.JdbcTransactionRepository;
+import com.my.repository.impl.JdbcUserRepository;
 import com.my.service.JdbcDataService;
 import com.my.service.NotificationService;
 import com.my.service.TransactionCategoryService;
@@ -18,22 +18,32 @@ import com.my.service.impl.TransactionCategoryServiceImpl;
 import com.my.service.impl.TransactionServiceImpl;
 import com.my.service.impl.UserServiceImpl;
 
-public class InMemoryAppFactory implements AppFactory{
+import java.sql.Connection;
+
+public class JdbcAppFactory implements AppFactory {
+    private final Connection connection;
+
+    public JdbcAppFactory(Connection connection) {
+        this.connection = connection;
+    }
+
     @Override
     public UserService createUserService() {
-        UserRepository userRepository = new InMemoryUserRepository();
+        UserRepository userRepository = new JdbcUserRepository(connection);
         return new UserServiceImpl(userRepository);
     }
 
     @Override
     public TransactionService createTransactionService() {
-        TransactionRepository transactionRepository = new InMemoryTransactionRepository();
+        TransactionCategoryRepository transactionCategoryRepository = new JdbcTransactionCategoryRepository(connection);
+        UserRepository userRepository = new JdbcUserRepository(connection);
+        TransactionRepository transactionRepository = new JdbcTransactionRepository(connection, transactionCategoryRepository, userRepository);
         return new TransactionServiceImpl(transactionRepository);
     }
 
     @Override
     public TransactionCategoryService createTransactionCategoryService() {
-        TransactionCategoryRepository transactionCategoryRepository = new InMemoryTransactionCategoryRepository();
+        TransactionCategoryRepository transactionCategoryRepository = new JdbcTransactionCategoryRepository(connection);
         return new TransactionCategoryServiceImpl(transactionCategoryRepository);
     }
 
