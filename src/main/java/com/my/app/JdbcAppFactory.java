@@ -15,32 +15,27 @@ import com.my.service.impl.TransactionCategoryServiceImpl;
 import com.my.service.impl.TransactionServiceImpl;
 import com.my.service.impl.UserServiceImpl;
 
-import java.sql.Connection;
+import java.sql.SQLException;
 
 public class JdbcAppFactory implements AppFactory {
-    private final Connection connection;
-
-    public JdbcAppFactory(Connection connection) {
-        this.connection = connection;
-    }
 
     @Override
-    public UserService createUserService() {
-        UserRepository userRepository = new JdbcUserRepository(connection);
+    public UserService createUserService() throws SQLException {
+        UserRepository userRepository = new JdbcUserRepository();
         return new UserServiceImpl(userRepository);
     }
 
     @Override
-    public TransactionService createTransactionService() {
-        TransactionCategoryRepository transactionCategoryRepository = new JdbcTransactionCategoryRepository(connection);
-        UserRepository userRepository = new JdbcUserRepository(connection);
-        JdbcTransactionRepository transactionRepository = new JdbcTransactionRepository(connection, transactionCategoryRepository, userRepository);
+    public TransactionService createTransactionService() throws SQLException {
+        TransactionCategoryRepository transactionCategoryRepository = new JdbcTransactionCategoryRepository();
+        UserRepository userRepository = new JdbcUserRepository();
+        JdbcTransactionRepository transactionRepository = new JdbcTransactionRepository(transactionCategoryRepository, userRepository);
         return new TransactionServiceImpl(transactionRepository);
     }
 
     @Override
-    public TransactionCategoryService createTransactionCategoryService() {
-        TransactionCategoryRepository transactionCategoryRepository = new JdbcTransactionCategoryRepository(connection);
+    public TransactionCategoryService createTransactionCategoryService() throws SQLException {
+        TransactionCategoryRepository transactionCategoryRepository = new JdbcTransactionCategoryRepository();
         return new TransactionCategoryServiceImpl(transactionCategoryRepository);
     }
 
@@ -55,7 +50,7 @@ public class JdbcAppFactory implements AppFactory {
     }
 
     @Override
-    public ConsoleApp createConsoleApp() {
+    public ConsoleApp createConsoleApp() throws SQLException {
         return new ConsoleApp(
                 createUserService(),
                 createTransactionService(),

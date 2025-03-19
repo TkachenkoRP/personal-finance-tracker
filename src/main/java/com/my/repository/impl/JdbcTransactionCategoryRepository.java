@@ -3,6 +3,7 @@ package com.my.repository.impl;
 import com.my.configuration.AppConfiguration;
 import com.my.model.TransactionCategory;
 import com.my.repository.TransactionCategoryRepository;
+import com.my.util.DBUtil;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -17,6 +18,10 @@ public class JdbcTransactionCategoryRepository implements TransactionCategoryRep
 
     private final Connection connection;
     private final String schema;
+
+    public JdbcTransactionCategoryRepository() throws SQLException {
+        this(DBUtil.getConnection());
+    }
 
     public JdbcTransactionCategoryRepository(Connection connection) {
         this.connection = connection;

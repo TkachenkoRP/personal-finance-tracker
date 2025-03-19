@@ -10,6 +10,7 @@ import com.my.repository.impl.JdbcUserRepository;
 import com.my.service.impl.TransactionCategoryServiceImpl;
 import com.my.service.impl.TransactionServiceImpl;
 import com.my.service.impl.UserServiceImpl;
+import com.my.util.DBUtil;
 import liquibase.Contexts;
 import liquibase.Liquibase;
 import liquibase.database.Database;
@@ -25,7 +26,6 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -48,10 +48,10 @@ public abstract class AbstractTestContainer {
     @BeforeAll
     static void setUp() throws SQLException, LiquibaseException {
         postgresContainer.start();
-        String jdbcUrl = postgresContainer.getJdbcUrl() + "&currentSchema=tracker";
+        String jdbcUrl = postgresContainer.getJdbcUrl();
         String username = postgresContainer.getUsername();
         String password = postgresContainer.getPassword();
-        testConnection = DriverManager.getConnection(jdbcUrl, username, password);
+        testConnection = DBUtil.getConnection(jdbcUrl, username, password, "tracker");
 
         try (Statement statement = testConnection.createStatement()) {
             statement.executeUpdate("CREATE SCHEMA IF NOT EXISTS tracker;");

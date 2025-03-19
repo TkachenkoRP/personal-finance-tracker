@@ -4,6 +4,7 @@ import com.my.configuration.AppConfiguration;
 import com.my.model.User;
 import com.my.model.UserRole;
 import com.my.repository.UserRepository;
+import com.my.util.DBUtil;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -19,6 +20,10 @@ public class JdbcUserRepository implements UserRepository {
 
     private final Connection connection;
     private final String schema;
+
+    public JdbcUserRepository() throws SQLException {
+        this(DBUtil.getConnection());
+    }
 
     public JdbcUserRepository(Connection connection) {
         this.connection = connection;

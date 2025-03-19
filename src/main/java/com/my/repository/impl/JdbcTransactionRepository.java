@@ -9,6 +9,7 @@ import com.my.model.User;
 import com.my.repository.TransactionCategoryRepository;
 import com.my.repository.TransactionRepository;
 import com.my.repository.UserRepository;
+import com.my.util.DBUtil;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -30,6 +31,10 @@ public class JdbcTransactionRepository implements TransactionRepository {
     private final UserRepository userRepository;
 
     private final String schema;
+
+    public JdbcTransactionRepository(TransactionCategoryRepository transactionCategoryRepository, UserRepository userRepository) throws SQLException {
+        this(DBUtil.getConnection(), transactionCategoryRepository, userRepository);
+    }
 
     public JdbcTransactionRepository(Connection connection, TransactionCategoryRepository transactionCategoryRepository, UserRepository userRepository) {
         this.connection = connection;

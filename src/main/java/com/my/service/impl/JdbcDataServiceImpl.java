@@ -1,8 +1,8 @@
 package com.my.service.impl;
 
 import com.my.configuration.AppConfiguration;
-import com.my.configuration.DatabaseConfiguration;
 import com.my.service.JdbcDataService;
+import com.my.util.DBUtil;
 import liquibase.Liquibase;
 import liquibase.database.Database;
 import liquibase.database.DatabaseFactory;
@@ -19,7 +19,7 @@ public class JdbcDataServiceImpl implements JdbcDataService {
 
     public JdbcDataServiceImpl() {
         try {
-            connection = DatabaseConfiguration.getConnection(AppConfiguration.getProperty("liquibase.schema"));
+            connection = DBUtil.getConnection(AppConfiguration.getProperty("liquibase.schema"));
         } catch (SQLException e) {
             System.err.println("Failed to create connection database: " + e.getMessage());
         }

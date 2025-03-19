@@ -5,11 +5,13 @@ import com.my.service.TransactionCategoryService;
 import com.my.service.TransactionService;
 import com.my.service.UserService;
 
+import java.sql.SQLException;
+
 public interface AppFactory {
-    UserService createUserService();
-    TransactionService createTransactionService();
-    TransactionCategoryService createTransactionCategoryService();
+    UserService createUserService() throws SQLException;
+    TransactionService createTransactionService() throws SQLException;
+    TransactionCategoryService createTransactionCategoryService() throws SQLException;
     NotificationService createNotificationService();
     NotificationService createEmailNotificationService();
-    ConsoleApp createConsoleApp();
+    ConsoleApp createConsoleApp() throws SQLException;
 }
