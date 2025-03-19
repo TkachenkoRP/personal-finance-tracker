@@ -23,9 +23,8 @@ public class DBUtil {
     }
 
     public static Connection getConnection(String url, String username, String password, String schema) throws SQLException {
-        try (Connection connection = DriverManager.getConnection(url, username, password)) {
-            connection.setSchema(schema);
-            return connection;
-        }
+        Connection connection = DriverManager.getConnection(url, username, password);
+        connection.setSchema(schema);
+        return connection;
     }
 }
