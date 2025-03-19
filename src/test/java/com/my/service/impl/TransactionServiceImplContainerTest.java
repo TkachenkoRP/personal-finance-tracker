@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 class TransactionServiceImplContainerTest extends AbstractTestContainer {
     final Long userId = 2L;
@@ -129,8 +130,10 @@ class TransactionServiceImplContainerTest extends AbstractTestContainer {
     @Test
     void whenGenerateFinancialReport_thenReturnCorrectMap() throws Exception {
         Map<String, BigDecimal> report = transactionService.generateFinancialReport(userId, LocalDate.of(2025, 1, 1), LocalDate.now());
-        assertThat(report).containsKey("income");
-        assertThat(report).containsKey("expenses");
-        assertThat(report).containsKey("balance");
+        assertAll(
+                () -> assertThat(report).containsKey("income"),
+                () -> assertThat(report).containsKey("expenses"),
+                () -> assertThat(report).containsKey("balance")
+        );
     }
 }

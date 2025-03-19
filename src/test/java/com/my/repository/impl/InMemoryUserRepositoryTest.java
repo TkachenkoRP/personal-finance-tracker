@@ -21,7 +21,7 @@ class InMemoryUserRepositoryTest {
 
     @Test
     void testGetById_ExistingId() {
-        User user = userRepository.getAll().get(0);
+        User user = userRepository.getAll().getFirst();
         Optional<User> foundUser = userRepository.getById(user.getId());
         assertAll(
                 () -> assertThat(foundUser).isPresent(),
@@ -46,7 +46,7 @@ class InMemoryUserRepositoryTest {
 
     @Test
     void testUpdate() {
-        User user = userRepository.getAll().get(0);
+        User user = userRepository.getAll().getFirst();
         user.setName("UpdatedName");
         User updatedUser = userRepository.update(user);
 
@@ -55,7 +55,7 @@ class InMemoryUserRepositoryTest {
 
     @Test
     void testDeleteById_ExistingId() {
-        User user = userRepository.getAll().get(0);
+        User user = userRepository.getAll().getFirst();
         boolean isDeleted = userRepository.deleteById(user.getId());
 
         assertThat(isDeleted).isTrue();
@@ -94,7 +94,7 @@ class InMemoryUserRepositoryTest {
 
     @Test
     void testGetByEmailAndPassword_BlockedUser() {
-        User user = userRepository.getAll().get(0);
+        User user = userRepository.getAll().getFirst();
         user.setBlocked(true);
         userRepository.update(user);
         Optional<User> foundUser = userRepository.getByEmailAndPassword("Admin", "aDmIn");

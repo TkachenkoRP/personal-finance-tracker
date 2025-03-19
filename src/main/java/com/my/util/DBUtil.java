@@ -7,6 +7,10 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DBUtil {
+
+    private DBUtil() {
+    }
+
     public static Connection getConnection() throws SQLException {
         return getConnection(AppConfiguration.getProperty("database.schema"));
     }
@@ -19,8 +23,9 @@ public class DBUtil {
     }
 
     public static Connection getConnection(String url, String username, String password, String schema) throws SQLException {
-        Connection connection = DriverManager.getConnection(url, username, password);
-        connection.setSchema(schema);
-        return connection;
+        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+            connection.setSchema(schema);
+            return connection;
+        }
     }
 }

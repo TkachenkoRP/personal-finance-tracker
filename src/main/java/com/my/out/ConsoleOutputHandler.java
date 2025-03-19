@@ -53,7 +53,7 @@ public class ConsoleOutputHandler {
 
         if (currentUser != null && currentUser.getRole().equals(UserRole.ROLE_ADMIN)) {
             menu.append("""
-                    \nПанель управления для администратора:
+                    Панель управления для администратора:
                     22 - отобразить всех пользователей.
                     23 - редактировать пользователя.
                     24 - удалить пользователя.

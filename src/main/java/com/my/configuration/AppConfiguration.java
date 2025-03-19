@@ -8,6 +8,9 @@ public class AppConfiguration {
     private static final String CONFIG_FILE_PATH = "src/main/resources/application.properties";
     private static final Properties properties;
 
+    private AppConfiguration() {
+    }
+
     static {
         properties = new Properties();
         try {
