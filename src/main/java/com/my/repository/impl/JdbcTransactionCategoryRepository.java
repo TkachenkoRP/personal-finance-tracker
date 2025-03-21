@@ -19,7 +19,7 @@ public class JdbcTransactionCategoryRepository implements TransactionCategoryRep
     private final Connection connection;
     private final String schema;
 
-    public JdbcTransactionCategoryRepository() throws SQLException {
+    public JdbcTransactionCategoryRepository() {
         this(DBUtil.getConnection());
     }
 

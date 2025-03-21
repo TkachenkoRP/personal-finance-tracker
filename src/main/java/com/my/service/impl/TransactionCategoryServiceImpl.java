@@ -3,6 +3,7 @@ package com.my.service.impl;
 import com.my.mapper.TransactionCategoryMapper;
 import com.my.model.TransactionCategory;
 import com.my.repository.TransactionCategoryRepository;
+import com.my.repository.impl.JdbcTransactionCategoryRepository;
 import com.my.service.TransactionCategoryService;
 
 import java.sql.SQLException;
@@ -11,6 +12,10 @@ import java.util.List;
 public class TransactionCategoryServiceImpl implements TransactionCategoryService {
 
     private final TransactionCategoryRepository transactionCategoryRepository;
+
+    public TransactionCategoryServiceImpl() {
+        this.transactionCategoryRepository = new JdbcTransactionCategoryRepository();
+    }
 
     public TransactionCategoryServiceImpl(TransactionCategoryRepository transactionCategoryRepository) {
         this.transactionCategoryRepository = transactionCategoryRepository;

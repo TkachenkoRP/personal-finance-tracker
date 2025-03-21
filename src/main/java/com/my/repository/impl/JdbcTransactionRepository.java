@@ -32,7 +32,11 @@ public class JdbcTransactionRepository implements TransactionRepository {
 
     private final String schema;
 
-    public JdbcTransactionRepository(TransactionCategoryRepository transactionCategoryRepository, UserRepository userRepository) throws SQLException {
+    public JdbcTransactionRepository() {
+        this(new JdbcTransactionCategoryRepository(), new JdbcUserRepository());
+    }
+
+    public JdbcTransactionRepository(TransactionCategoryRepository transactionCategoryRepository, UserRepository userRepository) {
         this(DBUtil.getConnection(), transactionCategoryRepository, userRepository);
     }
 

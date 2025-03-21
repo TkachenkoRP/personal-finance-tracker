@@ -1,10 +1,10 @@
 package com.my.configuration;
 
+import com.my.Main;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Properties;
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class AppConfiguration {
     private static final Logger logger = LogManager.getRootLogger();
 
-    private static final String CONFIG_FILE_PATH = "src/main/resources/application.properties";
+    private static final String CONFIG_FILE_PATH = "/application.properties";
     private static final Properties properties;
 
     private AppConfiguration() {
@@ -28,9 +28,7 @@ public class AppConfiguration {
     }
 
     private static void loadConfig() throws IOException {
-        try (FileInputStream inputStream = new FileInputStream(CONFIG_FILE_PATH)) {
-            properties.load(inputStream);
-        }
+        properties.load(Main.class.getResourceAsStream(CONFIG_FILE_PATH));
     }
 
     public static String getProperty(String key) {

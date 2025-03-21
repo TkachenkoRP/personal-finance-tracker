@@ -26,7 +26,11 @@ public class JdbcUserRepository implements UserRepository {
 
     private final String schema;
 
-    public JdbcUserRepository(BudgetRepository budgetRepository, GoalRepository goalRepository) throws SQLException {
+    public JdbcUserRepository() {
+        this(new JdbcBudgetRepositoryImpl(), new JdbcGoalRepositoryImpl());
+    }
+
+    public JdbcUserRepository(BudgetRepository budgetRepository, GoalRepository goalRepository) {
         this(DBUtil.getConnection(), budgetRepository, goalRepository);
     }
 

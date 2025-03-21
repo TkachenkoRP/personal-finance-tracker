@@ -4,6 +4,7 @@ import com.my.mapper.UserMapper;
 import com.my.model.User;
 import com.my.model.UserRole;
 import com.my.repository.UserRepository;
+import com.my.repository.impl.JdbcUserRepository;
 import com.my.service.UserService;
 
 import java.sql.SQLException;
@@ -12,6 +13,10 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+
+    public UserServiceImpl() {
+        this(new JdbcUserRepository());
+    }
 
     public UserServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;

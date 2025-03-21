@@ -23,7 +23,11 @@ public class JdbcGoalRepositoryImpl implements GoalRepository {
 
     private final String schema;
 
-    public JdbcGoalRepositoryImpl(TransactionCategoryRepository transactionCategoryRepository) throws SQLException {
+    public JdbcGoalRepositoryImpl() {
+        this(new JdbcTransactionCategoryRepository());
+    }
+
+    public JdbcGoalRepositoryImpl(TransactionCategoryRepository transactionCategoryRepository) {
         this(DBUtil.getConnection(), transactionCategoryRepository);
     }
 

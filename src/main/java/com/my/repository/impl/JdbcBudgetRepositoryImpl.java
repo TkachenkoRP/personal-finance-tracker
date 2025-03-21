@@ -25,7 +25,11 @@ public class JdbcBudgetRepositoryImpl implements BudgetRepository {
 
     private final String schema;
 
-    public JdbcBudgetRepositoryImpl(TransactionCategoryRepository transactionCategoryRepository) throws SQLException {
+    public JdbcBudgetRepositoryImpl() {
+        this(new JdbcTransactionCategoryRepository());
+    }
+
+    public JdbcBudgetRepositoryImpl(TransactionCategoryRepository transactionCategoryRepository) {
         this(DBUtil.getConnection(), transactionCategoryRepository);
     }
 
