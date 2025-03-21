@@ -40,7 +40,7 @@ public interface TransactionService {
     /**
      * Обновление существующей транзакции.
      *
-     * @param id идентификатор транзакции
+     * @param id                идентификатор транзакции
      * @param sourceTransaction объект транзакции с обновленной информацией
      * @return обновленная транзакция
      */
@@ -74,8 +74,8 @@ public interface TransactionService {
     /**
      * Проверка достижения целевого дохода для пользователя.
      *
-     * @param userId идентификатор пользователя
-     * @param goal целевой доход
+     * @param userId                идентификатор пользователя
+     * @param goal                  целевой доход
      * @param transactionCategoryId идентификатор категории транзакции
      * @return true, если целевой доход достигнут, иначе false
      */
@@ -93,8 +93,8 @@ public interface TransactionService {
      * Расчет общего дохода пользователя за указанный период.
      *
      * @param userId идентификатор пользователя
-     * @param from дата начала периода
-     * @param to дата окончания периода
+     * @param from   дата начала периода
+     * @param to     дата окончания периода
      * @return общая сумма доходов за указанный период
      */
     BigDecimal getTotalIncome(Long userId, LocalDate from, LocalDate to) throws SQLException;
@@ -103,8 +103,8 @@ public interface TransactionService {
      * Расчет общих расходов пользователя за указанный период.
      *
      * @param userId идентификатор пользователя
-     * @param from дата начала периода
-     * @param to дата окончания периода
+     * @param from   дата начала периода
+     * @param to     дата окончания периода
      * @return общая сумма расходов за указанный период
      */
     BigDecimal getTotalExpenses(Long userId, LocalDate from, LocalDate to) throws SQLException;
@@ -113,8 +113,8 @@ public interface TransactionService {
      * Анализ расходов пользователя по категориям за указанный период.
      *
      * @param userId идентификатор пользователя
-     * @param from дата начала периода
-     * @param to дата окончания периода
+     * @param from   дата начала периода
+     * @param to     дата окончания периода
      * @return карта, где ключи - названия категорий, а значения - суммы расходов по этим категориям
      */
     Map<String, BigDecimal> analyzeExpensesByCategory(Long userId, LocalDate from, LocalDate to) throws SQLException;
@@ -123,9 +123,22 @@ public interface TransactionService {
      * Генерация финансового отчета пользователя за указанный период.
      *
      * @param userId идентификатор пользователя
-     * @param from дата начала периода
-     * @param to дата окончания периода
+     * @param from   дата начала периода
+     * @param to     дата окончания периода
      * @return карта с финансовым отчетом
      */
     Map<String, BigDecimal> generateFinancialReport(Long userId, LocalDate from, LocalDate to) throws SQLException;
+
+    /**
+     * Обрабатывает транзакцию, проверяя, превышен ли бюджет для расходов
+     * или достигнута ли цель для доходов. Возвращает список сообщений,
+     * описывающих результаты проверки.
+     *
+     * @param transaction Транзакция, которую необходимо обработать.
+     *                    Не должен быть null.
+     * @return Сообщение, которое может содержать информацию о
+     * превышении бюджета или достижении целей.
+     * Если никаких сообщений нет, возвращается null.
+     */
+    public String processTransaction(Transaction transaction) throws SQLException;
 }

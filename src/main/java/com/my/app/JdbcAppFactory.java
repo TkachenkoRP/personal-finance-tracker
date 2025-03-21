@@ -30,7 +30,7 @@ public class JdbcAppFactory implements AppFactory {
         TransactionCategoryRepository transactionCategoryRepository = new JdbcTransactionCategoryRepository();
         UserRepository userRepository = new JdbcUserRepository();
         JdbcTransactionRepository transactionRepository = new JdbcTransactionRepository(transactionCategoryRepository, userRepository);
-        return new TransactionServiceImpl(transactionRepository);
+        return new TransactionServiceImpl(transactionRepository, createUserService());
     }
 
     @Override

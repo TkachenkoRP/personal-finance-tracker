@@ -26,7 +26,7 @@ public class InMemoryAppFactory implements AppFactory{
     @Override
     public TransactionService createTransactionService() {
         TransactionRepository transactionRepository = new InMemoryTransactionRepository();
-        return new TransactionServiceImpl(transactionRepository);
+        return new TransactionServiceImpl(transactionRepository, createUserService());
     }
 
     @Override

@@ -330,49 +330,12 @@ public class ConsoleApp {
             transaction.setUser(currentUser);
 
             transactionService.save(transaction);
-            if (transaction.getType() == TransactionType.EXPENSE) {
-                checkBudgetExceeded();
-            } else {
-                checkGoalIncome(transactionCategory.getId());
+            String msg = transactionService.processTransaction(transaction);
+            if (msg != null) {
+                ConsoleOutputHandler.displayMsg(msg);
             }
         } catch (SQLException e) {
             ConsoleOutputHandler.displayMsg("Ошибка запроса добавления транзакции.");
-            System.err.println(e.getMessage());
-        }
-    }
-
-    private void checkGoalIncome(Long transactionCategoryId) {
-        try {
-            if (currentUser.getGoals() != null && currentUser.getGoals().get(transactionCategoryId) != null && transactionService.isGoalIncome(currentUser.getId(), currentUser.getGoals().get(transactionCategoryId), transactionCategoryId)) {
-                TransactionCategory transactionCategory = transactionCategoryService.getById(transactionCategoryId);
-                String msg = "Выполнена цель " + currentUser.getGoals().get(transactionCategoryId) + " для " + transactionCategory.getCategoryName();
-                ConsoleOutputHandler.displayMsg(msg);
-                notificationService.sendNotification(msg);
-                emailNotificationService.sendNotification(msg);
-                currentUser.getGoals().remove(transactionCategoryId);
-                userService.update(currentUser.getId(), currentUser);
-            }
-        } catch (SQLException e) {
-            ConsoleOutputHandler.displayMsg("Ошибка запроса проверки цели.");
-            System.err.println(e.getMessage());
-        }
-    }
-
-    private void checkBudgetExceeded() {
-        try {
-            if (transactionService.isBudgetExceeded(currentUser.getId(), currentUser.getBudget())) {
-                BigDecimal monthExpense = transactionService.getMonthExpense(currentUser.getId());
-                String msg = "Перерасход бюджета! Ваши расходы: " + monthExpense +
-                        ", установленный бюджет: " + currentUser.getBudget();
-                ConsoleOutputHandler.displayMsg(msg);
-                notificationService.sendNotification(msg);
-                emailNotificationService.sendNotification(msg);
-                currentUser.setBudget(null);
-
-                userService.update(currentUser.getId(), currentUser);
-            }
-        } catch (SQLException e) {
-            ConsoleOutputHandler.displayMsg("Ошибка запроса проверки бюджета.");
             System.err.println(e.getMessage());
         }
     }
