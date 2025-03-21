@@ -1,12 +1,18 @@
 package com.my.service;
 
 import com.my.configuration.AppConfiguration;
+import com.my.repository.BudgetRepository;
+import com.my.repository.GoalRepository;
 import com.my.repository.TransactionCategoryRepository;
 import com.my.repository.TransactionRepository;
 import com.my.repository.UserRepository;
+import com.my.repository.impl.JdbcBudgetRepositoryImpl;
+import com.my.repository.impl.JdbcGoalRepositoryImpl;
 import com.my.repository.impl.JdbcTransactionCategoryRepository;
 import com.my.repository.impl.JdbcTransactionRepository;
 import com.my.repository.impl.JdbcUserRepository;
+import com.my.service.impl.BudgetServiceImpl;
+import com.my.service.impl.GoalServiceImpl;
 import com.my.service.impl.TransactionCategoryServiceImpl;
 import com.my.service.impl.TransactionServiceImpl;
 import com.my.service.impl.UserServiceImpl;
@@ -44,6 +50,10 @@ public abstract class AbstractTestContainer {
     public static TransactionCategoryService transactionCategoryService;
     public static TransactionRepository transactionRepository;
     public static TransactionService transactionService;
+    public static BudgetRepository budgetRepository;
+    public static BudgetService budgetService;
+    public static GoalRepository goalRepository;
+    public static GoalService goalService;
 
     @BeforeAll
     static void setUp() throws SQLException, LiquibaseException {
@@ -63,12 +73,17 @@ public abstract class AbstractTestContainer {
         Liquibase liquibase = new Liquibase(changelogFile, new ClassLoaderResourceAccessor(), database);
         liquibase.update(contexts);
 
-        userRepository = new JdbcUserRepository(testConnection);
-        userService = new UserServiceImpl(userRepository);
         transactionCategoryRepository = new JdbcTransactionCategoryRepository(testConnection);
         transactionCategoryService = new TransactionCategoryServiceImpl(transactionCategoryRepository);
+        budgetRepository = new JdbcBudgetRepositoryImpl(transactionCategoryRepository);
+        budgetService = new BudgetServiceImpl(budgetRepository, transactionRepository);
+        goalRepository = new JdbcGoalRepositoryImpl(transactionCategoryRepository);
+        goalService = new GoalServiceImpl(goalRepository, transactionRepository, null, null);
+        userRepository = new JdbcUserRepository(testConnection, budgetRepository, goalRepository);
+        userService = new UserServiceImpl(userRepository);
+
         transactionRepository = new JdbcTransactionRepository(testConnection, transactionCategoryRepository, userRepository);
-        transactionService = new TransactionServiceImpl(transactionRepository, userService, null, null);
+        transactionService = new TransactionServiceImpl(transactionRepository, null, null);
     }
 
     @AfterAll

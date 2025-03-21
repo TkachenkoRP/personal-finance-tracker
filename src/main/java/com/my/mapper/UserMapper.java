@@ -25,12 +25,4 @@ public interface UserMapper {
      */
     @Mapping(target = "id", ignore = true)
     void updateUser(User sourceUser, @MappingTarget User targetUser);
-
-    /**
-     * Копирует данные из одного объекта User в новый объект User.
-     *
-     * @param sourceUser объект User, из которого будут скопированы значения
-     * @return новый объект User с данными из sourceUser
-     */
-    User copyUser(User sourceUser);
 }

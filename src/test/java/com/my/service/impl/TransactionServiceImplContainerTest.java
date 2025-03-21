@@ -104,23 +104,6 @@ class TransactionServiceImplContainerTest extends AbstractTestContainer {
     }
 
     @Test
-    void whenIsBudgetExceeded_andBudgetIsExceeded_thenReturnTrue() throws Exception {
-        BigDecimal budget = BigDecimal.valueOf(80);
-        Transaction transaction = new Transaction(LocalDate.now(), TransactionType.EXPENSE, new BigDecimal(100), "desc", transactionCategoryService.getById(1L));
-        transaction.setUser(userService.getById(2L));
-        transactionService.save(transaction);
-        boolean isExceeded = transactionService.isBudgetExceeded(userId, budget);
-        assertThat(isExceeded).isTrue();
-    }
-
-    @Test
-    void whenIsGoalIncome_andGoalIsExceeded_thenReturnTrue() throws Exception {
-        BigDecimal goal = BigDecimal.valueOf(100);
-        boolean isGoalExceeded = transactionService.isGoalIncome(userId, goal, 1L);
-        assertThat(isGoalExceeded).isTrue();
-    }
-
-    @Test
     void whenGetBalance_thenReturnCorrectBalance() throws Exception {
         BigDecimal expectedBalance = BigDecimal.valueOf(440.0);
         BigDecimal actualBalance = transactionService.getBalance(userIdForAnalyze);

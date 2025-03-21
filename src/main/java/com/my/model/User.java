@@ -5,9 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @AllArgsConstructor
@@ -19,8 +18,8 @@ public class User {
     private String email;
     private String password;
     private String name;
-    private BigDecimal budget;
-    private Map<Long, BigDecimal> goals = new HashMap<>();
+    private List<Budget> budgets = new ArrayList<>();
+    private List<Goal> goals = new ArrayList<>();
     private UserRole role;
     private boolean blocked;
 

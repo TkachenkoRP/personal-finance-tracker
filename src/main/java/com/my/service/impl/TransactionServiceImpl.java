@@ -4,12 +4,11 @@ import com.my.mapper.TransactionMapper;
 import com.my.model.Transaction;
 import com.my.model.TransactionFilter;
 import com.my.model.TransactionType;
-import com.my.model.User;
 import com.my.repository.TransactionRepository;
 import com.my.repository.impl.JdbcTransactionRepository;
-import com.my.service.NotificationService;
+import com.my.service.BudgetService;
+import com.my.service.GoalService;
 import com.my.service.TransactionService;
-import com.my.service.UserService;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
@@ -21,15 +20,13 @@ import java.util.Map;
 public class TransactionServiceImpl implements TransactionService {
 
     private final JdbcTransactionRepository transactionRepository;
-    private final UserService userService;
-    private final NotificationService notificationService;
-    private final NotificationService emailNotificationService;
+    private final BudgetService budgetService;
+    private final GoalService goalService;
 
-    public TransactionServiceImpl(TransactionRepository transactionRepository, UserService userService, NotificationService notificationService, NotificationService emailNotificationService) {
+    public TransactionServiceImpl(TransactionRepository transactionRepository, BudgetService budgetService, GoalService goalService) {
         this.transactionRepository = (JdbcTransactionRepository) transactionRepository;
-        this.userService = userService;
-        this.notificationService = notificationService;
-        this.emailNotificationService = emailNotificationService;
+        this.budgetService = budgetService;
+        this.goalService = goalService;
     }
 
     @Override
@@ -44,7 +41,9 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public Transaction save(Transaction transaction) throws SQLException {
-        return transactionRepository.save(transaction);
+        Transaction saved = transactionRepository.save(transaction);
+        processTransaction(saved);
+        return saved;
     }
 
     @Override
@@ -69,17 +68,6 @@ public class TransactionServiceImpl implements TransactionService {
         return transactionRepository.getMonthExpense(userId);
     }
 
-    @Override
-    public boolean isBudgetExceeded(Long userId, BigDecimal budget) throws SQLException {
-        BigDecimal monthExpense = getMonthExpense(userId);
-        return monthExpense.compareTo(budget) > 0;
-    }
-
-    @Override
-    public boolean isGoalIncome(Long userId, BigDecimal goal, Long transactionCategoryId) throws SQLException {
-        BigDecimal goalExceeded = getGoalExceeded(userId, transactionCategoryId);
-        return goalExceeded.compareTo(goal) > 0;
-    }
 
     @Override
     public BigDecimal getBalance(Long userId) throws SQLException {
@@ -116,40 +104,12 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public String processTransaction(Transaction transaction) throws SQLException {
-        String message;
-        if (transaction.getType() == TransactionType.EXPENSE && transaction.getUser().getBudget() != null) {
-            message = checkBudgetExceeded(transaction.getUser().getId(), transaction.getUser().getBudget());
+        String msg = null;
+        if (transaction.getType() == TransactionType.EXPENSE) {
+            msg = budgetService.getBudgetsExceededInfo(transaction.getUser().getId(), transaction.getCategory().getId());
         } else {
-            message = checkGoalIncome(transaction.getCategory().getId(), transaction.getCategory().getCategoryName(), transaction.getUser());
+            msg = goalService.getGoalIncomeInfo(transaction.getUser().getId(), transaction.getCategory().getId());
         }
-        if (message != null) {
-            notificationService.sendNotification(message);
-            emailNotificationService.sendNotification(message);
-        }
-        return message;
-    }
-
-    private String checkBudgetExceeded(Long userId, BigDecimal budget) throws SQLException {
-        String message = null;
-        if (isBudgetExceeded(userId, budget)) {
-            BigDecimal monthExpense = getMonthExpense(userId);
-            message = "Перерасход бюджета! Ваши расходы: " + monthExpense +
-                      ", установленный бюджет: " + budget;
-        }
-        return message;
-    }
-
-    private String checkGoalIncome(Long transactionCategoryId, String transactionCategoryName, User user) throws SQLException {
-        String message = null;
-        if (user.getGoals() != null && user.getGoals().get(transactionCategoryId) != null && isGoalIncome(user.getId(), user.getGoals().get(transactionCategoryId), transactionCategoryId)) {
-            message = "Выполнена цель " + user.getGoals().get(transactionCategoryId) + " для " + transactionCategoryName;
-            user.getGoals().remove(transactionCategoryId);
-            userService.update(user.getId(), user);
-        }
-        return message;
-    }
-
-    private BigDecimal getGoalExceeded(Long userId, Long transactionCategoryId) throws SQLException {
-        return transactionRepository.getGoalExceeded(userId, transactionCategoryId);
+        return msg;
     }
 }

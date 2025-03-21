@@ -60,6 +60,7 @@ public class JdbcTransactionRepository implements TransactionRepository {
         return transactions;
     }
 
+    @Override
     public List<Transaction> getAll(TransactionFilter filter) throws SQLException {
         List<Transaction> transactions = new ArrayList<>();
         StringBuilder query = new StringBuilder("SELECT t.id, t.amount, t.description, t.date, t.type, tc.id AS category_id, u.id AS user_id " +
@@ -200,6 +201,7 @@ public class JdbcTransactionRepository implements TransactionRepository {
         }
     }
 
+    @Override
     public BigDecimal getMonthExpense(Long userId) throws SQLException {
         BigDecimal totalExpense = BigDecimal.ZERO;
         LocalDate currentDate = LocalDate.now();
@@ -228,6 +230,7 @@ public class JdbcTransactionRepository implements TransactionRepository {
         return totalExpense != null ? totalExpense : BigDecimal.ZERO;
     }
 
+    @Override
     public BigDecimal getBalance(Long userId) throws SQLException {
         BigDecimal balance = BigDecimal.ZERO;
 
@@ -249,6 +252,7 @@ public class JdbcTransactionRepository implements TransactionRepository {
         return balance != null ? balance : BigDecimal.ZERO;
     }
 
+    @Override
     public BigDecimal getTotalIncome(Long userId, LocalDate from, LocalDate to) throws SQLException {
         BigDecimal totalIncome = BigDecimal.ZERO;
 
@@ -273,6 +277,7 @@ public class JdbcTransactionRepository implements TransactionRepository {
         return totalIncome != null ? totalIncome : BigDecimal.ZERO;
     }
 
+    @Override
     public BigDecimal getTotalExpenses(Long userId, LocalDate from, LocalDate to) throws SQLException {
         BigDecimal totalExpenses = BigDecimal.ZERO;
 
@@ -297,6 +302,7 @@ public class JdbcTransactionRepository implements TransactionRepository {
         return totalExpenses != null ? totalExpenses : BigDecimal.ZERO;
     }
 
+    @Override
     public Map<String, BigDecimal> analyzeExpensesByCategory(Long userId, LocalDate from, LocalDate to) throws SQLException {
         Map<String, BigDecimal> result = new HashMap<>();
 
@@ -325,6 +331,7 @@ public class JdbcTransactionRepository implements TransactionRepository {
         return result;
     }
 
+    @Override
     public BigDecimal getGoalExceeded(Long userId, Long transactionCategoryId) throws SQLException {
         BigDecimal totalIncome = BigDecimal.ZERO;
 

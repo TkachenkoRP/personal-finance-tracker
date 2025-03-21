@@ -131,17 +131,6 @@ class TransactionServiceImplTest {
     }
 
     @Test
-    void testIsBudgetExceeded() throws Exception {
-        Long userId = 1L;
-        BigDecimal budget = BigDecimal.valueOf(100);
-        when(transactionRepository.getMonthExpense(userId)).thenReturn(BigDecimal.valueOf(150));
-
-        boolean result = transactionService.isBudgetExceeded(userId, budget);
-
-        assertThat(result).isTrue();
-    }
-
-    @Test
     void testGetBalance() throws Exception {
         Long userId = 1L;
         BigDecimal expectedBalance = BigDecimal.valueOf(200);

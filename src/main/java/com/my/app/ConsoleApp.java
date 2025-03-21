@@ -1,6 +1,8 @@
 package com.my.app;
 
 import com.my.in.ConsoleInputHandler;
+import com.my.model.Budget;
+import com.my.model.Goal;
 import com.my.model.Transaction;
 import com.my.model.TransactionCategory;
 import com.my.model.TransactionFilter;
@@ -203,40 +205,11 @@ public class ConsoleApp {
 
     private void editGoal() {
         ConsoleOutputHandler.displayMsg("\nРедактирование цели накопления");
-        User updated = null;
-        BigDecimal goalAmount = null;
-        try {
-            Map<Long, BigDecimal> goals = currentUser.getGoals();
-            List<TransactionCategory> transactionCategories = transactionCategoryService.getAll();
-            if (!goals.isEmpty()) {
-                ConsoleOutputHandler.displayMapWithCategories(goals, transactionCategories);
-            } else {
-                ConsoleOutputHandler.displayTransactionCategoryList(transactionCategories);
-            }
-            long goalId = ConsoleInputHandler.getUserIntegerInput("Выберите цель: ");
-            goalAmount = ConsoleInputHandler.getUserBigDecimalInput("Какова новая цель?");
-            currentUser.getGoals().put(goalId, goalAmount);
-            updated = userService.update(currentUser.getId(), currentUser);
-        } catch (SQLException e) {
-            ConsoleOutputHandler.displayMsg("Ошибка запроса установки цели.");
-            logger.log(Level.ERROR, MessageFormat.format("Ошибка запроса установки цели! {0}", e.getMessage()));
-        }
-        if (updated != null) {
-            ConsoleOutputHandler.displayMsg("Цель успешно установлена на " + goalAmount);
-        } else {
-            ConsoleOutputHandler.displayMsg("Не удалось установить цель.");
-        }
     }
 
     private void displayGoal() {
         if (!currentUser.getGoals().isEmpty()) {
-            try {
-                List<TransactionCategory> transactionCategories = transactionCategoryService.getAll();
-                ConsoleOutputHandler.displayMapWithCategories(currentUser.getGoals(), transactionCategories);
-            } catch (SQLException e) {
-                ConsoleOutputHandler.displayMsg("Ошибка запроса отображения целей.");
-                logger.log(Level.ERROR, MessageFormat.format("Ошибка запроса отображения целей! {0}", e.getMessage()));
-            }
+            ConsoleOutputHandler.displayGoalsList(currentUser.getGoals());
         } else {
             ConsoleOutputHandler.displayMsg("Цели не установлены.");
         }
@@ -244,27 +217,14 @@ public class ConsoleApp {
 
     private void editBudget() {
         ConsoleOutputHandler.displayMsg("\nРедактирование бюджета");
-        String msg = currentUser.getBudget() == null ? "Установить бюджет: " : "Бюджет - " + currentUser.getBudget() + ", изменить на: ";
-        BigDecimal budget = ConsoleInputHandler.getUserBigDecimalInput(msg);
-        currentUser.setBudget(budget);
-        User updated = null;
-        try {
-            updated = userService.update(currentUser.getId(), currentUser);
-        } catch (SQLException e) {
-            ConsoleOutputHandler.displayMsg("Ошибка запроса установки бюджета.");
-            logger.log(Level.ERROR, MessageFormat.format("Ошибка запроса установки бюджета! {0}", e.getMessage()));
-        }
-        if (updated != null) {
-            ConsoleOutputHandler.displayMsg("Бюджет успешно установлен на " + budget);
-        } else {
-            ConsoleOutputHandler.displayMsg("Не удалось обновить бюджет.");
-        }
     }
 
     private void displayBudget() {
-        BigDecimal budget = currentUser.getBudget();
-        String msg = budget == null ? "Бюджет не установлен" : "Ваш бюджет: " + budget;
-        ConsoleOutputHandler.displayMsg(msg);
+        List<Budget> budgets = currentUser.getBudgets();
+        if (budgets.isEmpty()) {
+            ConsoleOutputHandler.displayMsg("Бюджет не установлен");
+        }
+        ConsoleOutputHandler.displayBudgetList(budgets);
     }
 
     private void deleteTransaction() {

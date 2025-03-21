@@ -26,12 +26,4 @@ public interface TransactionCategoryMapper {
      */
     @Mapping(target = "id", ignore = true)
     void updateTransaction(TransactionCategory sourceUser, @MappingTarget TransactionCategory targetUser);
-
-    /**
-     * Копирует данные из одного объекта TransactionCategory в новый объект TransactionCategory.
-     *
-     * @param sourceUser объект TransactionCategory, из которого будут скопированы значения
-     * @return новый объект TransactionCategory с данными из sourceUser
-     */
-    TransactionCategory copyTransactionCategory(TransactionCategory sourceUser);
 }

@@ -29,12 +29,4 @@ public interface TransactionMapper {
     @Mapping(target = "date", ignore = true)
     @Mapping(target = "type", ignore = true)
     void updateTransaction(Transaction sourceUser, @MappingTarget Transaction targetUser);
-
-    /**
-     * Копирует данные из одного объекта Transaction в новый объект Transaction.
-     *
-     * @param sourceUser объект Transaction, из которого будут скопированы значения
-     * @return новый объект Transaction с данными из sourceUser
-     */
-    Transaction copyTransaction(Transaction sourceUser);
 }

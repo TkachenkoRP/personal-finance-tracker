@@ -3,14 +3,20 @@ package com.my.repository;
 import com.my.model.User;
 
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Optional;
 
-/**
- * Интерфейс репозитория для управления пользователями.
- * Наследует базовый интерфейс {@link BaseRepository} для выполнения основных операций
- * и добавляет специфичные для пользователей методы.
- */
-public interface UserRepository extends BaseRepository<User> {
+public interface UserRepository {
+    List<User> getAll() throws SQLException;
+
+    Optional<User> getById(Long id) throws SQLException;
+
+    User save(User entity) throws SQLException;
+
+    User update(User entity) throws SQLException;
+
+    boolean deleteById(Long id) throws SQLException;
+
     /**
      * Проверка существования пользователя по адресу электронной почты.
      *
@@ -22,7 +28,7 @@ public interface UserRepository extends BaseRepository<User> {
     /**
      * Получение пользователя по адресу электронной почты и паролю.
      *
-     * @param email адрес электронной почты пользователя
+     * @param email    адрес электронной почты пользователя
      * @param password пароль пользователя
      * @return объект Optional, содержащий найденного пользователя, или пустой,
      * если пользователь с указанными учетными данными не найден

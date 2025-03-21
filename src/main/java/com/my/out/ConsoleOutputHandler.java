@@ -1,5 +1,7 @@
 package com.my.out;
 
+import com.my.model.Budget;
+import com.my.model.Goal;
 import com.my.model.Transaction;
 import com.my.model.TransactionCategory;
 import com.my.model.User;
@@ -118,6 +120,16 @@ public class ConsoleOutputHandler {
                 System.out.println(id + " - " + name);
             }
         });
+    }
+
+    public static void displayGoalsList(List<Goal> goals) {
+        goals.forEach(g -> System.out.println(g.getId() + " - " + g.getCategory().getCategoryName() + " - " + g.getTargetAmount()));
+    }
+
+    public static void displayBudgetList(List<Budget> budgets) {
+        budgets.forEach(b -> System.out.println(
+                MessageFormat.format("{0} - Бюджет {1} - с {2} по {3} в категории {4}",
+                        b.getId(), b.getTotalAmount(), b.getPeriodStart(), b.getPeriodEnd(), b.getCategory())));
     }
 
     public static void displayMap(Map<String, BigDecimal> map) {

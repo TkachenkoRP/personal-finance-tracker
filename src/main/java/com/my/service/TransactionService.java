@@ -63,25 +63,6 @@ public interface TransactionService {
     BigDecimal getMonthExpense(Long userId) throws SQLException;
 
     /**
-     * Проверка превышения бюджета пользователя.
-     *
-     * @param userId идентификатор пользователя
-     * @param budget бюджет для проверки
-     * @return true, если бюджет превышен, иначе false
-     */
-    boolean isBudgetExceeded(Long userId, BigDecimal budget) throws SQLException;
-
-    /**
-     * Проверка достижения целевого дохода для пользователя.
-     *
-     * @param userId                идентификатор пользователя
-     * @param goal                  целевой доход
-     * @param transactionCategoryId идентификатор категории транзакции
-     * @return true, если целевой доход достигнут, иначе false
-     */
-    boolean isGoalIncome(Long userId, BigDecimal goal, Long transactionCategoryId) throws SQLException;
-
-    /**
      * Проверка баланса пользователя.
      *
      * @param userId идентификатор пользователя
@@ -140,5 +121,5 @@ public interface TransactionService {
      * превышении бюджета или достижении целей.
      * Если никаких сообщений нет, возвращается null.
      */
-    public String processTransaction(Transaction transaction) throws SQLException;
+    String processTransaction(Transaction transaction) throws SQLException;
 }

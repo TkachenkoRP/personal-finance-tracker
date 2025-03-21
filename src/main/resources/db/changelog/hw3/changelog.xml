@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
+    <changeSet id="add-tag-hw2" author="Rodion Tkachenko">
+        <tagDatabase tag="v.0.0.1"/>
+    </changeSet>
+    <include file="008-create-table-budget.xml" relativeToChangelogFile="true"/>
+    <include file="009-add-isActive-in-goal.xml" relativeToChangelogFile="true"/>
+    <include file="010-remove-budget-from-user.xml" relativeToChangelogFile="true"/>
+</databaseChangeLog>

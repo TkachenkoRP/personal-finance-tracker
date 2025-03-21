@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Objects;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -33,8 +34,8 @@ public class TransactionCategory {
     @Override
     public String toString() {
         return "TransactionCategory{" +
-                "id=" + id +
-                ", categoryName='" + categoryName + '\'' +
-                '}';
+               "id=" + id +
+               ", categoryName='" + categoryName + '\'' +
+               '}';
     }
 }

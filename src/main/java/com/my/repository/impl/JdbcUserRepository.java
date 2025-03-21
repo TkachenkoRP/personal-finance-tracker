@@ -1,12 +1,15 @@
 package com.my.repository.impl;
 
 import com.my.configuration.AppConfiguration;
+import com.my.model.Budget;
+import com.my.model.Goal;
 import com.my.model.User;
 import com.my.model.UserRole;
+import com.my.repository.BudgetRepository;
+import com.my.repository.GoalRepository;
 import com.my.repository.UserRepository;
 import com.my.util.DBUtil;
 
-import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -17,16 +20,20 @@ import java.util.List;
 import java.util.Optional;
 
 public class JdbcUserRepository implements UserRepository {
-
     private final Connection connection;
+    private final BudgetRepository budgetRepository;
+    private final GoalRepository goalRepository;
+
     private final String schema;
 
-    public JdbcUserRepository() throws SQLException {
-        this(DBUtil.getConnection());
+    public JdbcUserRepository(BudgetRepository budgetRepository, GoalRepository goalRepository) throws SQLException {
+        this(DBUtil.getConnection(), budgetRepository, goalRepository);
     }
 
-    public JdbcUserRepository(Connection connection) {
+    public JdbcUserRepository(Connection connection, BudgetRepository budgetRepository, GoalRepository goalRepository) {
         this.connection = connection;
+        this.budgetRepository = budgetRepository;
+        this.goalRepository = goalRepository;
         schema = AppConfiguration.getProperty("database.schema");
     }
 
@@ -67,7 +74,8 @@ public class JdbcUserRepository implements UserRepository {
         String name = resultSet.getString("name");
         UserRole role = UserRole.valueOf(resultSet.getString("role"));
         boolean blocked = resultSet.getBoolean("blocked");
-        BigDecimal budget = resultSet.getBigDecimal("budget");
+        List<Budget> budgets = budgetRepository.getAllByUserId(id);
+        List<Goal> goals = goalRepository.getAllByUserId(id);
 
         User user = new User();
         user.setId(id);
@@ -76,7 +84,8 @@ public class JdbcUserRepository implements UserRepository {
         user.setName(name);
         user.setRole(role);
         user.setBlocked(blocked);
-        user.setBudget(budget);
+        user.setBudgets(budgets);
+        user.setGoals(goals);
 
         return user;
     }
@@ -104,15 +113,14 @@ public class JdbcUserRepository implements UserRepository {
 
     @Override
     public User update(User entity) throws SQLException {
-        String query = "UPDATE " + schema + ".user SET email = ? , password = ?, name = ?, role = ?, budget = ?, blocked = ? WHERE id = ?";
+        String query = "UPDATE " + schema + ".user SET email = ? , password = ?, name = ?, role = ?, blocked = ? WHERE id = ?";
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setString(1, entity.getEmail());
             statement.setString(2, entity.getPassword());
             statement.setString(3, entity.getName());
             statement.setString(4, entity.getRole().name());
-            statement.setBigDecimal(5, entity.getBudget());
-            statement.setBoolean(6, entity.isBlocked());
-            statement.setLong(7, entity.getId());
+            statement.setBoolean(5, entity.isBlocked());
+            statement.setLong(6, entity.getId());
             int affectedRows = statement.executeUpdate();
             if (affectedRows > 0) {
                 return entity;

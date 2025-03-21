@@ -1,6 +1,5 @@
 package com.my;
 
-import com.my.app.AppFactory;
 import com.my.app.ConsoleApp;
 import com.my.app.JdbcAppFactory;
 import org.apache.logging.log4j.Level;
@@ -14,7 +13,7 @@ public class Main {
     public static void main(String[] args) {
         final Logger logger = LogManager.getRootLogger();
         try {
-            AppFactory appFactory = new JdbcAppFactory();
+            JdbcAppFactory appFactory = new JdbcAppFactory();
             ConsoleApp consoleApp = appFactory.createConsoleApp();
             consoleApp.start();
         } catch (SQLException e) {
