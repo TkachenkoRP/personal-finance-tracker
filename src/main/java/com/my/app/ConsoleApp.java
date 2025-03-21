@@ -9,39 +9,39 @@ import com.my.model.User;
 import com.my.model.UserRole;
 import com.my.out.ConsoleOutputHandler;
 import com.my.service.JdbcDataService;
-import com.my.service.NotificationService;
 import com.my.service.TransactionCategoryService;
 import com.my.service.TransactionService;
 import com.my.service.UserService;
 import com.my.service.impl.JdbcDataServiceImpl;
 import liquibase.exception.LiquibaseException;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public class ConsoleApp {
+    private static final Logger logger = LogManager.getRootLogger();
+
     private User currentUser = null;
     private final UserService userService;
     private final TransactionService transactionService;
     private final TransactionCategoryService transactionCategoryService;
-    private final NotificationService notificationService;
-    private final NotificationService emailNotificationService;
     private static final Set<Integer> UNAUTHENTICATED_CHOICES = Set.of(3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22);
     private static final Set<Integer> AUTHENTICATED_CHOICES = Set.of(1, 2);
     private static final Set<Integer> ADMIN_CHOICES = Set.of(22, 23, 24, 25, 26);
 
     public ConsoleApp(UserService userService, TransactionService transactionService,
-                      TransactionCategoryService transactionCategoryService, NotificationService notificationService,
-                      NotificationService emailNotificationService) {
+                      TransactionCategoryService transactionCategoryService) {
         this.userService = userService;
         this.transactionService = transactionService;
         this.transactionCategoryService = transactionCategoryService;
-        this.notificationService = notificationService;
-        this.emailNotificationService = emailNotificationService;
     }
 
     public void start() {
@@ -60,7 +60,7 @@ public class ConsoleApp {
             jdbcDataService.initDb();
         } catch (LiquibaseException e) {
             ConsoleOutputHandler.displayMsg("Ошибка инициализации БД!");
-            System.err.println(e.getMessage());
+            logger.log(Level.ERROR, MessageFormat.format("Ошибка инициализации БД! {0}", e.getMessage()));
         }
     }
 
@@ -123,7 +123,7 @@ public class ConsoleApp {
             }
         } catch (SQLException e) {
             ConsoleOutputHandler.displayMsg("Ошибка запроса блокировки пользователя - " + userId);
-            System.err.println(e.getMessage());
+            logger.log(Level.ERROR, MessageFormat.format("Ошибка запроса блокировки пользователя! {0}", e.getMessage()));
         }
     }
 
@@ -134,7 +134,7 @@ public class ConsoleApp {
             ConsoleOutputHandler.displayMap(report);
         } catch (SQLException e) {
             ConsoleOutputHandler.displayMsg("Ошибка запроса финансового отчета.");
-            System.err.println(e.getMessage());
+            logger.log(Level.ERROR, MessageFormat.format("Ошибка запроса финансового отчета! {0}", e.getMessage()));
         }
     }
 
@@ -145,7 +145,7 @@ public class ConsoleApp {
             ConsoleOutputHandler.displayMap(analyzed);
         } catch (SQLException e) {
             ConsoleOutputHandler.displayMsg("Ошибка запроса анализа по категориям.");
-            System.err.println(e.getMessage());
+            logger.log(Level.ERROR, MessageFormat.format("Ошибка запроса анализа по категориям! {0}", e.getMessage()));
         }
 
     }
@@ -157,7 +157,7 @@ public class ConsoleApp {
             ConsoleOutputHandler.displayMsg("Расходы с " + dates[0] + " до " + dates[1] + ": " + expenses);
         } catch (SQLException e) {
             ConsoleOutputHandler.displayMsg("Ошибка запроса расходов.");
-            System.err.println(e.getMessage());
+            logger.log(Level.ERROR, MessageFormat.format("Ошибка запроса расходов! {0}", e.getMessage()));
         }
     }
 
@@ -168,7 +168,7 @@ public class ConsoleApp {
             ConsoleOutputHandler.displayMsg("Доход с " + dates[0] + " до " + dates[1] + ": " + income);
         } catch (SQLException e) {
             ConsoleOutputHandler.displayMsg("Ошибка запроса доходов.");
-            System.err.println(e.getMessage());
+            logger.log(Level.ERROR, MessageFormat.format("Ошибка запроса доходов! {0}", e.getMessage()));
         }
     }
 
@@ -181,7 +181,7 @@ public class ConsoleApp {
             ConsoleOutputHandler.displayMsg("Баланс c " + dates[0] + " по " + dates[1] + ": " + income.subtract(expenses));
         } catch (SQLException e) {
             ConsoleOutputHandler.displayMsg("Ошибка запроса баланса.");
-            System.err.println(e.getMessage());
+            logger.log(Level.ERROR, MessageFormat.format("Ошибка запроса баланса! {0}", e.getMessage()));
         }
     }
 
@@ -197,7 +197,7 @@ public class ConsoleApp {
             ConsoleOutputHandler.displayMsg("Баланс: " + balance);
         } catch (SQLException e) {
             ConsoleOutputHandler.displayMsg("Ошибка запроса баланса.");
-            System.err.println(e.getMessage());
+            logger.log(Level.ERROR, MessageFormat.format("Ошибка запроса баланса! {0}", e.getMessage()));
         }
     }
 
@@ -219,7 +219,7 @@ public class ConsoleApp {
             updated = userService.update(currentUser.getId(), currentUser);
         } catch (SQLException e) {
             ConsoleOutputHandler.displayMsg("Ошибка запроса установки цели.");
-            System.err.println(e.getMessage());
+            logger.log(Level.ERROR, MessageFormat.format("Ошибка запроса установки цели! {0}", e.getMessage()));
         }
         if (updated != null) {
             ConsoleOutputHandler.displayMsg("Цель успешно установлена на " + goalAmount);
@@ -235,7 +235,7 @@ public class ConsoleApp {
                 ConsoleOutputHandler.displayMapWithCategories(currentUser.getGoals(), transactionCategories);
             } catch (SQLException e) {
                 ConsoleOutputHandler.displayMsg("Ошибка запроса отображения целей.");
-                System.err.println(e.getMessage());
+                logger.log(Level.ERROR, MessageFormat.format("Ошибка запроса отображения целей! {0}", e.getMessage()));
             }
         } else {
             ConsoleOutputHandler.displayMsg("Цели не установлены.");
@@ -252,7 +252,7 @@ public class ConsoleApp {
             updated = userService.update(currentUser.getId(), currentUser);
         } catch (SQLException e) {
             ConsoleOutputHandler.displayMsg("Ошибка запроса установки бюджета.");
-            System.err.println(e.getMessage());
+            logger.log(Level.ERROR, MessageFormat.format("Ошибка запроса установки бюджета! {0}", e.getMessage()));
         }
         if (updated != null) {
             ConsoleOutputHandler.displayMsg("Бюджет успешно установлен на " + budget);
@@ -279,7 +279,7 @@ public class ConsoleApp {
             }
         } catch (SQLException e) {
             ConsoleOutputHandler.displayMsg("Ошибка запроса удаления транзакции.");
-            System.err.println(e.getMessage());
+            logger.log(Level.ERROR, MessageFormat.format("Ошибка запроса удаления транзакции! {0}", e.getMessage()));
         }
     }
 
@@ -309,7 +309,7 @@ public class ConsoleApp {
             transactionService.update(transactionId, request);
         } catch (SQLException e) {
             ConsoleOutputHandler.displayMsg("Ошибка запроса редактирования транзакции.");
-            System.err.println(e.getMessage());
+            logger.log(Level.ERROR, MessageFormat.format("Ошибка запроса редактирования транзакции! {0}", e.getMessage()));
         }
     }
 
@@ -336,7 +336,7 @@ public class ConsoleApp {
             }
         } catch (SQLException e) {
             ConsoleOutputHandler.displayMsg("Ошибка запроса добавления транзакции.");
-            System.err.println(e.getMessage());
+            logger.log(Level.ERROR, MessageFormat.format("Ошибка запроса добавления транзакции! {0}", e.getMessage()));
         }
     }
 
@@ -388,7 +388,7 @@ public class ConsoleApp {
             ConsoleOutputHandler.displayTransactionList(transactions);
         } catch (SQLException e) {
             ConsoleOutputHandler.displayMsg("Ошибка запроса транзакций.");
-            System.err.println(e.getMessage());
+            logger.log(Level.ERROR, MessageFormat.format("Ошибка запроса транзакций! {0}", e.getMessage()));
         }
     }
 
@@ -402,7 +402,7 @@ public class ConsoleApp {
             currentUser = userService.registration(userEmail, userName, password);
         } catch (SQLException e) {
             ConsoleOutputHandler.displayMsg("Ошибка запроса регистрации пользователя.");
-            System.err.println(e.getMessage());
+            logger.log(Level.ERROR, MessageFormat.format("Ошибка запроса регистрации пользователя! {0}", e.getMessage()));
         }
         String msg = currentUser != null ?
                 "\nРегистрация " + currentUser.getEmail() + " прошла успешно!\n" :
@@ -418,7 +418,7 @@ public class ConsoleApp {
             currentUser = userService.login(userEmail, password);
         } catch (SQLException e) {
             ConsoleOutputHandler.displayMsg("Ошибка запроса авторизации пользователя.");
-            System.err.println(e.getMessage());
+            logger.log(Level.ERROR, MessageFormat.format("Ошибка запроса авторизации пользователя! {0}", e.getMessage()));
         }
         String msg = currentUser != null ?
                 "\nУспешный вход!\n" :
@@ -440,7 +440,7 @@ public class ConsoleApp {
             user = userService.getById(userId);
         } catch (SQLException e) {
             ConsoleOutputHandler.displayMsg("Ошибка запроса редактирования данных пользователя.");
-            System.err.println(e.getMessage());
+            logger.log(Level.ERROR, MessageFormat.format("Ошибка запроса редактирования данных пользователя! {0}", e.getMessage()));
         }
         if (user == null) {
             ConsoleOutputHandler.displayMsg("Ошибка: пользователь не найден.");
@@ -456,7 +456,7 @@ public class ConsoleApp {
             updated = userService.update(user.getId(), userForUpdate);
         } catch (SQLException e) {
             ConsoleOutputHandler.displayMsg("Ошибка запроса редактирования данных пользователя.");
-            System.err.println(e.getMessage());
+            logger.log(Level.ERROR, MessageFormat.format("Ошибка запроса редактирования данных пользователя! {0}", e.getMessage()));
         }
         if (updated != null) {
             ConsoleOutputHandler.displayMsg("Данные пользователя успешно обновлены.");
@@ -478,7 +478,7 @@ public class ConsoleApp {
             ConsoleOutputHandler.displayUserList(userService.getAll());
         } catch (SQLException e) {
             ConsoleOutputHandler.displayMsg("Ошибка запроса выборки всех пользователей.");
-            System.err.println(e.getMessage());
+            logger.log(Level.ERROR, MessageFormat.format("Ошибка запроса выборки всех пользователей! {0}", e.getMessage()));
         }
     }
 
@@ -511,7 +511,7 @@ public class ConsoleApp {
             }
         } catch (SQLException e) {
             ConsoleOutputHandler.displayMsg("Ошибка запроса удаления пользователя - " + userId);
-            System.err.println(e.getMessage());
+            logger.log(Level.ERROR, MessageFormat.format("Ошибка запроса удаления пользователя! {0}", e.getMessage()));
         }
     }
 
@@ -526,7 +526,7 @@ public class ConsoleApp {
             }
         } catch (SQLException e) {
             ConsoleOutputHandler.displayMsg("Ошибка запроса удаления категории - " + transactionCategoryId);
-            System.err.println(e.getMessage());
+            logger.log(Level.ERROR, MessageFormat.format("Ошибка запроса удаления категории! {0}", e.getMessage()));
         }
     }
 
@@ -540,7 +540,7 @@ public class ConsoleApp {
             updated = transactionCategoryService.update(transactionCategoryId, new TransactionCategory(transactionCategoryName));
         } catch (SQLException e) {
             ConsoleOutputHandler.displayMsg("Ошибка запроса редактирования категории.");
-            System.err.println(e.getMessage());
+            logger.log(Level.ERROR, MessageFormat.format("Ошибка запроса редактирования категории! {0}", e.getMessage()));
         }
         if (updated == null) {
             ConsoleOutputHandler.displayMsg("Ошибка: категория не найдена.");
@@ -558,7 +558,7 @@ public class ConsoleApp {
             transactionCategory = transactionCategoryService.save(transactionCategoryRequest);
         } catch (SQLException e) {
             ConsoleOutputHandler.displayMsg("Ошибка запроса добавления категории.");
-            System.err.println(e.getMessage());
+            logger.log(Level.ERROR, MessageFormat.format("Ошибка запроса добавления категории! {0}", e.getMessage()));
         }
         String msg = transactionCategory != null ?
                 "\nДобавлен новый тип: " + transactionCategory.getCategoryName() + "\n" :
@@ -574,7 +574,7 @@ public class ConsoleApp {
             ConsoleOutputHandler.displayTransactionCategoryList(transactionCategories);
         } catch (SQLException e) {
             ConsoleOutputHandler.displayMsg("Ошибка запроса всех категорий.");
-            System.err.println(e.getMessage());
+            logger.log(Level.ERROR, MessageFormat.format("Ошибка запроса всех категорий! {0}", e.getMessage()));
         }
     }
 

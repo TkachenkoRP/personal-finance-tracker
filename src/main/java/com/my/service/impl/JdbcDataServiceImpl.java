@@ -9,11 +9,16 @@ import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.LiquibaseException;
 import liquibase.resource.ClassLoaderResourceAccessor;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.text.MessageFormat;
 
 public class JdbcDataServiceImpl implements JdbcDataService {
+    private static final Logger logger = LogManager.getRootLogger();
 
     private Connection connection;
 
@@ -21,7 +26,7 @@ public class JdbcDataServiceImpl implements JdbcDataService {
         try {
             connection = DBUtil.getConnection(AppConfiguration.getProperty("liquibase.schema"));
         } catch (SQLException e) {
-            System.err.println("Failed to create connection database: " + e.getMessage());
+            logger.log(Level.ERROR, MessageFormat.format("Failed to create connection database: {0}", e.getMessage()));
         }
     }
 

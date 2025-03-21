@@ -16,7 +16,7 @@ import com.my.service.impl.TransactionCategoryServiceImpl;
 import com.my.service.impl.TransactionServiceImpl;
 import com.my.service.impl.UserServiceImpl;
 
-public class InMemoryAppFactory implements AppFactory{
+public class InMemoryAppFactory implements AppFactory {
     @Override
     public UserService createUserService() {
         UserRepository userRepository = new InMemoryUserRepository();
@@ -26,7 +26,7 @@ public class InMemoryAppFactory implements AppFactory{
     @Override
     public TransactionService createTransactionService() {
         TransactionRepository transactionRepository = new InMemoryTransactionRepository();
-        return new TransactionServiceImpl(transactionRepository, createUserService());
+        return new TransactionServiceImpl(transactionRepository, createUserService(), createNotificationService(), createEmailNotificationService());
     }
 
     @Override
@@ -50,9 +50,7 @@ public class InMemoryAppFactory implements AppFactory{
         return new ConsoleApp(
                 createUserService(),
                 createTransactionService(),
-                createTransactionCategoryService(),
-                createNotificationService(),
-                createEmailNotificationService()
+                createTransactionCategoryService()
         );
     }
 }

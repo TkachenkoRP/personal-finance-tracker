@@ -7,6 +7,7 @@ import com.my.model.TransactionType;
 import com.my.model.User;
 import com.my.repository.TransactionRepository;
 import com.my.repository.impl.JdbcTransactionRepository;
+import com.my.service.NotificationService;
 import com.my.service.TransactionService;
 import com.my.service.UserService;
 
@@ -21,10 +22,14 @@ public class TransactionServiceImpl implements TransactionService {
 
     private final JdbcTransactionRepository transactionRepository;
     private final UserService userService;
+    private final NotificationService notificationService;
+    private final NotificationService emailNotificationService;
 
-    public TransactionServiceImpl(TransactionRepository transactionRepository, UserService userService) {
+    public TransactionServiceImpl(TransactionRepository transactionRepository, UserService userService, NotificationService notificationService, NotificationService emailNotificationService) {
         this.transactionRepository = (JdbcTransactionRepository) transactionRepository;
         this.userService = userService;
+        this.notificationService = notificationService;
+        this.emailNotificationService = emailNotificationService;
     }
 
     @Override
@@ -116,6 +121,10 @@ public class TransactionServiceImpl implements TransactionService {
             message = checkBudgetExceeded(transaction.getUser().getId(), transaction.getUser().getBudget());
         } else {
             message = checkGoalIncome(transaction.getCategory().getId(), transaction.getCategory().getCategoryName(), transaction.getUser());
+        }
+        if (message != null) {
+            notificationService.sendNotification(message);
+            emailNotificationService.sendNotification(message);
         }
         return message;
     }

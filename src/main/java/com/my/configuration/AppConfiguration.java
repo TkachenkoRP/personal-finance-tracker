@@ -1,10 +1,17 @@
 package com.my.configuration;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.Properties;
 
 public class AppConfiguration {
+    private static final Logger logger = LogManager.getRootLogger();
+
     private static final String CONFIG_FILE_PATH = "src/main/resources/application.properties";
     private static final Properties properties;
 
@@ -16,7 +23,7 @@ public class AppConfiguration {
         try {
             loadConfig();
         } catch (IOException e) {
-            System.err.println("Failed to load database configuration: " + e.getMessage());
+            logger.log(Level.ERROR, MessageFormat.format("Failed to load database configuration: {0}", e.getMessage()));
         }
     }
 

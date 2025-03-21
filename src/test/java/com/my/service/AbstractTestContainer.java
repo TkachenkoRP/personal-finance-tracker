@@ -68,7 +68,7 @@ public abstract class AbstractTestContainer {
         transactionCategoryRepository = new JdbcTransactionCategoryRepository(testConnection);
         transactionCategoryService = new TransactionCategoryServiceImpl(transactionCategoryRepository);
         transactionRepository = new JdbcTransactionRepository(testConnection, transactionCategoryRepository, userRepository);
-        transactionService = new TransactionServiceImpl(transactionRepository, userService);
+        transactionService = new TransactionServiceImpl(transactionRepository, userService, null, null);
     }
 
     @AfterAll

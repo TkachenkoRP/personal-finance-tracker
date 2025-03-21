@@ -1,31 +1,20 @@
 package com.my.model;
 
-import java.util.Objects;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+import java.util.Objects;
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
 public class TransactionCategory {
     private Long id;
     private String categoryName;
 
-    public TransactionCategory() {
-    }
-
     public TransactionCategory(String categoryName) {
-        this.categoryName = categoryName;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getCategoryName() {
-        return categoryName;
-    }
-
-    public void setCategoryName(String categoryName) {
         this.categoryName = categoryName;
     }
 

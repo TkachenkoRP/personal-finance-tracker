@@ -30,7 +30,7 @@ public class JdbcAppFactory implements AppFactory {
         TransactionCategoryRepository transactionCategoryRepository = new JdbcTransactionCategoryRepository();
         UserRepository userRepository = new JdbcUserRepository();
         JdbcTransactionRepository transactionRepository = new JdbcTransactionRepository(transactionCategoryRepository, userRepository);
-        return new TransactionServiceImpl(transactionRepository, createUserService());
+        return new TransactionServiceImpl(transactionRepository, createUserService(), createNotificationService(), createEmailNotificationService());
     }
 
     @Override
@@ -54,9 +54,7 @@ public class JdbcAppFactory implements AppFactory {
         return new ConsoleApp(
                 createUserService(),
                 createTransactionService(),
-                createTransactionCategoryService(),
-                createNotificationService(),
-                createEmailNotificationService()
+                createTransactionCategoryService()
         );
     }
 }

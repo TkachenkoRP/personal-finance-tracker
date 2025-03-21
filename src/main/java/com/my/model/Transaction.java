@@ -1,9 +1,18 @@
 package com.my.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Objects;
 
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
 public class Transaction {
     private Long id;
     private LocalDate date;
@@ -13,71 +22,12 @@ public class Transaction {
     private TransactionCategory category;
     private User user;
 
-    public Transaction() {
-    }
-
     public Transaction(LocalDate date, TransactionType type, BigDecimal amount, String description, TransactionCategory category) {
         this.date = date;
         this.type = type;
         this.amount = amount;
         this.description = description;
         this.category = category;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public LocalDate getDate() {
-        return date;
-    }
-
-    public void setDate(LocalDate date) {
-        this.date = date;
-    }
-
-    public TransactionType getType() {
-        return type;
-    }
-
-    public void setType(TransactionType type) {
-        this.type = type;
-    }
-
-    public BigDecimal getAmount() {
-        return amount;
-    }
-
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public TransactionCategory getCategory() {
-        return category;
-    }
-
-    public void setCategory(TransactionCategory category) {
-        this.category = category;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
     }
 
     @Override
