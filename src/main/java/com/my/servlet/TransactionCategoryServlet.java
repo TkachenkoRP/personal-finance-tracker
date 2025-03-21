@@ -2,7 +2,8 @@ package com.my.servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.my.model.TransactionCategory;
+import com.my.dto.TransactionCategoryRequestDto;
+import com.my.dto.TransactionCategoryResponseDto;
 import com.my.service.TransactionCategoryService;
 import com.my.service.impl.TransactionCategoryServiceImpl;
 import jakarta.servlet.annotation.WebServlet;
@@ -51,15 +52,18 @@ public class TransactionCategoryServlet extends HttpServlet {
     }
 
     private void findAll(HttpServletResponse resp) throws IOException, SQLException {
-        List<TransactionCategory> transactionCategories = transactionCategoryService.getAll();
+        List<TransactionCategoryResponseDto> transactionCategories = transactionCategoryService.getAll();
         String foundCategories = objectMapper.writeValueAsString(transactionCategories);
         resp.getWriter().write(foundCategories);
     }
 
     private void findById(HttpServletResponse resp, long id) throws SQLException, IOException {
-        TransactionCategory transactionCategory = transactionCategoryService.getById(id);
+        TransactionCategoryResponseDto transactionCategory = transactionCategoryService.getById(id);
         String foundCategory = objectMapper.writeValueAsString(transactionCategory);
         resp.getWriter().write(foundCategory);
+        if (transactionCategory == null) {
+            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+        }
     }
 
     @Override
@@ -81,8 +85,8 @@ public class TransactionCategoryServlet extends HttpServlet {
     }
 
     private void save(HttpServletRequest req, HttpServletResponse resp) throws IOException, SQLException {
-        TransactionCategory transactionCategory = objectMapper.readValue(req.getReader(), TransactionCategory.class);
-        TransactionCategory savedCategory = transactionCategoryService.save(transactionCategory);
+        TransactionCategoryRequestDto transactionCategory = objectMapper.readValue(req.getReader(), TransactionCategoryRequestDto.class);
+        TransactionCategoryResponseDto savedCategory = transactionCategoryService.save(transactionCategory);
         resp.getWriter().write(objectMapper.writeValueAsString(savedCategory));
     }
 
@@ -109,8 +113,8 @@ public class TransactionCategoryServlet extends HttpServlet {
     }
 
     private void update(HttpServletRequest req, HttpServletResponse resp, long id) throws IOException, SQLException {
-        TransactionCategory transactionCategory = objectMapper.readValue(req.getReader(), TransactionCategory.class);
-        TransactionCategory updatedTransactionCategory = transactionCategoryService.update(id, transactionCategory);
+        TransactionCategoryRequestDto transactionCategory = objectMapper.readValue(req.getReader(), TransactionCategoryRequestDto.class);
+        TransactionCategoryResponseDto updatedTransactionCategory = transactionCategoryService.update(id, transactionCategory);
         resp.getWriter().write(objectMapper.writeValueAsString(updatedTransactionCategory));
     }
 

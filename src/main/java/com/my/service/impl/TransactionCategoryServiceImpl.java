@@ -1,5 +1,7 @@
 package com.my.service.impl;
 
+import com.my.dto.TransactionCategoryRequestDto;
+import com.my.dto.TransactionCategoryResponseDto;
 import com.my.mapper.TransactionCategoryMapper;
 import com.my.model.TransactionCategory;
 import com.my.repository.TransactionCategoryRepository;
@@ -22,33 +24,40 @@ public class TransactionCategoryServiceImpl implements TransactionCategoryServic
     }
 
     @Override
-    public List<TransactionCategory> getAll() throws SQLException {
-        return transactionCategoryRepository.getAll();
+    public List<TransactionCategoryResponseDto> getAll() throws SQLException {
+        List<TransactionCategory> transactionCategoryList = transactionCategoryRepository.getAll();
+        List<TransactionCategoryResponseDto> responseDtoList = transactionCategoryList.stream().map(TransactionCategoryMapper.INSTANCE::toDto).toList();
+        return responseDtoList;
     }
 
     @Override
-    public TransactionCategory getById(Long id) throws SQLException {
-        return transactionCategoryRepository.getById(id).orElse(null);
+    public TransactionCategoryResponseDto getById(Long id) throws SQLException {
+        TransactionCategory transactionCategory = transactionCategoryRepository.getById(id).orElse(null);
+        TransactionCategoryResponseDto categoryResponseDto = TransactionCategoryMapper.INSTANCE.toDto(transactionCategory);
+        return categoryResponseDto;
     }
 
     @Override
-    public TransactionCategory save(TransactionCategory transactionCategory) throws SQLException {
-        if (transactionCategoryRepository.existsByCategoryNameIgnoreCase(transactionCategory.getCategoryName())) {
+    public TransactionCategoryResponseDto save(TransactionCategoryRequestDto request) throws SQLException {
+        if (transactionCategoryRepository.existsByCategoryNameIgnoreCase(request.getCategoryName())) {
             return null;
         }
-        return transactionCategoryRepository.save(transactionCategory);
+        TransactionCategory requestEntity = TransactionCategoryMapper.INSTANCE.toEntity(request);
+        TransactionCategory saved = transactionCategoryRepository.save(requestEntity);
+        TransactionCategoryResponseDto categoryResponseDto = TransactionCategoryMapper.INSTANCE.toDto(saved);
+        return categoryResponseDto;
     }
 
     @Override
-    public TransactionCategory update(Long id, TransactionCategory sourceTransactionCategory) throws SQLException {
-        TransactionCategory updatedTransactionCategory = getById(id);
+    public TransactionCategoryResponseDto update(Long id, TransactionCategoryRequestDto sourceTransactionCategory) throws SQLException {
+        TransactionCategory updatedTransactionCategory = transactionCategoryRepository.getById(id).orElse(null);
         if (updatedTransactionCategory == null) {
             return null;
         }
-
         TransactionCategoryMapper.INSTANCE.updateTransaction(sourceTransactionCategory, updatedTransactionCategory);
-
-        return transactionCategoryRepository.update(updatedTransactionCategory);
+        TransactionCategory updated = transactionCategoryRepository.update(updatedTransactionCategory);
+        TransactionCategoryResponseDto categoryResponseDto = TransactionCategoryMapper.INSTANCE.toDto(updated);
+        return categoryResponseDto;
     }
 
     @Override

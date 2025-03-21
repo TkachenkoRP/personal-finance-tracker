@@ -1,6 +1,7 @@
 package com.my.service;
 
-import com.my.model.TransactionCategory;
+import com.my.dto.TransactionCategoryRequestDto;
+import com.my.dto.TransactionCategoryResponseDto;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -14,7 +15,7 @@ public interface TransactionCategoryService {
      *
      * @return список всех категорий транзакций
      */
-    List<TransactionCategory> getAll() throws SQLException;
+    List<TransactionCategoryResponseDto> getAll() throws SQLException;
 
     /**
      * Получение категории транзакции по её идентификатору.
@@ -22,24 +23,24 @@ public interface TransactionCategoryService {
      * @param id идентификатор категории транзакции
      * @return категория транзакции с указанным идентификатором
      */
-    TransactionCategory getById(Long id) throws SQLException;
+    TransactionCategoryResponseDto getById(Long id) throws SQLException;
 
     /**
      * Сохранение новой категории транзакции.
      *
-     * @param transactionCategory объект категории транзакции для сохранения
+     * @param request объект категории транзакции для сохранения
      * @return сохраненная категория транзакции
      */
-    TransactionCategory save(TransactionCategory transactionCategory) throws SQLException;
+    TransactionCategoryResponseDto save(TransactionCategoryRequestDto request) throws SQLException;
 
     /**
      * Обновление существующей категории транзакции.
      *
-     * @param id                        идентификатор категории транзакции
-     * @param sourceTransactionCategory объект категории транзакции с обновленной информацией
+     * @param id      идентификатор категории транзакции
+     * @param request объект категории транзакции с обновленной информацией
      * @return обновленная категория транзакции
      */
-    TransactionCategory update(Long id, TransactionCategory sourceTransactionCategory) throws SQLException;
+    TransactionCategoryResponseDto update(Long id, TransactionCategoryRequestDto request) throws SQLException;
 
     /**
      * Удаление категории транзакции по её идентификатору.
