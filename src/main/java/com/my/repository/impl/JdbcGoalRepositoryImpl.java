@@ -1,7 +1,6 @@
 package com.my.repository.impl;
 
 import com.my.configuration.AppConfiguration;
-import com.my.model.Budget;
 import com.my.model.Goal;
 import com.my.model.TransactionCategory;
 import com.my.repository.GoalRepository;

@@ -5,7 +5,7 @@ import com.my.model.Goal;
 import com.my.model.Transaction;
 import com.my.model.TransactionCategory;
 import com.my.model.User;
-import com.my.model.UserRole;
+import com.my.service.UserManager;
 
 import java.math.BigDecimal;
 import java.text.MessageFormat;
@@ -18,17 +18,17 @@ public class ConsoleOutputHandler {
     private ConsoleOutputHandler() {
     }
 
-    public static void displayMenu(User currentUser) {
+    public static void displayMenu() {
         StringBuilder menu = new StringBuilder("Доступные команды:\n");
 
-        if (currentUser == null) {
+        if (!UserManager.isLoggedIn()) {
             menu.append("""
                     1 - регистрация пользователя;
                     2 - авторизация пользователя;
                     0 - завершить работу.
                     """);
         } else {
-            menu.append(currentUser.getName()).append("\n")
+            menu.append(UserManager.getLoggedInUser().getName()).append("\n")
                     .append("""
                             3 - редактировать профиль.
                             4 - удалить текущего пользователя.
@@ -53,7 +53,7 @@ public class ConsoleOutputHandler {
                             """);
         }
 
-        if (currentUser != null && currentUser.getRole().equals(UserRole.ROLE_ADMIN)) {
+        if (UserManager.isAdmin()) {
             menu.append("""
                     Панель управления для администратора:
                     22 - отобразить всех пользователей.

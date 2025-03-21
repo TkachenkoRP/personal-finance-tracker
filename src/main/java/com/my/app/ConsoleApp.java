@@ -2,17 +2,16 @@ package com.my.app;
 
 import com.my.in.ConsoleInputHandler;
 import com.my.model.Budget;
-import com.my.model.Goal;
 import com.my.model.Transaction;
 import com.my.model.TransactionCategory;
 import com.my.model.TransactionFilter;
 import com.my.model.TransactionType;
 import com.my.model.User;
-import com.my.model.UserRole;
 import com.my.out.ConsoleOutputHandler;
 import com.my.service.JdbcDataService;
 import com.my.service.TransactionCategoryService;
 import com.my.service.TransactionService;
+import com.my.service.UserManager;
 import com.my.service.UserService;
 import com.my.service.impl.JdbcDataServiceImpl;
 import liquibase.exception.LiquibaseException;
@@ -31,7 +30,6 @@ import java.util.Set;
 public class ConsoleApp {
     private static final Logger logger = LogManager.getRootLogger();
 
-    private User currentUser = null;
     private final UserService userService;
     private final TransactionService transactionService;
     private final TransactionCategoryService transactionCategoryService;
@@ -50,7 +48,7 @@ public class ConsoleApp {
         init();
         boolean working = true;
         while (working) {
-            ConsoleOutputHandler.displayMenu(currentUser);
+            ConsoleOutputHandler.displayMenu();
             int choice = ConsoleInputHandler.getUserIntegerInput("Ваш выбор: ");
             working = handleUserChoice(choice);
         }
@@ -67,13 +65,13 @@ public class ConsoleApp {
     }
 
     private boolean handleUserChoice(int choice) {
-        if (currentUser == null && UNAUTHENTICATED_CHOICES.contains(choice)) {
+        if (!UserManager.isLoggedIn() && UNAUTHENTICATED_CHOICES.contains(choice)) {
             choice = -1;
         }
-        if (currentUser != null && AUTHENTICATED_CHOICES.contains(choice)) {
+        if (UserManager.isLoggedIn() && AUTHENTICATED_CHOICES.contains(choice)) {
             choice = -1;
         }
-        if (currentUser != null && !currentUser.getRole().equals(UserRole.ROLE_ADMIN) && ADMIN_CHOICES.contains(choice)) {
+        if (UserManager.isAdmin() && ADMIN_CHOICES.contains(choice)) {
             choice = -1;
         }
         switch (choice) {
@@ -132,7 +130,7 @@ public class ConsoleApp {
     private void displayFinancialReport() {
         LocalDate[] dates = getInputDates();
         try {
-            Map<String, BigDecimal> report = transactionService.generateFinancialReport(currentUser.getId(), dates[0], dates[1]);
+            Map<String, BigDecimal> report = transactionService.generateFinancialReport(UserManager.getLoggedInUser().getId(), dates[0], dates[1]);
             ConsoleOutputHandler.displayMap(report);
         } catch (SQLException e) {
             ConsoleOutputHandler.displayMsg("Ошибка запроса финансового отчета.");
@@ -143,7 +141,7 @@ public class ConsoleApp {
     private void displayAnalyzeExpensesByCategory() {
         LocalDate[] dates = getInputDates();
         try {
-            Map<String, BigDecimal> analyzed = transactionService.analyzeExpensesByCategory(currentUser.getId(), dates[0], dates[1]);
+            Map<String, BigDecimal> analyzed = transactionService.analyzeExpensesByCategory(UserManager.getLoggedInUser().getId(), dates[0], dates[1]);
             ConsoleOutputHandler.displayMap(analyzed);
         } catch (SQLException e) {
             ConsoleOutputHandler.displayMsg("Ошибка запроса анализа по категориям.");
@@ -155,7 +153,7 @@ public class ConsoleApp {
     private void displayTotalExpenses() {
         LocalDate[] dates = getInputDates();
         try {
-            BigDecimal expenses = transactionService.getTotalExpenses(currentUser.getId(), dates[0], dates[1]);
+            BigDecimal expenses = transactionService.getTotalExpenses(UserManager.getLoggedInUser().getId(), dates[0], dates[1]);
             ConsoleOutputHandler.displayMsg("Расходы с " + dates[0] + " до " + dates[1] + ": " + expenses);
         } catch (SQLException e) {
             ConsoleOutputHandler.displayMsg("Ошибка запроса расходов.");
@@ -166,7 +164,7 @@ public class ConsoleApp {
     private void displayTotalIncome() {
         LocalDate[] dates = getInputDates();
         try {
-            BigDecimal income = transactionService.getTotalIncome(currentUser.getId(), dates[0], dates[1]);
+            BigDecimal income = transactionService.getTotalIncome(UserManager.getLoggedInUser().getId(), dates[0], dates[1]);
             ConsoleOutputHandler.displayMsg("Доход с " + dates[0] + " до " + dates[1] + ": " + income);
         } catch (SQLException e) {
             ConsoleOutputHandler.displayMsg("Ошибка запроса доходов.");
@@ -178,8 +176,8 @@ public class ConsoleApp {
         LocalDate[] dates = getInputDates();
 
         try {
-            BigDecimal income = transactionService.getTotalIncome(currentUser.getId(), dates[0], dates[1]);
-            BigDecimal expenses = transactionService.getTotalExpenses(currentUser.getId(), dates[0], dates[1]);
+            BigDecimal income = transactionService.getTotalIncome(UserManager.getLoggedInUser().getId(), dates[0], dates[1]);
+            BigDecimal expenses = transactionService.getTotalExpenses(UserManager.getLoggedInUser().getId(), dates[0], dates[1]);
             ConsoleOutputHandler.displayMsg("Баланс c " + dates[0] + " по " + dates[1] + ": " + income.subtract(expenses));
         } catch (SQLException e) {
             ConsoleOutputHandler.displayMsg("Ошибка запроса баланса.");
@@ -195,7 +193,7 @@ public class ConsoleApp {
 
     private void displayBalance() {
         try {
-            BigDecimal balance = transactionService.getBalance(currentUser.getId());
+            BigDecimal balance = transactionService.getBalance(UserManager.getLoggedInUser().getId());
             ConsoleOutputHandler.displayMsg("Баланс: " + balance);
         } catch (SQLException e) {
             ConsoleOutputHandler.displayMsg("Ошибка запроса баланса.");
@@ -208,8 +206,8 @@ public class ConsoleApp {
     }
 
     private void displayGoal() {
-        if (!currentUser.getGoals().isEmpty()) {
-            ConsoleOutputHandler.displayGoalsList(currentUser.getGoals());
+        if (!UserManager.getLoggedInUser().getGoals().isEmpty()) {
+            ConsoleOutputHandler.displayGoalsList(UserManager.getLoggedInUser().getGoals());
         } else {
             ConsoleOutputHandler.displayMsg("Цели не установлены.");
         }
@@ -220,7 +218,7 @@ public class ConsoleApp {
     }
 
     private void displayBudget() {
-        List<Budget> budgets = currentUser.getBudgets();
+        List<Budget> budgets = UserManager.getLoggedInUser().getBudgets();
         if (budgets.isEmpty()) {
             ConsoleOutputHandler.displayMsg("Бюджет не установлен");
         }
@@ -229,7 +227,7 @@ public class ConsoleApp {
 
     private void deleteTransaction() {
         ConsoleOutputHandler.displayMsg("\nУдаление транзакции");
-        displayTransactions(new TransactionFilter(currentUser.getId()));
+        displayTransactions(new TransactionFilter(UserManager.getLoggedInUser().getId()));
         long transactionId = ConsoleInputHandler.getUserIntegerInput("Введите id транзакции: ");
         try {
             if (transactionService.deleteById(transactionId)) {
@@ -245,7 +243,7 @@ public class ConsoleApp {
 
     private void editTransaction() {
         ConsoleOutputHandler.displayMsg("\nРедактирование транзакции");
-        displayTransactions(new TransactionFilter(currentUser.getId()));
+        displayTransactions(new TransactionFilter(UserManager.getLoggedInUser().getId()));
         long transactionId = ConsoleInputHandler.getUserIntegerInput("Введите id транзакции: ");
         try {
             Transaction transaction = transactionService.getById(transactionId);
@@ -287,7 +285,7 @@ public class ConsoleApp {
 
             Transaction transaction =
                     new Transaction(date, TransactionType.values()[transactionType], amount, desc, transactionCategory);
-            transaction.setUser(currentUser);
+            transaction.setUser(UserManager.getLoggedInUser());
 
             transactionService.save(transaction);
             String msg = transactionService.processTransaction(transaction);
@@ -324,9 +322,9 @@ public class ConsoleApp {
             transactionType = TransactionType.values()[transactionTypeOrdinal];
         }
 
-        long userId = currentUser.getId();
+        long userId = UserManager.getLoggedInUser().getId();
 
-        if (isAdmin()) {
+        if (UserManager.isAdmin()) {
             int choice;
             do {
                 choice = ConsoleInputHandler.getUserIntegerInput("1 - Свои транзакции, 2 - Транзакции другого пользователя");
@@ -359,13 +357,13 @@ public class ConsoleApp {
         String userName = ConsoleInputHandler.getUserTextInput("Введите имя пользователя: ");
         String password = ConsoleInputHandler.getUserTextInput("Введите пароль: ");
         try {
-            currentUser = userService.registration(userEmail, userName, password);
+            UserManager.setLoggedInUser(userService.registration(userEmail, userName, password));
         } catch (SQLException e) {
             ConsoleOutputHandler.displayMsg("Ошибка запроса регистрации пользователя.");
             logger.log(Level.ERROR, MessageFormat.format("Ошибка запроса регистрации пользователя! {0}", e.getMessage()));
         }
-        String msg = currentUser != null ?
-                "\nРегистрация " + currentUser.getEmail() + " прошла успешно!\n" :
+        String msg = UserManager.isLoggedIn() ?
+                "\nРегистрация " + UserManager.getLoggedInUser().getEmail() + " прошла успешно!\n" :
                 "\nРегистрация не удалась\n";
         ConsoleOutputHandler.displayMsg(msg);
     }
@@ -375,20 +373,20 @@ public class ConsoleApp {
         String userEmail = ConsoleInputHandler.getUserTextInput("Введите email пользователя: ");
         String password = ConsoleInputHandler.getUserTextInput("Введите пароль: ");
         try {
-            currentUser = userService.login(userEmail, password);
+            UserManager.setLoggedInUser(userService.login(userEmail, password));
         } catch (SQLException e) {
             ConsoleOutputHandler.displayMsg("Ошибка запроса авторизации пользователя.");
             logger.log(Level.ERROR, MessageFormat.format("Ошибка запроса авторизации пользователя! {0}", e.getMessage()));
         }
-        String msg = currentUser != null ?
+        String msg = UserManager.isLoggedIn() ?
                 "\nУспешный вход!\n" :
                 "\nНеудачный вход!\n";
         ConsoleOutputHandler.displayMsg(msg);
     }
 
     private void editCurrentUserData() {
-        ConsoleOutputHandler.displayMsg("\nРедактирование пользователя " + currentUser.getName());
-        editUserData(currentUser);
+        ConsoleOutputHandler.displayMsg("\nРедактирование пользователя " + UserManager.getLoggedInUser().getName());
+        editUserData(UserManager.getLoggedInUser());
     }
 
     private void editUserData() {
@@ -443,8 +441,8 @@ public class ConsoleApp {
     }
 
     private boolean exit() {
-        if (currentUser != null) {
-            currentUser = null;
+        if (UserManager.isLoggedIn()) {
+            UserManager.setLoggedInUser(null);
             return true;
         }
         return false;
@@ -452,8 +450,8 @@ public class ConsoleApp {
 
     private void deleteCurrentUser() {
         try {
-            if (userService.delete(currentUser.getId())) {
-                currentUser = null;
+            if (userService.delete(UserManager.getLoggedInUser().getId())) {
+                UserManager.setLoggedInUser(null);
             }
         } catch (SQLException e) {
             ConsoleOutputHandler.displayMsg("Ошибка запроса удаления текущего пользователя.");
@@ -536,9 +534,5 @@ public class ConsoleApp {
             ConsoleOutputHandler.displayMsg("Ошибка запроса всех категорий.");
             logger.log(Level.ERROR, MessageFormat.format("Ошибка запроса всех категорий! {0}", e.getMessage()));
         }
-    }
-
-    private boolean isAdmin() {
-        return currentUser.getRole() == UserRole.ROLE_ADMIN;
     }
 }

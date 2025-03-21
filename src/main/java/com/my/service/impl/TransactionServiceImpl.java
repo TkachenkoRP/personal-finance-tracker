@@ -104,7 +104,7 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public String processTransaction(Transaction transaction) throws SQLException {
-        String msg = null;
+        String msg;
         if (transaction.getType() == TransactionType.EXPENSE) {
             msg = budgetService.getBudgetsExceededInfo(transaction.getUser().getId(), transaction.getCategory().getId());
         } else {
