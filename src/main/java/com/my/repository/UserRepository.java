@@ -23,7 +23,7 @@ public interface UserRepository {
      * @param email адрес электронной почты для проверки
      * @return true, если пользователь с указанным адресом электронной почты существует, иначе false
      */
-    boolean isPresentByEmail(String email) throws SQLException;
+    boolean isEmailAvailable(String email) throws SQLException;
 
     /**
      * Получение пользователя по адресу электронной почты и паролю.
@@ -34,4 +34,8 @@ public interface UserRepository {
      * если пользователь с указанными учетными данными не найден
      */
     Optional<User> getByEmailAndPassword(String email, String password) throws SQLException;
+
+    boolean blockUserById(Long userId) throws SQLException;
+
+    boolean unBlockUserById(long userId) throws SQLException;
 }

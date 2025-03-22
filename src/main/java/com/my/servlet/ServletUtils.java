@@ -22,23 +22,27 @@ public class ServletUtils {
         this.objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
     }
 
-    public boolean checkAdminAccess(HttpServletResponse resp) throws IOException {
-        if (!UserManager.isAdmin()) {
-            return handleAccessDenied(resp);
+    public boolean checkAuthentication(HttpServletResponse resp) {
+        if (UserManager.isLoggedIn()) {
+            return true;
         }
-        return true;
+        handleAccessDenied(resp);
+        return false;
     }
 
-    public boolean checkAuthorizationToUpdate(HttpServletResponse resp, long id) throws IOException {
-        if (!UserManager.isAdmin() && UserManager.getLoggedInUser().getId() != id) {
-            return handleAccessDenied(resp);
+    public boolean checkAdminAccess(HttpServletResponse resp) {
+        if (UserManager.isAdmin()) {
+            return true;
         }
-        return true;
+        handleAccessDenied(resp);
+        return false;
     }
 
-    private boolean handleAccessDenied(HttpServletResponse resp) throws IOException {
-        resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-        writeResponse(resp, new ErrorResponseDto("Access denied"));
+    public boolean checkAuthorizationToUpdate(HttpServletResponse resp, long id) {
+        if (UserManager.isAdmin() || UserManager.getLoggedInUser().getId() == id) {
+            return true;
+        }
+        handleAccessDenied(resp);
         return false;
     }
 
@@ -68,7 +72,15 @@ public class ServletUtils {
         }
     }
 
+    public void handleAccessDenied(HttpServletResponse resp) {
+        handleError(resp, HttpServletResponse.SC_FORBIDDEN, "Access denied", null);
+    }
+
     public <T> T readRequestBody(HttpServletRequest req, Class<T> clazz) throws IOException {
         return objectMapper.readValue(req.getReader(), clazz);
+    }
+
+    public void setJsonContentType(HttpServletResponse resp) {
+        resp.setContentType("application/json");
     }
 }

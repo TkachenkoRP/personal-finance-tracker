@@ -2,6 +2,7 @@ package com.my.servlet;
 
 import com.my.dto.UserRequestDto;
 import com.my.dto.UserResponseDto;
+import com.my.exception.EntityNotFoundException;
 import com.my.service.UserService;
 import com.my.service.impl.UserServiceImpl;
 import jakarta.servlet.annotation.WebServlet;
@@ -26,7 +27,7 @@ public class UserServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
-        resp.setContentType("application/json");
+        servletUtils.setJsonContentType(resp);
         try {
             Optional<Long> id = servletUtils.getId(req);
             if (id.isEmpty()) {
@@ -34,7 +35,9 @@ public class UserServlet extends HttpServlet {
             } else {
                 findById(resp, id.get());
             }
-        } catch (SQLException | IOException e) {
+        } catch (EntityNotFoundException e) {
+            servletUtils.handleError(resp, HttpServletResponse.SC_NOT_FOUND, e.getMessage(), null);
+        }  catch (SQLException | IOException e) {
             servletUtils.handleError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred. Please try again later.", e);
         }
     }
@@ -55,18 +58,19 @@ public class UserServlet extends HttpServlet {
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) {
-        resp.setContentType("application/json");
+        servletUtils.setJsonContentType(resp);
         try {
             Optional<Long> idOptional = servletUtils.getId(req);
             if (idOptional.isEmpty()) {
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверно указан id", null);
                 return;
             }
             long id = idOptional.get();
             String action = req.getParameter("action");
-
             if ("block".equals(action)) {
                 block(resp, id);
+            } else if ("unBlock".equals(action)) {
+                unBlock(resp, id);
             } else {
                 update(req, resp, id);
             }
@@ -89,6 +93,38 @@ public class UserServlet extends HttpServlet {
             if (!blocked) {
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             }
+        }
+    }
+
+    private void unBlock(HttpServletResponse resp, long id) throws IOException, SQLException {
+        if (servletUtils.checkAdminAccess(resp)) {
+            boolean blocked = userService.unBlockUser(id);
+            if (!blocked) {
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            }
+        }
+    }
+
+    @Override
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) {
+        try {
+            Optional<Long> id = servletUtils.getId(req);
+            if (id.isEmpty()) {
+                servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверно указан id", null);
+                return;
+            }
+            delete(resp, id.get());
+        } catch (SQLException e) {
+            servletUtils.handleError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred. Please try again later.", e);
+        }
+    }
+
+    private void delete(HttpServletResponse resp, Long id) throws SQLException {
+        boolean deleted = userService.delete(id);
+        if (deleted) {
+            resp.setStatus(HttpServletResponse.SC_OK);
+        } else {
+            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
         }
     }
 }

@@ -50,7 +50,7 @@ public class Transaction {
                 ", type=" + type +
                 ", amount=" + amount +
                 ", description='" + description + '\'' +
-                ", category=" + category.getCategoryName() +
+                ", categoryId=" + category.getCategoryName() +
                 '}';
     }
 }

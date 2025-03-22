@@ -2,10 +2,11 @@ package com.my.repository.impl;
 
 import com.my.configuration.AppConfiguration;
 import com.my.model.Budget;
-import com.my.model.TransactionCategory;
 import com.my.repository.BudgetRepository;
-import com.my.repository.TransactionCategoryRepository;
 import com.my.util.DBUtil;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -20,22 +21,17 @@ import java.util.List;
 import java.util.Optional;
 
 public class JdbcBudgetRepositoryImpl implements BudgetRepository {
+    private static final Logger logger = LogManager.getRootLogger();
     private final Connection connection;
-    private final TransactionCategoryRepository transactionCategoryRepository;
 
     private final String schema;
 
     public JdbcBudgetRepositoryImpl() {
-        this(new JdbcTransactionCategoryRepository());
+        this(DBUtil.getConnection());
     }
 
-    public JdbcBudgetRepositoryImpl(TransactionCategoryRepository transactionCategoryRepository) {
-        this(DBUtil.getConnection(), transactionCategoryRepository);
-    }
-
-    public JdbcBudgetRepositoryImpl(Connection connection, TransactionCategoryRepository transactionCategoryRepository) {
+    public JdbcBudgetRepositoryImpl(Connection connection) {
         this.connection = connection;
-        this.transactionCategoryRepository = transactionCategoryRepository;
         this.schema = AppConfiguration.getProperty("database.schema");
     }
 
@@ -62,15 +58,16 @@ public class JdbcBudgetRepositoryImpl implements BudgetRepository {
         LocalDate periodEnd = Optional.ofNullable(resultSet.getDate("period_end"))
                 .map(java.sql.Date::toLocalDate)
                 .orElse(null);
-        TransactionCategory transactionCategory =
-                transactionCategoryRepository.getById(resultSet.getLong("category_id")).orElse(null);
+        long categoryId = resultSet.getLong("category_id");
+        boolean active = resultSet.getBoolean("is_active");
 
         Budget budget = new Budget();
         budget.setId(id);
         budget.setTotalAmount(totalAmount);
         budget.setPeriodStart(periodStart);
         budget.setPeriodEnd(periodEnd);
-        budget.setCategory(transactionCategory);
+        budget.setCategoryId(categoryId);
+        budget.setActive(active);
 
         return budget;
     }
@@ -91,22 +88,40 @@ public class JdbcBudgetRepositoryImpl implements BudgetRepository {
     }
 
     @Override
-    public Budget save(Long userId, Budget entity) throws SQLException {
-        String query = "INSERT INTO " + schema + ".budget (total_amount, period_start, period_end, user_id, category_id) VALUES (?, ?, ?, ?, ?)";
-        try (PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
-            statement.setBigDecimal(1, entity.getTotalAmount());
-            statement.setDate(2, Date.valueOf(entity.getPeriodStart()));
-            statement.setDate(3, Date.valueOf(entity.getPeriodEnd()));
-            statement.setLong(4, userId);
-            statement.setLong(5, entity.getCategory().getId());
+    public Budget save(Long userId, Budget entity) {
+        try {
+            connection.setAutoCommit(false);
+            String query = "INSERT INTO " + schema + ".budget (total_amount, period_start, period_end, user_id, category_id, is_active) VALUES (?, ?, ?, ?, ?, ?)";
+            try (PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+                statement.setBigDecimal(1, entity.getTotalAmount());
+                statement.setDate(2, Date.valueOf(entity.getPeriodStart()));
+                statement.setDate(3, Date.valueOf(entity.getPeriodEnd()));
+                statement.setLong(4, userId);
+                statement.setLong(5, entity.getCategoryId());
+                statement.setBoolean(6, entity.isActive());
 
-            int affectedRows = statement.executeUpdate();
-            if (affectedRows > 0) {
-                ResultSet generatedKeys = statement.getGeneratedKeys();
-                if (generatedKeys.next()) {
-                    entity.setId(generatedKeys.getLong(1));
-                    return entity;
+                int affectedRows = statement.executeUpdate();
+                if (affectedRows > 0) {
+                    ResultSet generatedKeys = statement.getGeneratedKeys();
+                    if (generatedKeys.next()) {
+                        entity.setId(generatedKeys.getLong(1));
+                        connection.commit();
+                        return entity;
+                    }
                 }
+            }
+        } catch (SQLException e) {
+            try {
+                connection.rollback();
+            } catch (SQLException rollbackEx) {
+                logger.log(Level.ERROR, rollbackEx);
+            }
+            logger.log(Level.ERROR, e);
+        } finally {
+            try {
+                connection.setAutoCommit(true);
+            } catch (SQLException e) {
+                logger.log(Level.ERROR, e);
             }
         }
         return null;
@@ -168,5 +183,14 @@ public class JdbcBudgetRepositoryImpl implements BudgetRepository {
             }
         }
         return Optional.empty();
+    }
+
+    @Override
+    public boolean deactivateBudgetById(Long id) throws SQLException {
+        String query = "UPDATE " + schema + ".budget SET is_active = false WHERE id = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setLong(1, id);
+            return preparedStatement.executeUpdate() > 0;
+        }
     }
 }

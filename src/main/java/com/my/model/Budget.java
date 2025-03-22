@@ -18,15 +18,14 @@ public class Budget {
     private BigDecimal totalAmount;
     private LocalDate periodStart;
     private LocalDate periodEnd;
-    private TransactionCategory category;
-    private boolean isActive;
+    private Long categoryId;
+    private boolean active;
 
-    public Budget(BigDecimal totalAmount, LocalDate periodStart, LocalDate periodEnd, TransactionCategory category) {
+    public Budget(BigDecimal totalAmount, LocalDate periodStart, LocalDate periodEnd, Long categoryId) {
         this.totalAmount = totalAmount;
         this.periodStart = periodStart;
         this.periodEnd = periodEnd;
-        this.category = category;
-        isActive = true;
+        this.categoryId = categoryId;
     }
 
     @Override
@@ -48,8 +47,8 @@ public class Budget {
                ", totalAmount=" + totalAmount +
                ", periodStart=" + periodStart +
                ", periodEnd=" + periodEnd +
-               ", category=" + category.getCategoryName() +
-               ", isActive=" + isActive +
+               ", categoryId=" + categoryId +
+               ", active=" + active +
                '}';
     }
 }

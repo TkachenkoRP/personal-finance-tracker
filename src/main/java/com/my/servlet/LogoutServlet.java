@@ -8,10 +8,16 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @WebServlet("/logout")
 public class LogoutServlet extends HttpServlet {
+    private final ServletUtils servletUtils;
+
+    public LogoutServlet() {
+        this.servletUtils = new ServletUtils();
+    }
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
+        servletUtils.setJsonContentType(resp);
         resp.setStatus(HttpServletResponse.SC_OK);
-        resp.setContentType("application/json");
         UserManager.setLoggedInUser(null);
     }
 }

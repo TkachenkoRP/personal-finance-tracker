@@ -20,4 +20,6 @@ public interface BudgetRepository {
     List<Budget> getAllByUserId(Long userId) throws SQLException;
 
     Optional<Budget> getActiveBudgetByUserIdAndCategoryId(Long userId, Long categoryId) throws SQLException;
+
+    boolean deactivateBudgetById(Long id) throws SQLException;
 }

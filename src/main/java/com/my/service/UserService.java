@@ -69,4 +69,6 @@ public interface UserService {
      * @return true, если пользователь был успешно заблокирован, иначе false
      */
     boolean blockUser(Long userId) throws SQLException;
+
+    boolean unBlockUser(long userId) throws SQLException;
 }

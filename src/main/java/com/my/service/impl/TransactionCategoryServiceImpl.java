@@ -42,12 +42,19 @@ public class TransactionCategoryServiceImpl implements TransactionCategoryServic
 
     @Override
     public TransactionCategoryResponseDto getById(Long id) throws SQLException {
+        TransactionCategory transactionCategory = getEntityById(id);
+        TransactionCategoryResponseDto categoryResponseDto = TransactionCategoryMapper.INSTANCE.toDto(transactionCategory);
+        logger.log(Level.DEBUG, "Get transaction categoryId by id: {}", categoryResponseDto);
+        return categoryResponseDto;
+    }
+
+    @Override
+    public TransactionCategory getEntityById(Long id) throws SQLException {
         TransactionCategory transactionCategory = transactionCategoryRepository.getById(id).orElseThrow(
                 () -> new EntityNotFoundException(MessageFormat.format(CATEGORY_NOT_FOUND, id))
         );
-        TransactionCategoryResponseDto categoryResponseDto = TransactionCategoryMapper.INSTANCE.toDto(transactionCategory);
-        logger.log(Level.DEBUG, "Get transaction category by id: {}", categoryResponseDto);
-        return categoryResponseDto;
+        logger.log(Level.DEBUG, "Get entity transaction categoryId by id: {}", transactionCategory);
+        return transactionCategory;
     }
 
     @Override
@@ -58,22 +65,20 @@ public class TransactionCategoryServiceImpl implements TransactionCategoryServic
         TransactionCategory requestEntity = TransactionCategoryMapper.INSTANCE.toEntity(request);
         TransactionCategory saved = transactionCategoryRepository.save(requestEntity);
         TransactionCategoryResponseDto categoryResponseDto = TransactionCategoryMapper.INSTANCE.toDto(saved);
-        logger.log(Level.DEBUG, "Save transaction category: {}", categoryResponseDto);
+        logger.log(Level.DEBUG, "Save transaction categoryId: {}", categoryResponseDto);
         return categoryResponseDto;
     }
 
     @Override
     public TransactionCategoryResponseDto update(Long id, TransactionCategoryRequestDto sourceTransactionCategory) throws SQLException {
-        TransactionCategory updatedTransactionCategory = transactionCategoryRepository.getById(id).orElseThrow(
-                () -> new EntityNotFoundException(MessageFormat.format(CATEGORY_NOT_FOUND, id))
-        );
+        TransactionCategory updatedTransactionCategory = getEntityById(id);
         if (transactionCategoryRepository.existsByCategoryNameIgnoreCase(sourceTransactionCategory.getCategoryName())) {
             throw new TransactionCategoryException(MessageFormat.format(CATEGORY_ALREADY_EXISTS, sourceTransactionCategory.getCategoryName()));
         }
         TransactionCategoryMapper.INSTANCE.updateTransaction(sourceTransactionCategory, updatedTransactionCategory);
         TransactionCategory updated = transactionCategoryRepository.update(updatedTransactionCategory);
         TransactionCategoryResponseDto categoryResponseDto = TransactionCategoryMapper.INSTANCE.toDto(updated);
-        logger.log(Level.DEBUG, "Update transaction category: {}", categoryResponseDto);
+        logger.log(Level.DEBUG, "Update transaction categoryId: {}", categoryResponseDto);
         return categoryResponseDto;
     }
 

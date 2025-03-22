@@ -144,17 +144,17 @@ public class JdbcUserRepository implements UserRepository {
     }
 
     @Override
-    public boolean isPresentByEmail(String email) throws SQLException {
+    public boolean isEmailAvailable(String email) throws SQLException {
         String query = "SELECT COUNT(*) FROM " + schema + ".user WHERE LOWER(email) = LOWER(?)";
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setString(1, email);
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
-                    return resultSet.getInt(1) > 0;
+                    return resultSet.getInt(1) == 0;
                 }
             }
         }
-        return false;
+        return true;
     }
 
     @Override
@@ -171,5 +171,23 @@ public class JdbcUserRepository implements UserRepository {
             }
         }
         return Optional.empty();
+    }
+
+    @Override
+    public boolean blockUserById(Long userId) throws SQLException {
+        String query = "UPDATE " + schema + ".user SET blocked = true WHERE id = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setLong(1, userId);
+            return preparedStatement.executeUpdate() > 0;
+        }
+    }
+
+    @Override
+    public boolean unBlockUserById(long userId) throws SQLException {
+        String query = "UPDATE " + schema + ".user SET blocked = false WHERE id = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setLong(1, userId);
+            return preparedStatement.executeUpdate() > 0;
+        }
     }
 }

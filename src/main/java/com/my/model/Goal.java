@@ -41,7 +41,7 @@ public class Goal {
         return "Goal{" +
                "id=" + id +
                ", targetAmount=" + targetAmount +
-               ", category=" + category.getCategoryName() +
+               ", categoryId=" + category.getCategoryName() +
                ", isActive=" + isActive +
                '}';
     }

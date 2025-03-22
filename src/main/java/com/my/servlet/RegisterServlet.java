@@ -1,6 +1,7 @@
 package com.my.servlet;
 
 import com.my.dto.UserRegisterRequestDto;
+import com.my.exception.UserException;
 import com.my.mapper.UserMapper;
 import com.my.model.User;
 import com.my.service.UserManager;
@@ -26,13 +27,15 @@ public class RegisterServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) {
-        resp.setContentType("application/json");
+        servletUtils.setJsonContentType(resp);
         try {
             if (req.getContentLength() <= 0) {
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, "Тело запроса пустое", null);
                 return;
             }
             save(req, resp);
+        } catch (UserException e) {
+            servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage(), e);
         } catch (SQLException | IOException e) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
@@ -41,10 +44,6 @@ public class RegisterServlet extends HttpServlet {
     private void save(HttpServletRequest req, HttpServletResponse resp) throws SQLException, IOException {
         UserRegisterRequestDto userRegisterRequestDto = servletUtils.readRequestBody(req, UserRegisterRequestDto.class);
         User registeredUser = userService.registration(userRegisterRequestDto.getPassword(), userRegisterRequestDto.getName(), userRegisterRequestDto.getPassword());
-        if (registeredUser == null) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            return;
-        }
         UserManager.setLoggedInUser(registeredUser);
         resp.setStatus(HttpServletResponse.SC_CREATED);
         servletUtils.writeResponse(resp, UserMapper.INSTANCE.toDto(registeredUser));

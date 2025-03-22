@@ -1,11 +1,15 @@
 package com.my.servlet;
 
-import com.my.dto.TransactionCategoryRequestDto;
-import com.my.dto.TransactionCategoryResponseDto;
+import com.my.dto.BudgetRequestDto;
+import com.my.dto.BudgetResponseDto;
+import com.my.dto.ReportResponseDto;
+import com.my.exception.AccessDeniedException;
+import com.my.exception.ArgumentNotValidException;
 import com.my.exception.EntityNotFoundException;
-import com.my.exception.TransactionCategoryException;
-import com.my.service.TransactionCategoryService;
-import com.my.service.impl.TransactionCategoryServiceImpl;
+import com.my.service.BudgetService;
+import com.my.service.UserManager;
+import com.my.service.impl.BudgetServiceImpl;
+import com.my.util.Validation;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,29 +20,38 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
-@WebServlet("/categoryId")
-public class TransactionCategoryServlet extends HttpServlet {
+@WebServlet("/budget")
+public class BudgetServlet extends HttpServlet {
     private final ServletUtils servletUtils;
-    private final TransactionCategoryService transactionCategoryService;
+    private final BudgetService budgetService;
 
-    public TransactionCategoryServlet() {
-        this(new TransactionCategoryServiceImpl());
+    public BudgetServlet() {
+        this(new BudgetServiceImpl());
     }
 
-    public TransactionCategoryServlet(TransactionCategoryService transactionCategoryService) {
-        this.transactionCategoryService = transactionCategoryService;
-        this.servletUtils = new ServletUtils();
+    public BudgetServlet(BudgetService budgetService) {
+        this.budgetService = budgetService;
+        servletUtils = new ServletUtils();
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
         servletUtils.setJsonContentType(resp);
+        if (!servletUtils.checkAuthentication(resp)) {
+            return;
+        }
         try {
-            Optional<Long> id = servletUtils.getId(req);
-            if (id.isEmpty()) {
-                findAll(resp);
+            String action = req.getParameter("action");
+            Optional<Long> optionalId = servletUtils.getId(req);
+            if (optionalId.isEmpty()) {
+                findAllByUserId(resp, UserManager.getLoggedInUser().getId());
+                return;
+            }
+            long id = optionalId.get();
+            if ("report".equals(action)) {
+                getReport(resp, id);
             } else {
-                findById(resp, id.get());
+                findById(resp, id);
             }
         } catch (EntityNotFoundException e) {
             servletUtils.handleError(resp, HttpServletResponse.SC_NOT_FOUND, e.getMessage(), null);
@@ -47,14 +60,19 @@ public class TransactionCategoryServlet extends HttpServlet {
         }
     }
 
-    private void findAll(HttpServletResponse resp) throws IOException, SQLException {
-        List<TransactionCategoryResponseDto> transactionCategories = transactionCategoryService.getAll();
-        servletUtils.writeResponse(resp, transactionCategories);
+    private void getReport(HttpServletResponse resp, long id) throws SQLException, IOException {
+        String budgetsExceededInfo = budgetService.getBudgetsExceededInfo(UserManager.getLoggedInUser().getId(), id);
+        servletUtils.writeResponse(resp, new ReportResponseDto(budgetsExceededInfo));
     }
 
-    private void findById(HttpServletResponse resp, long id) throws SQLException, IOException {
-        TransactionCategoryResponseDto transactionCategory = transactionCategoryService.getById(id);
-        servletUtils.writeResponse(resp, transactionCategory);
+    private void findAllByUserId(HttpServletResponse resp, long userId) throws SQLException, IOException {
+        List<BudgetResponseDto> allBudgetsByUserId = budgetService.getAllBudgetsByUserId(userId);
+        servletUtils.writeResponse(resp, allBudgetsByUserId);
+    }
+
+    private void findById(HttpServletResponse resp, Long id) throws SQLException, IOException {
+        BudgetResponseDto budget = budgetService.getById(id);
+        servletUtils.writeResponse(resp, budget);
     }
 
     @Override
@@ -70,25 +88,28 @@ public class TransactionCategoryServlet extends HttpServlet {
         }
         try {
             save(req, resp);
-        } catch (TransactionCategoryException e) {
-            servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage(), null);
+        } catch (AccessDeniedException e) {
+            servletUtils.handleAccessDenied(resp);
+        } catch (ArgumentNotValidException e) {
+            servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage(), e);
         } catch (SQLException | IOException e) {
-            servletUtils.handleError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error during saving", e);
+            servletUtils.handleError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred. Please try again later.", e);
         }
     }
 
-    private void save(HttpServletRequest req, HttpServletResponse resp) throws IOException, SQLException {
-        TransactionCategoryRequestDto transactionCategoryRequestDto = servletUtils.readRequestBody(req, TransactionCategoryRequestDto.class);
-        TransactionCategoryResponseDto savedCategory = transactionCategoryService.save(transactionCategoryRequestDto);
-        servletUtils.writeResponse(resp, savedCategory);
+    private void save(HttpServletRequest req, HttpServletResponse resp) throws IOException, SQLException, ArgumentNotValidException {
+        BudgetRequestDto budgetRequestDto = servletUtils.readRequestBody(req, BudgetRequestDto.class);
+        Validation.validationBudget(budgetRequestDto);
+        BudgetResponseDto saved = budgetService.save(UserManager.getLoggedInUser().getId(), budgetRequestDto);
+        servletUtils.writeResponse(resp, saved);
     }
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) {
-        servletUtils.setJsonContentType(resp);
         if (!servletUtils.checkAuthentication(resp)) {
             return;
         }
+        servletUtils.setJsonContentType(resp);
         try {
             Optional<Long> id = servletUtils.getId(req);
             if (id.isEmpty()) {
@@ -98,22 +119,19 @@ public class TransactionCategoryServlet extends HttpServlet {
             update(req, resp, id.get());
         } catch (EntityNotFoundException e) {
             servletUtils.handleError(resp, HttpServletResponse.SC_NOT_FOUND, e.getMessage(), null);
-        } catch (TransactionCategoryException e) {
-            servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage(), null);
         } catch (SQLException | IOException e) {
             servletUtils.handleError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred. Please try again later.", e);
         }
     }
 
     private void update(HttpServletRequest req, HttpServletResponse resp, long id) throws IOException, SQLException {
-        TransactionCategoryRequestDto transactionCategoryRequestDto = servletUtils.readRequestBody(req, TransactionCategoryRequestDto.class);
-        TransactionCategoryResponseDto updatedTransactionCategory = transactionCategoryService.update(id, transactionCategoryRequestDto);
-        servletUtils.writeResponse(resp, updatedTransactionCategory);
+        BudgetRequestDto budgetRequestDto = servletUtils.readRequestBody(req, BudgetRequestDto.class);
+        BudgetResponseDto updated = budgetService.update(id, budgetRequestDto);
+        servletUtils.writeResponse(resp, updated);
     }
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) {
-        servletUtils.setJsonContentType(resp);
         if (!servletUtils.checkAuthentication(resp)) {
             return;
         }
@@ -129,8 +147,8 @@ public class TransactionCategoryServlet extends HttpServlet {
         }
     }
 
-    private void delete(HttpServletResponse resp, long id) throws SQLException {
-        boolean deleted = transactionCategoryService.deleteById(id);
+    private void delete(HttpServletResponse resp, Long id) throws SQLException {
+        boolean deleted = budgetService.deleteById(id);
         if (deleted) {
             resp.setStatus(HttpServletResponse.SC_OK);
         } else {

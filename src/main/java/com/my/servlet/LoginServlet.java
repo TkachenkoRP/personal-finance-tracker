@@ -1,5 +1,6 @@
 package com.my.servlet;
 
+import com.my.exception.UserException;
 import com.my.mapper.UserMapper;
 import com.my.model.User;
 import com.my.service.UserManager;
@@ -25,28 +26,25 @@ public class LoginServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
+        servletUtils.setJsonContentType(resp);
         String email = req.getParameter("email");
         String password = req.getParameter("password");
         if (email == null || password == null) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, "Укажите email и password", null);
             return;
         }
         resp.setStatus(HttpServletResponse.SC_OK);
-        resp.setContentType("application/json");
-
         try {
             login(email, password, resp);
+        } catch (UserException e) {
+            servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage(), e);
         } catch (SQLException | IOException e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, "An error occurred. Please try again later.", e);
         }
     }
 
     private void login(String email, String password, HttpServletResponse resp) throws SQLException, IOException {
         User user = userService.login(email, password);
-        if (user == null) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            return;
-        }
         UserManager.setLoggedInUser(user);
         servletUtils.writeResponse(resp, UserMapper.INSTANCE.toDto(user));
     }

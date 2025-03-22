@@ -2,6 +2,7 @@ package com.my.service;
 
 import com.my.dto.TransactionCategoryRequestDto;
 import com.my.dto.TransactionCategoryResponseDto;
+import com.my.model.TransactionCategory;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -24,6 +25,8 @@ public interface TransactionCategoryService {
      * @return категория транзакции с указанным идентификатором
      */
     TransactionCategoryResponseDto getById(Long id) throws SQLException;
+
+    TransactionCategory getEntityById(Long id) throws SQLException;
 
     /**
      * Сохранение новой категории транзакции.

@@ -129,7 +129,7 @@ public class ConsoleOutputHandler {
     public static void displayBudgetList(List<Budget> budgets) {
         budgets.forEach(b -> System.out.println(
                 MessageFormat.format("{0} - Бюджет {1} - с {2} по {3} в категории {4}",
-                        b.getId(), b.getTotalAmount(), b.getPeriodStart(), b.getPeriodEnd(), b.getCategory())));
+                        b.getId(), b.getTotalAmount(), b.getPeriodStart(), b.getPeriodEnd(), b.getCategoryId())));
     }
 
     public static void displayMap(Map<String, BigDecimal> map) {

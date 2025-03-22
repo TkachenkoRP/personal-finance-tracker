@@ -9,4 +9,5 @@
     <include file="008-create-table-budget.xml" relativeToChangelogFile="true"/>
     <include file="009-add-isActive-in-goal.xml" relativeToChangelogFile="true"/>
     <include file="010-remove-budget-from-user.xml" relativeToChangelogFile="true"/>
+    <include file="011-remove-spent-from-budget.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

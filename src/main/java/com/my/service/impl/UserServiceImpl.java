@@ -92,18 +92,15 @@ public class UserServiceImpl implements UserService {
     }
 
     private boolean isEmailAvailable(String email) throws SQLException {
-        return !userRepository.isPresentByEmail(email);
+        return userRepository.isEmailAvailable(email);
     }
 
     public boolean blockUser(Long userId) throws SQLException {
-        User user = userRepository.getById(userId).orElseThrow(
-                () -> new EntityNotFoundException(MessageFormat.format(USER_NOT_FOUND, userId))
-        );
-        if (user != null) {
-            user.setBlocked(true);
-            userRepository.save(user);
-            return true;
-        }
-        return false;
+        return userRepository.blockUserById(userId);
+    }
+
+    @Override
+    public boolean unBlockUser(long userId) throws SQLException {
+        return userRepository.unBlockUserById(userId);
     }
 }

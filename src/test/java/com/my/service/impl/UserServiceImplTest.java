@@ -34,7 +34,7 @@ class UserServiceImplTest {
 
     @Test
     void registration_ShouldReturnUser_WhenEmailIsAvailable() throws Exception {
-        when(userRepository.isPresentByEmail(user.getEmail())).thenReturn(false);
+        when(userRepository.isEmailAvailable(user.getEmail())).thenReturn(false);
         when(userRepository.save(any(User.class))).thenReturn(user);
 
         User registeredUser = userService.registration(user.getEmail(), user.getName(), user.getPassword());
@@ -45,7 +45,7 @@ class UserServiceImplTest {
 
     @Test
     void registration_ShouldReturnNull_WhenEmailIsNotAvailable() throws Exception {
-        when(userRepository.isPresentByEmail(user.getEmail())).thenReturn(true);
+        when(userRepository.isEmailAvailable(user.getEmail())).thenReturn(true);
 
         User registeredUser = userService.registration(user.getEmail(), user.getName(), user.getPassword());
 
@@ -94,7 +94,7 @@ class UserServiceImplTest {
     void update_ShouldReturnUpdatedUser_WhenEmailIsAvailable() throws Exception {
         User sourceUser = new User("new@example.com", "newPassword", "New User", UserRole.ROLE_USER);
         when(userRepository.getById(1L)).thenReturn(Optional.of(user));
-        when(userRepository.isPresentByEmail(sourceUser.getEmail())).thenReturn(false);
+        when(userRepository.isEmailAvailable(sourceUser.getEmail())).thenReturn(false);
         when(userRepository.update(any(User.class))).thenReturn(user);
 
         User updatedUser = userService.update(1L, sourceUser);
@@ -107,7 +107,7 @@ class UserServiceImplTest {
     void update_ShouldReturnNull_WhenEmailIsNotAvailable() throws Exception {
         User sourceUser = new User("test@example.com", "newPassword", "New User", UserRole.ROLE_USER);
         when(userRepository.getById(1L)).thenReturn(Optional.of(user));
-        when(userRepository.isPresentByEmail(sourceUser.getEmail())).thenReturn(true);
+        when(userRepository.isEmailAvailable(sourceUser.getEmail())).thenReturn(true);
 
         User updatedUser = userService.update(1L, sourceUser);
 
