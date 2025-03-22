@@ -1,5 +1,7 @@
 package com.my.service.impl;
 
+import com.my.dto.UserRequestDto;
+import com.my.dto.UserResponseDto;
 import com.my.mapper.UserMapper;
 import com.my.model.User;
 import com.my.model.UserRole;
@@ -36,18 +38,22 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getById(Long id) throws SQLException {
-        return userRepository.getById(id).orElse(null);
+    public UserResponseDto getById(Long id) throws SQLException {
+        User user = userRepository.getById(id).orElse(null);
+        UserResponseDto userResponseDto = UserMapper.INSTANCE.toDto(user);
+        return userResponseDto;
     }
 
     @Override
-    public User update(Long id, User sourceUser) throws SQLException {
-        User updatedUser = getById(id);
+    public UserResponseDto update(Long id, UserRequestDto sourceUser) throws SQLException {
+        User updatedUser = userRepository.getById(id).orElse(null);
         if (updatedUser == null || (!updatedUser.getEmail().equals(sourceUser.getEmail()) && !isEmailAvailable(sourceUser.getEmail()))) {
             return null;
         }
         UserMapper.INSTANCE.updateUser(sourceUser, updatedUser);
-        return userRepository.update(updatedUser);
+        User updated = userRepository.update(updatedUser);
+        UserResponseDto userResponseDto = UserMapper.INSTANCE.toDto(updated);
+        return userResponseDto;
     }
 
     @Override
@@ -56,8 +62,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<User> getAll() throws SQLException {
-        return userRepository.getAll();
+    public List<UserResponseDto> getAll() throws SQLException {
+        return userRepository.getAll().stream().map(UserMapper.INSTANCE::toDto).toList();
     }
 
     private User getUserByLoginAndPassword(String email, String password) throws SQLException {
@@ -69,10 +75,10 @@ public class UserServiceImpl implements UserService {
     }
 
     public boolean blockUser(Long userId) throws SQLException {
-        User user = getById(userId);
+        User user = userRepository.getById(userId).orElse(null);
         if (user != null) {
             user.setBlocked(true);
-            update(userId, user);
+            userRepository.save(user);
             return true;
         }
         return false;

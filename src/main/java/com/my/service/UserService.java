@@ -1,5 +1,7 @@
 package com.my.service;
 
+import com.my.dto.UserRequestDto;
+import com.my.dto.UserResponseDto;
 import com.my.model.User;
 
 import java.sql.SQLException;
@@ -34,7 +36,7 @@ public interface UserService {
      * @param id идентификатор пользователя
      * @return пользователь с указанным идентификатором
      */
-    User getById(Long id) throws SQLException;
+    UserResponseDto getById(Long id) throws SQLException;
 
     /**
      * Обновление информации о пользователе.
@@ -43,7 +45,7 @@ public interface UserService {
      * @param sourceUser объект пользователя с обновленной информацией
      * @return обновленный пользователь
      */
-    User update(Long id, User sourceUser) throws SQLException;
+    UserResponseDto update(Long id, UserRequestDto sourceUser) throws SQLException;
 
     /**
      * Удаление пользователя по его идентификатору.
@@ -58,7 +60,7 @@ public interface UserService {
      *
      * @return список всех пользователей
      */
-    List<User> getAll() throws SQLException;
+    List<UserResponseDto> getAll() throws SQLException;
 
     /**
      * Блокировка пользователя по его идентификатору.
