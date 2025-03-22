@@ -1,9 +1,9 @@
 package com.my.servlet;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.my.dto.TransactionCategoryRequestDto;
 import com.my.dto.TransactionCategoryResponseDto;
+import com.my.exception.EntityNotFoundException;
+import com.my.exception.TransactionCategoryException;
 import com.my.service.TransactionCategoryService;
 import com.my.service.impl.TransactionCategoryServiceImpl;
 import jakarta.servlet.annotation.WebServlet;
@@ -14,10 +14,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 
 @WebServlet("/category")
 public class TransactionCategoryServlet extends HttpServlet {
-    private final ObjectMapper objectMapper;
+    private final ServletUtils servletUtils;
     private final TransactionCategoryService transactionCategoryService;
 
     public TransactionCategoryServlet() {
@@ -25,111 +26,96 @@ public class TransactionCategoryServlet extends HttpServlet {
     }
 
     public TransactionCategoryServlet(TransactionCategoryService transactionCategoryService) {
-        this.objectMapper = new ObjectMapper();
-        this.objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         this.transactionCategoryService = transactionCategoryService;
+        this.servletUtils = new ServletUtils();
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
-        String reqId = req.getParameter("id");
-
-        resp.setStatus(HttpServletResponse.SC_OK);
         resp.setContentType("application/json");
-
         try {
-            if (reqId == null) {
+            Optional<Long> id = servletUtils.getId(req);
+            if (id.isEmpty()) {
                 findAll(resp);
             } else {
-                long id = Long.parseLong(reqId);
-                findById(resp, id);
+                findById(resp, id.get());
             }
+        } catch (EntityNotFoundException e) {
+            servletUtils.handleError(resp, HttpServletResponse.SC_NOT_FOUND, e.getMessage(), null);
         } catch (SQLException | IOException e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        } catch (NumberFormatException e) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            servletUtils.handleError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred. Please try again later.", e);
         }
     }
 
     private void findAll(HttpServletResponse resp) throws IOException, SQLException {
         List<TransactionCategoryResponseDto> transactionCategories = transactionCategoryService.getAll();
-        String foundCategories = objectMapper.writeValueAsString(transactionCategories);
-        resp.getWriter().write(foundCategories);
+        servletUtils.writeResponse(resp, transactionCategories);
     }
 
     private void findById(HttpServletResponse resp, long id) throws SQLException, IOException {
         TransactionCategoryResponseDto transactionCategory = transactionCategoryService.getById(id);
-        String foundCategory = objectMapper.writeValueAsString(transactionCategory);
-        resp.getWriter().write(foundCategory);
-        if (transactionCategory == null) {
-            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-        }
+        servletUtils.writeResponse(resp, transactionCategory);
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) {
         int contentLength = req.getContentLength();
         if (contentLength <= 0) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, "Тело запроса пустое", null);
             return;
         }
-
-        resp.setStatus(HttpServletResponse.SC_OK);
         resp.setContentType("application/json");
-
         try {
             save(req, resp);
+        } catch (EntityNotFoundException e) {
+            servletUtils.handleError(resp, HttpServletResponse.SC_NOT_FOUND, e.getMessage(), null);
+        } catch (TransactionCategoryException e) {
+            servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage(), null);
         } catch (SQLException | IOException e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            servletUtils.handleError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error during saving", e);
         }
     }
 
     private void save(HttpServletRequest req, HttpServletResponse resp) throws IOException, SQLException {
-        TransactionCategoryRequestDto transactionCategory = objectMapper.readValue(req.getReader(), TransactionCategoryRequestDto.class);
-        TransactionCategoryResponseDto savedCategory = transactionCategoryService.save(transactionCategory);
-        resp.getWriter().write(objectMapper.writeValueAsString(savedCategory));
+        TransactionCategoryRequestDto transactionCategoryRequestDto = servletUtils.readRequestBody(req, TransactionCategoryRequestDto.class);
+        TransactionCategoryResponseDto savedCategory = transactionCategoryService.save(transactionCategoryRequestDto);
+        servletUtils.writeResponse(resp, savedCategory);
     }
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) {
-        String reqId = req.getParameter("id");
-
-        if (reqId == null) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            return;
-        }
-
-        resp.setStatus(HttpServletResponse.SC_OK);
         resp.setContentType("application/json");
-
         try {
-            long id = Long.parseLong(reqId);
-            update(req, resp, id);
+            Optional<Long> id = servletUtils.getId(req);
+            if (id.isEmpty()) {
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            }
+            update(req, resp, id.get());
+        } catch (EntityNotFoundException e) {
+            servletUtils.handleError(resp, HttpServletResponse.SC_NOT_FOUND, e.getMessage(), null);
+        } catch (TransactionCategoryException e) {
+            servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage(), null);
         } catch (SQLException | IOException e) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        } catch (NumberFormatException e) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         }
     }
 
     private void update(HttpServletRequest req, HttpServletResponse resp, long id) throws IOException, SQLException {
-        TransactionCategoryRequestDto transactionCategory = objectMapper.readValue(req.getReader(), TransactionCategoryRequestDto.class);
-        TransactionCategoryResponseDto updatedTransactionCategory = transactionCategoryService.update(id, transactionCategory);
-        resp.getWriter().write(objectMapper.writeValueAsString(updatedTransactionCategory));
+        TransactionCategoryRequestDto transactionCategoryRequestDto = servletUtils.readRequestBody(req, TransactionCategoryRequestDto.class);
+        TransactionCategoryResponseDto updatedTransactionCategory = transactionCategoryService.update(id, transactionCategoryRequestDto);
+        servletUtils.writeResponse(resp, updatedTransactionCategory);
     }
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) {
-        String reqId = req.getParameter("id");
-
-        if (reqId == null) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            return;
-        }
-
         try {
-            long id = Long.parseLong(reqId);
-            delete(resp, id);
+            Optional<Long> id = servletUtils.getId(req);
+            if (id.isEmpty()) {
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            }
+            delete(resp, id.get());
         } catch (SQLException e) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         } catch (NumberFormatException e) {

@@ -15,7 +15,6 @@ import java.util.Optional;
 
 public class ServletUtils {
     private static final Logger logger = LogManager.getRootLogger();
-
     private final ObjectMapper objectMapper;
 
     public ServletUtils() {
@@ -25,20 +24,22 @@ public class ServletUtils {
 
     public boolean checkAdminAccess(HttpServletResponse resp) throws IOException {
         if (!UserManager.isAdmin()) {
-            resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            writeResponse(resp, new ErrorResponseDto("Access denied"));
-            return false;
+            return handleAccessDenied(resp);
         }
         return true;
     }
 
     public boolean checkAuthorizationToUpdate(HttpServletResponse resp, long id) throws IOException {
         if (!UserManager.isAdmin() && UserManager.getLoggedInUser().getId() != id) {
-            resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            writeResponse(resp, new ErrorResponseDto("Access denied"));
-            return false;
+            return handleAccessDenied(resp);
         }
         return true;
+    }
+
+    private boolean handleAccessDenied(HttpServletResponse resp) throws IOException {
+        resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        writeResponse(resp, new ErrorResponseDto("Access denied"));
+        return false;
     }
 
     public Optional<Long> getId(HttpServletRequest req) {
