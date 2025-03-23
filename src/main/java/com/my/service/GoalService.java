@@ -1,5 +1,7 @@
 package com.my.service;
 
+import com.my.dto.GoalRequestDto;
+import com.my.dto.GoalResponseDto;
 import com.my.model.Goal;
 
 import java.sql.SQLException;
@@ -8,15 +10,17 @@ import java.util.List;
 public interface GoalService {
     List<Goal> geAll() throws SQLException;
 
-    Goal getById(Long id) throws SQLException;
+    Goal getEntityById(Long id) throws SQLException;
 
-    Goal create(Long userId, Goal goal) throws SQLException;
+    GoalResponseDto getById(Long id) throws SQLException;
 
-    Goal update(Long id, Goal sourceGoal) throws SQLException;
+    GoalResponseDto save(Long userId, GoalRequestDto goal) throws SQLException;
+
+    GoalResponseDto update(Long id, GoalRequestDto sourceGoal) throws SQLException;
 
     boolean deleteById(Long id) throws SQLException;
 
-    List<Goal> getAllGoalsByUserId(Long userId) throws SQLException;
+    List<GoalResponseDto> getAllGoalsByUserId(Long userId) throws SQLException;
 
     String getGoalIncomeInfo(Long userId, Long categoryId) throws SQLException;
 

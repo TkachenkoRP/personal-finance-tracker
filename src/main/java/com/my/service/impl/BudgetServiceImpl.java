@@ -80,7 +80,7 @@ public class BudgetServiceImpl implements BudgetService {
     @Override
     public BudgetResponseDto update(Long id, BudgetRequestDto sourceBudget) throws SQLException {
         Budget updatedBudget = getEntityById(id);
-        BudgetMapper.INSTANCE.updateTransaction(sourceBudget, updatedBudget);
+        BudgetMapper.INSTANCE.updateBudget(sourceBudget, updatedBudget);
         Budget updated = budgetRepository.update(updatedBudget);
         BudgetResponseDto responseDto = BudgetMapper.INSTANCE.toDto(updated);
         logger.log(Level.DEBUG, "Update budget: {}", responseDto);

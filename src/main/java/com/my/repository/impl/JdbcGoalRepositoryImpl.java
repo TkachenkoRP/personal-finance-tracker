@@ -2,9 +2,7 @@ package com.my.repository.impl;
 
 import com.my.configuration.AppConfiguration;
 import com.my.model.Goal;
-import com.my.model.TransactionCategory;
 import com.my.repository.GoalRepository;
-import com.my.repository.TransactionCategoryRepository;
 import com.my.util.DBUtil;
 
 import java.math.BigDecimal;
@@ -19,21 +17,15 @@ import java.util.Optional;
 
 public class JdbcGoalRepositoryImpl implements GoalRepository {
     private final Connection connection;
-    private final TransactionCategoryRepository transactionCategoryRepository;
 
     private final String schema;
 
     public JdbcGoalRepositoryImpl() {
-        this(new JdbcTransactionCategoryRepository());
+        this(DBUtil.getConnection());
     }
 
-    public JdbcGoalRepositoryImpl(TransactionCategoryRepository transactionCategoryRepository) {
-        this(DBUtil.getConnection(), transactionCategoryRepository);
-    }
-
-    public JdbcGoalRepositoryImpl(Connection connection, TransactionCategoryRepository transactionCategoryRepository) {
+    public JdbcGoalRepositoryImpl(Connection connection) {
         this.connection = connection;
-        this.transactionCategoryRepository = transactionCategoryRepository;
         this.schema = AppConfiguration.getProperty("database.schema");
     }
 
@@ -68,24 +60,23 @@ public class JdbcGoalRepositoryImpl implements GoalRepository {
 
     private Goal mapRowToGoal(ResultSet resultSet) throws SQLException {
         long id = resultSet.getLong("id");
-        BigDecimal amount = resultSet.getBigDecimal("target_amount");
-        TransactionCategory transactionCategory =
-                transactionCategoryRepository.getById(resultSet.getLong("category_id")).orElse(null);
+        BigDecimal amount = resultSet.getBigDecimal("amount");
+        long transactionCategoryId = resultSet.getLong("category_id");
 
         Goal goal = new Goal();
         goal.setId(id);
         goal.setTargetAmount(amount);
-        goal.setCategory(transactionCategory);
+        goal.setCategoryId(transactionCategoryId);
 
         return goal;
     }
 
     @Override
     public Goal save(Long userId, Goal entity) throws SQLException {
-        String query = "INSERT INTO " + schema + ".goal (target_amount, category_id, user_id) VALUES (?, ?, ?)";
+        String query = "INSERT INTO " + schema + ".goal (amount, category_id, user_id) VALUES (?, ?, ?)";
         try (PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
             statement.setBigDecimal(1, entity.getTargetAmount());
-            statement.setLong(2, entity.getCategory().getId());
+            statement.setLong(2, entity.getCategoryId());
             statement.setLong(3, userId);
 
             int affectedRows = statement.executeUpdate();
@@ -102,10 +93,11 @@ public class JdbcGoalRepositoryImpl implements GoalRepository {
 
     @Override
     public Goal update(Goal entity) throws SQLException {
-        String query = "UPDATE " + schema + ".goal SET target_amount = ?, category_id = ? WHERE id = ?";
+        String query = "UPDATE " + schema + ".goal SET amount = ?, category_id = ? WHERE id = ?";
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setBigDecimal(1, entity.getTargetAmount());
-            statement.setLong(2, entity.getCategory().getId());
+            statement.setLong(2, entity.getCategoryId());
+            statement.setLong(3, entity.getId());
 
             int affectedRows = statement.executeUpdate();
             if (affectedRows > 0) {

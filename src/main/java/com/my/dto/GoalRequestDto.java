@@ -11,9 +11,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @Builder
 @Data
-public class BudgetRequestDto {
-    private BigDecimal totalAmount;
-    private String periodStart;
-    private String periodEnd;
+public class GoalRequestDto {
+    private BigDecimal targetAmount;
     private Long categoryId;
 }

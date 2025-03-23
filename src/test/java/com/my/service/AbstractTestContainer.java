@@ -75,10 +75,10 @@ public abstract class AbstractTestContainer {
 
         transactionCategoryRepository = new JdbcTransactionCategoryRepository(testConnection);
         transactionCategoryService = new TransactionCategoryServiceImpl(transactionCategoryRepository);
-        budgetRepository = new JdbcBudgetRepositoryImpl(transactionCategoryRepository);
+        budgetRepository = new JdbcBudgetRepositoryImpl();
         budgetService = new BudgetServiceImpl(budgetRepository, transactionRepository);
-        goalRepository = new JdbcGoalRepositoryImpl(transactionCategoryRepository);
-        goalService = new GoalServiceImpl(goalRepository, transactionRepository, null, null);
+        goalRepository = new JdbcGoalRepositoryImpl();
+        goalService = new GoalServiceImpl(goalRepository, transactionRepository, null);
         userRepository = new JdbcUserRepository(testConnection, budgetRepository, goalRepository);
         userService = new UserServiceImpl(userRepository);
 

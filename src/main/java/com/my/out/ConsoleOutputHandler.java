@@ -123,7 +123,7 @@ public class ConsoleOutputHandler {
     }
 
     public static void displayGoalsList(List<Goal> goals) {
-        goals.forEach(g -> System.out.println(g.getId() + " - " + g.getCategory().getCategoryName() + " - " + g.getTargetAmount()));
+        goals.forEach(g -> System.out.println(g.getId() + " - " + g.getCategoryId() + " - " + g.getTargetAmount()));
     }
 
     public static void displayBudgetList(List<Budget> budgets) {

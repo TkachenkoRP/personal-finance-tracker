@@ -1,15 +1,15 @@
 package com.my.servlet;
 
-import com.my.dto.BudgetRequestDto;
-import com.my.dto.BudgetResponseDto;
-import com.my.dto.ReportResponseDto;
+import com.my.dto.GoalRequestDto;
+import com.my.dto.GoalResponseDto;
 import com.my.exception.AccessDeniedException;
 import com.my.exception.ArgumentNotValidException;
 import com.my.exception.EntityNotFoundException;
-import com.my.service.BudgetService;
+import com.my.service.GoalService;
 import com.my.service.UserManager;
-import com.my.service.impl.BudgetServiceImpl;
+import com.my.service.impl.GoalServiceImpl;
 import com.my.util.Validation;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,18 +20,18 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
-@WebServlet("/budget")
-public class BudgetServlet extends HttpServlet {
+@WebServlet("/goal")
+public class GoalServlet extends HttpServlet {
     private final ServletUtils servletUtils;
-    private final BudgetService budgetService;
+    private final GoalService goalService;
 
-    public BudgetServlet() {
-        this(new BudgetServiceImpl());
+    public GoalServlet() {
+        this(new GoalServiceImpl());
     }
 
-    public BudgetServlet(BudgetService budgetService) {
-        this.budgetService = budgetService;
-        servletUtils = new ServletUtils();
+    public GoalServlet(GoalService goalService) {
+        this.goalService = goalService;
+        this.servletUtils = new ServletUtils();
     }
 
     @Override
@@ -41,18 +41,13 @@ public class BudgetServlet extends HttpServlet {
             return;
         }
         try {
-            String action = req.getParameter("action");
             Optional<Long> optionalId = servletUtils.getId(req);
             if (optionalId.isEmpty()) {
                 findAllByUserId(resp, UserManager.getLoggedInUser().getId());
                 return;
             }
             long id = optionalId.get();
-            if ("report".equals(action)) {
-                getReport(resp, id);
-            } else {
-                findById(resp, id);
-            }
+            findById(resp, id);
         } catch (EntityNotFoundException e) {
             servletUtils.handleError(resp, HttpServletResponse.SC_NOT_FOUND, e.getMessage(), null);
         } catch (SQLException | IOException e) {
@@ -60,19 +55,14 @@ public class BudgetServlet extends HttpServlet {
         }
     }
 
-    private void getReport(HttpServletResponse resp, long id) throws SQLException, IOException {
-        String budgetsExceededInfo = budgetService.getBudgetsExceededInfo(UserManager.getLoggedInUser().getId(), id);
-        servletUtils.writeResponse(resp, new ReportResponseDto(budgetsExceededInfo));
+    private void findAllByUserId(HttpServletResponse resp, Long id) throws SQLException, IOException {
+        List<GoalResponseDto> goals = goalService.getAllGoalsByUserId(id);
+        servletUtils.writeResponse(resp, goals);
     }
 
-    private void findAllByUserId(HttpServletResponse resp, long userId) throws SQLException, IOException {
-        List<BudgetResponseDto> allBudgetsByUserId = budgetService.getAllBudgetsByUserId(userId);
-        servletUtils.writeResponse(resp, allBudgetsByUserId);
-    }
-
-    private void findById(HttpServletResponse resp, Long id) throws SQLException, IOException {
-        BudgetResponseDto budget = budgetService.getById(id);
-        servletUtils.writeResponse(resp, budget);
+    private void findById(HttpServletResponse resp, long id) throws SQLException, IOException {
+        GoalResponseDto goal = goalService.getById(id);
+        servletUtils.writeResponse(resp, goal);
     }
 
     @Override
@@ -97,10 +87,10 @@ public class BudgetServlet extends HttpServlet {
         }
     }
 
-    private void save(HttpServletRequest req, HttpServletResponse resp) throws IOException, SQLException, ArgumentNotValidException {
-        BudgetRequestDto budgetRequestDto = servletUtils.readRequestBody(req, BudgetRequestDto.class);
-        Validation.validationBudget(budgetRequestDto);
-        BudgetResponseDto saved = budgetService.save(UserManager.getLoggedInUser().getId(), budgetRequestDto);
+    private void save(HttpServletRequest req, HttpServletResponse resp) throws SQLException, IOException {
+        GoalRequestDto goalRequestDto = servletUtils.readRequestBody(req, GoalRequestDto.class);
+        Validation.validationGoal(goalRequestDto);
+        GoalResponseDto saved = goalService.save(UserManager.getLoggedInUser().getId(), goalRequestDto);
         servletUtils.writeResponse(resp, saved);
     }
 
@@ -124,14 +114,14 @@ public class BudgetServlet extends HttpServlet {
         }
     }
 
-    private void update(HttpServletRequest req, HttpServletResponse resp, long id) throws IOException, SQLException {
-        BudgetRequestDto budgetRequestDto = servletUtils.readRequestBody(req, BudgetRequestDto.class);
-        BudgetResponseDto updated = budgetService.update(id, budgetRequestDto);
+    private void update(HttpServletRequest req, HttpServletResponse resp, Long id) throws IOException, SQLException {
+        GoalRequestDto goalRequestDto = servletUtils.readRequestBody(req, GoalRequestDto.class);
+        GoalResponseDto updated = goalService.update(id, goalRequestDto);
         servletUtils.writeResponse(resp, updated);
     }
 
     @Override
-    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) {
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         if (!servletUtils.checkAuthentication(resp)) {
             return;
         }
@@ -148,7 +138,7 @@ public class BudgetServlet extends HttpServlet {
     }
 
     private void delete(HttpServletResponse resp, Long id) throws SQLException {
-        boolean deleted = budgetService.deleteById(id);
+        boolean deleted = goalService.deleteById(id);
         if (deleted) {
             resp.setStatus(HttpServletResponse.SC_OK);
         } else {

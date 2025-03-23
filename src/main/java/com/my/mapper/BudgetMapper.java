@@ -19,7 +19,7 @@ public interface BudgetMapper {
     @Mapping(target = "periodStart", source = "periodStart", dateFormat = "d.M.yyyy")
     @Mapping(target = "periodEnd", source = "periodEnd", dateFormat = "d.M.yyyy")
     @Mapping(target = "targetGoal.categoryId", source = "categoryId")
-    void updateTransaction(BudgetRequestDto sourceGoal, @MappingTarget Budget targetGoal);
+    void updateBudget(BudgetRequestDto sourceGoal, @MappingTarget Budget targetGoal);
 
     @Mapping(target = "periodStart", source = "periodStart", dateFormat = "d.M.yyyy")
     @Mapping(target = "periodEnd", source = "periodEnd", dateFormat = "d.M.yyyy")

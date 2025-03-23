@@ -15,13 +15,13 @@ import java.util.Objects;
 public class Goal {
     private Long id;
     private BigDecimal targetAmount;
-    private TransactionCategory category;
-    private boolean isActive;
+    private Long categoryId;
+    private boolean active;
 
-    public Goal(BigDecimal targetAmount, TransactionCategory category) {
+    public Goal(BigDecimal targetAmount, Long categoryId) {
         this.targetAmount = targetAmount;
-        this.category = category;
-        isActive = true;
+        this.categoryId = categoryId;
+        active = true;
     }
 
     @Override
@@ -41,8 +41,8 @@ public class Goal {
         return "Goal{" +
                "id=" + id +
                ", targetAmount=" + targetAmount +
-               ", categoryId=" + category.getCategoryName() +
-               ", isActive=" + isActive +
+               ", categoryId=" + categoryId +
+               ", active=" + active +
                '}';
     }
 }

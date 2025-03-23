@@ -1,6 +1,7 @@
 package com.my.util;
 
 import com.my.dto.BudgetRequestDto;
+import com.my.dto.GoalRequestDto;
 import com.my.exception.ArgumentNotValidException;
 
 import java.time.LocalDate;
@@ -32,6 +33,19 @@ public class Validation {
             }
         }
         if (budget.getCategoryId() == null || budget.getCategoryId() < 1) {
+            msg.append("ID категории должно быть больше 0! ");
+        }
+        if (!msg.isEmpty()) {
+            throw new ArgumentNotValidException(msg.toString());
+        }
+    }
+
+    public static void validationGoal(GoalRequestDto goal) throws ArgumentNotValidException {
+        StringBuilder msg = new StringBuilder();
+        if (goal.getTargetAmount() == null) {
+            msg.append("Должна быть указана сумма цели");
+        }
+        if (goal.getCategoryId() == null || goal.getCategoryId() < 1) {
             msg.append("ID категории должно быть больше 0! ");
         }
         if (!msg.isEmpty()) {
