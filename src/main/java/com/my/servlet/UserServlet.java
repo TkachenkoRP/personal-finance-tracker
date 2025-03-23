@@ -1,5 +1,7 @@
 package com.my.servlet;
 
+import com.my.annotation.Audition;
+import com.my.annotation.Loggable;
 import com.my.dto.UserRequestDto;
 import com.my.dto.UserResponseDto;
 import com.my.exception.EntityNotFoundException;
@@ -15,6 +17,8 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
+@Loggable
+@Audition
 @WebServlet("/user")
 public class UserServlet extends HttpServlet {
     private final UserService userService;

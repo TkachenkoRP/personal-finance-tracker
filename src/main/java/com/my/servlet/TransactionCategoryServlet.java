@@ -1,5 +1,7 @@
 package com.my.servlet;
 
+import com.my.annotation.Audition;
+import com.my.annotation.Loggable;
 import com.my.dto.TransactionCategoryRequestDto;
 import com.my.dto.TransactionCategoryResponseDto;
 import com.my.exception.ArgumentNotValidException;
@@ -18,6 +20,8 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
+@Loggable
+@Audition
 @WebServlet("/category")
 public class TransactionCategoryServlet extends HttpServlet {
     private final ServletUtils servletUtils;

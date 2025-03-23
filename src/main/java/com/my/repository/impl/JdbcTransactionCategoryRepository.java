@@ -1,5 +1,6 @@
 package com.my.repository.impl;
 
+import com.my.annotation.Loggable;
 import com.my.configuration.AppConfiguration;
 import com.my.model.TransactionCategory;
 import com.my.repository.TransactionCategoryRepository;
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Loggable
 public class JdbcTransactionCategoryRepository implements TransactionCategoryRepository {
 
     private final Connection connection;

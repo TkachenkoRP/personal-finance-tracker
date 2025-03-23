@@ -1,5 +1,6 @@
 package com.my.repository.impl;
 
+import com.my.annotation.Loggable;
 import com.my.configuration.AppConfiguration;
 import com.my.model.Goal;
 import com.my.repository.GoalRepository;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Loggable
 public class JdbcGoalRepositoryImpl implements GoalRepository {
     private final Connection connection;
 

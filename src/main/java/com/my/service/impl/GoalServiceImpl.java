@@ -1,5 +1,6 @@
 package com.my.service.impl;
 
+import com.my.annotation.Loggable;
 import com.my.dto.GoalRequestDto;
 import com.my.dto.GoalResponseDto;
 import com.my.exception.AccessDeniedException;
@@ -24,6 +25,7 @@ import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.List;
 
+@Loggable
 public class GoalServiceImpl implements GoalService {
     private static final Logger logger = LogManager.getRootLogger();
     private final GoalRepository goalRepository;

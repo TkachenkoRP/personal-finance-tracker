@@ -1,5 +1,7 @@
 package com.my.servlet;
 
+import com.my.annotation.Audition;
+import com.my.annotation.Loggable;
 import com.my.dto.GoalRequestDto;
 import com.my.dto.GoalResponseDto;
 import com.my.exception.AccessDeniedException;
@@ -20,6 +22,8 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
+@Loggable
+@Audition
 @WebServlet("/goal")
 public class GoalServlet extends HttpServlet {
     private final ServletUtils servletUtils;

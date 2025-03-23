@@ -1,5 +1,6 @@
 package com.my.repository.impl;
 
+import com.my.annotation.Loggable;
 import com.my.configuration.AppConfiguration;
 import com.my.model.Budget;
 import com.my.model.Goal;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Loggable
 public class JdbcUserRepository implements UserRepository {
     private final Connection connection;
     private final BudgetRepository budgetRepository;

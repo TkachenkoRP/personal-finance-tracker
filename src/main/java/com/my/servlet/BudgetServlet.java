@@ -1,5 +1,7 @@
 package com.my.servlet;
 
+import com.my.annotation.Audition;
+import com.my.annotation.Loggable;
 import com.my.dto.BudgetRequestDto;
 import com.my.dto.BudgetResponseDto;
 import com.my.dto.ReportResponseDto;
@@ -20,6 +22,8 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
+@Loggable
+@Audition
 @WebServlet("/budget")
 public class BudgetServlet extends HttpServlet {
     private final ServletUtils servletUtils;

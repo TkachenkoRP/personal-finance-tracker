@@ -1,5 +1,6 @@
 package com.my.service.impl;
 
+import com.my.annotation.Loggable;
 import com.my.dto.TransactionCategoryRequestDto;
 import com.my.dto.TransactionCategoryResponseDto;
 import com.my.exception.EntityNotFoundException;
@@ -17,6 +18,7 @@ import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.List;
 
+@Loggable
 public class TransactionCategoryServiceImpl implements TransactionCategoryService {
     private static final Logger logger = LogManager.getRootLogger();
     private final TransactionCategoryRepository transactionCategoryRepository;

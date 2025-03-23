@@ -1,5 +1,6 @@
 package com.my.service.impl;
 
+import com.my.annotation.Loggable;
 import com.my.dto.BudgetRequestDto;
 import com.my.dto.BudgetResponseDto;
 import com.my.exception.AccessDeniedException;
@@ -24,6 +25,7 @@ import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.List;
 
+@Loggable
 public class BudgetServiceImpl implements BudgetService {
     private static final Logger logger = LogManager.getRootLogger();
     private final BudgetRepository budgetRepository;

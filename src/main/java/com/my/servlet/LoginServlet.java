@@ -1,5 +1,7 @@
 package com.my.servlet;
 
+import com.my.annotation.Audition;
+import com.my.annotation.Loggable;
 import com.my.exception.UserException;
 import com.my.mapper.UserMapper;
 import com.my.model.User;
@@ -14,6 +16,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 
+@Loggable
+@Audition
 @WebServlet("/login")
 public class LoginServlet extends HttpServlet {
     private final UserService userService;

@@ -1,5 +1,6 @@
 package com.my.repository.impl;
 
+import com.my.annotation.Loggable;
 import com.my.configuration.AppConfiguration;
 import com.my.model.Budget;
 import com.my.repository.BudgetRepository;
@@ -20,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Loggable
 public class JdbcBudgetRepositoryImpl implements BudgetRepository {
     private static final Logger logger = LogManager.getRootLogger();
     private final Connection connection;
