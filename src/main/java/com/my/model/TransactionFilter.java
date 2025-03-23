@@ -17,4 +17,8 @@ public record TransactionFilter(
     public TransactionFilter(Long userId) {
         this(userId, null, null, null, null, null);
     }
+
+    public TransactionFilter withUserId(Long newUserId) {
+        return new TransactionFilter(newUserId, date, from, to, categoryId, type);
+    }
 }

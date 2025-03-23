@@ -54,9 +54,9 @@ public class BudgetServlet extends HttpServlet {
                 findById(resp, id);
             }
         } catch (EntityNotFoundException e) {
-            servletUtils.handleError(resp, HttpServletResponse.SC_NOT_FOUND, e.getMessage(), null);
+            servletUtils.handleError(resp, HttpServletResponse.SC_NOT_FOUND, e.getMessage());
         } catch (SQLException | IOException e) {
-            servletUtils.handleError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred. Please try again later.", e);
+            servletUtils.handleError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred. Please try again later.");
         }
     }
 
@@ -83,7 +83,7 @@ public class BudgetServlet extends HttpServlet {
         }
         int contentLength = req.getContentLength();
         if (contentLength <= 0) {
-            servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, "Тело запроса пустое", null);
+            servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, "Тело запроса пустое");
             return;
         }
         try {
@@ -91,9 +91,9 @@ public class BudgetServlet extends HttpServlet {
         } catch (AccessDeniedException e) {
             servletUtils.handleAccessDenied(resp);
         } catch (ArgumentNotValidException e) {
-            servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage(), e);
+            servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         } catch (SQLException | IOException e) {
-            servletUtils.handleError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred. Please try again later.", e);
+            servletUtils.handleError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred. Please try again later.");
         }
     }
 
@@ -113,19 +113,22 @@ public class BudgetServlet extends HttpServlet {
         try {
             Optional<Long> id = servletUtils.getId(req);
             if (id.isEmpty()) {
-                servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверно указан id", null);
+                servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверно указан id");
                 return;
             }
             update(req, resp, id.get());
         } catch (EntityNotFoundException e) {
-            servletUtils.handleError(resp, HttpServletResponse.SC_NOT_FOUND, e.getMessage(), null);
-        } catch (SQLException | IOException e) {
-            servletUtils.handleError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred. Please try again later.", e);
+            servletUtils.handleError(resp, HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+        } catch (ArgumentNotValidException e) {
+            servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+        }  catch (SQLException | IOException e) {
+            servletUtils.handleError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred. Please try again later.");
         }
     }
 
     private void update(HttpServletRequest req, HttpServletResponse resp, long id) throws IOException, SQLException {
         BudgetRequestDto budgetRequestDto = servletUtils.readRequestBody(req, BudgetRequestDto.class);
+        Validation.validationBudget(budgetRequestDto);
         BudgetResponseDto updated = budgetService.update(id, budgetRequestDto);
         servletUtils.writeResponse(resp, updated);
     }
@@ -138,12 +141,12 @@ public class BudgetServlet extends HttpServlet {
         try {
             Optional<Long> id = servletUtils.getId(req);
             if (id.isEmpty()) {
-                servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверно указан id", null);
+                servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверно указан id");
                 return;
             }
             delete(resp, id.get());
         } catch (SQLException e) {
-            servletUtils.handleError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred. Please try again later.", e);
+            servletUtils.handleError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred. Please try again later.");
         }
     }
 

@@ -30,16 +30,16 @@ public class LoginServlet extends HttpServlet {
         String email = req.getParameter("email");
         String password = req.getParameter("password");
         if (email == null || password == null) {
-            servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, "Укажите email и password", null);
+            servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, "Укажите email и password");
             return;
         }
         resp.setStatus(HttpServletResponse.SC_OK);
         try {
             login(email, password, resp);
         } catch (UserException e) {
-            servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage(), e);
+            servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         } catch (SQLException | IOException e) {
-            servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, "An error occurred. Please try again later.", e);
+            servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, "An error occurred. Please try again later.");
         }
     }
 

@@ -1,14 +1,11 @@
 package com.my.repository.impl;
 
 import com.my.configuration.AppConfiguration;
+import com.my.dto.ExpenseAnalysisDto;
 import com.my.model.Transaction;
-import com.my.model.TransactionCategory;
 import com.my.model.TransactionFilter;
 import com.my.model.TransactionType;
-import com.my.model.User;
-import com.my.repository.TransactionCategoryRepository;
 import com.my.repository.TransactionRepository;
-import com.my.repository.UserRepository;
 import com.my.util.DBUtil;
 
 import java.math.BigDecimal;
@@ -20,30 +17,20 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 public class JdbcTransactionRepository implements TransactionRepository {
     private final Connection connection;
-    private final TransactionCategoryRepository transactionCategoryRepository;
-    private final UserRepository userRepository;
 
     private final String schema;
 
     public JdbcTransactionRepository() {
-        this(new JdbcTransactionCategoryRepository(), new JdbcUserRepository());
+        this(DBUtil.getConnection());
     }
 
-    public JdbcTransactionRepository(TransactionCategoryRepository transactionCategoryRepository, UserRepository userRepository) {
-        this(DBUtil.getConnection(), transactionCategoryRepository, userRepository);
-    }
-
-    public JdbcTransactionRepository(Connection connection, TransactionCategoryRepository transactionCategoryRepository, UserRepository userRepository) {
+    public JdbcTransactionRepository(Connection connection) {
         this.connection = connection;
-        this.transactionCategoryRepository = transactionCategoryRepository;
-        this.userRepository = userRepository;
         schema = AppConfiguration.getProperty("database.schema");
     }
 
@@ -51,9 +38,9 @@ public class JdbcTransactionRepository implements TransactionRepository {
     public List<Transaction> getAll() throws SQLException {
         List<Transaction> transactions = new ArrayList<>();
         String query = "SELECT t.id, t.amount, t.description, t.date, t.type, tc.id AS category_id, u.id AS user_id " +
-                "FROM " + schema + ".transaction t " +
-                "JOIN " + schema + ".transaction_category tc ON t.category_id = tc.id " +
-                "JOIN " + schema + ".user u ON t.user_id = u.id";
+                       "FROM " + schema + ".transaction t " +
+                       "JOIN " + schema + ".transaction_category tc ON t.category_id = tc.id " +
+                       "JOIN " + schema + ".user u ON t.user_id = u.id";
         try (PreparedStatement statement = connection.prepareStatement(query);
              ResultSet resultSet = statement.executeQuery()) {
             while (resultSet.next()) {
@@ -68,9 +55,9 @@ public class JdbcTransactionRepository implements TransactionRepository {
     public List<Transaction> getAll(TransactionFilter filter) throws SQLException {
         List<Transaction> transactions = new ArrayList<>();
         StringBuilder query = new StringBuilder("SELECT t.id, t.amount, t.description, t.date, t.type, tc.id AS category_id, u.id AS user_id " +
-                "FROM " + schema + ".transaction t " +
-                "JOIN " + schema + ".transaction_category tc ON t.category_id = tc.id " +
-                "JOIN " + schema + ".user u ON t.user_id = u.id");
+                                                "FROM " + schema + ".transaction t " +
+                                                "JOIN " + schema + ".transaction_category tc ON t.category_id = tc.id " +
+                                                "JOIN " + schema + ".user u ON t.user_id = u.id");
 
         List<Object> parameters = new ArrayList<>();
 
@@ -118,10 +105,10 @@ public class JdbcTransactionRepository implements TransactionRepository {
     @Override
     public Optional<Transaction> getById(Long id) throws SQLException {
         String query = "SELECT t.id, t.amount, t.description, t.date, t.type, tc.id AS category_id, u.id AS user_id " +
-                "FROM " + schema + ".transaction t " +
-                "JOIN " + schema + ".transaction_category tc ON t.category_id = tc.id " +
-                "JOIN " + schema + ".user u ON t.user_id = u.id " +
-                "WHERE t.id = ?";
+                       "FROM " + schema + ".transaction t " +
+                       "JOIN " + schema + ".transaction_category tc ON t.category_id = tc.id " +
+                       "JOIN " + schema + ".user u ON t.user_id = u.id " +
+                       "WHERE t.id = ?";
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setLong(1, id);
             ResultSet resultSet = statement.executeQuery();
@@ -139,9 +126,8 @@ public class JdbcTransactionRepository implements TransactionRepository {
         TransactionType transactionType = TransactionType.valueOf(resultSet.getString("type"));
         BigDecimal amount = resultSet.getBigDecimal("amount");
         String description = resultSet.getString("description");
-        User user = userRepository.getById(resultSet.getLong("user_id")).orElse(null);
-        TransactionCategory transactionCategory =
-                transactionCategoryRepository.getById(resultSet.getLong("category_id")).orElse(null);
+        long userId = resultSet.getLong("user_id");
+        long transactionCategoryId = resultSet.getLong("category_id");
 
         Transaction transaction = new Transaction();
         transaction.setId(id);
@@ -149,8 +135,8 @@ public class JdbcTransactionRepository implements TransactionRepository {
         transaction.setType(transactionType);
         transaction.setAmount(amount);
         transaction.setDescription(description);
-        transaction.setCategory(transactionCategory);
-        transaction.setUser(user);
+        transaction.setCategoryId(transactionCategoryId);
+        transaction.setUserId(userId);
 
         return transaction;
     }
@@ -163,8 +149,8 @@ public class JdbcTransactionRepository implements TransactionRepository {
             statement.setString(2, entity.getDescription());
             statement.setDate(3, Date.valueOf(entity.getDate()));
             statement.setString(4, entity.getType().name());
-            statement.setLong(5, entity.getCategory().getId());
-            statement.setLong(6, entity.getUser().getId());
+            statement.setLong(5, entity.getCategoryId());
+            statement.setLong(6, entity.getUserId());
 
             int affectedRows = statement.executeUpdate();
             if (affectedRows > 0) {
@@ -184,7 +170,7 @@ public class JdbcTransactionRepository implements TransactionRepository {
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setBigDecimal(1, entity.getAmount());
             statement.setString(2, entity.getDescription());
-            statement.setLong(3, entity.getCategory().getId());
+            statement.setLong(3, entity.getCategoryId());
             statement.setLong(4, entity.getId());
 
             int affectedRows = statement.executeUpdate();
@@ -213,10 +199,10 @@ public class JdbcTransactionRepository implements TransactionRepository {
         int currentYear = currentDate.getYear();
 
         String query = "SELECT SUM(amount) AS total_expense " +
-                "FROM " + schema + ".transaction t " +
-                "WHERE t.user_id = ? AND t.type = ? " +
-                "AND EXTRACT(MONTH FROM t.date) = ? " +
-                "AND EXTRACT(YEAR FROM t.date) = ?";
+                       "FROM " + schema + ".transaction t " +
+                       "WHERE t.user_id = ? AND t.type = ? " +
+                       "AND EXTRACT(MONTH FROM t.date) = ? " +
+                       "AND EXTRACT(YEAR FROM t.date) = ?";
 
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setLong(1, userId);
@@ -239,8 +225,8 @@ public class JdbcTransactionRepository implements TransactionRepository {
         BigDecimal balance = BigDecimal.ZERO;
 
         String query = "SELECT SUM(CASE WHEN t.type = ? THEN t.amount ELSE -t.amount END) AS balance " +
-                "FROM " + schema + ".transaction t " +
-                "WHERE t.user_id = ?";
+                       "FROM " + schema + ".transaction t " +
+                       "WHERE t.user_id = ?";
 
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setString(1, TransactionType.INCOME.name());
@@ -261,9 +247,9 @@ public class JdbcTransactionRepository implements TransactionRepository {
         BigDecimal totalIncome = BigDecimal.ZERO;
 
         String query = "SELECT SUM(amount) AS total_income " +
-                "FROM " + schema + ".transaction t " +
-                "WHERE t.user_id = ? AND t.type = ? " +
-                "AND t.date >= ? AND t.date <= ?";
+                       "FROM " + schema + ".transaction t " +
+                       "WHERE t.user_id = ? AND t.type = ? " +
+                       "AND t.date >= ? AND t.date <= ?";
 
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setLong(1, userId);
@@ -286,9 +272,9 @@ public class JdbcTransactionRepository implements TransactionRepository {
         BigDecimal totalExpenses = BigDecimal.ZERO;
 
         String query = "SELECT SUM(amount) AS total_expenses " +
-                "FROM " + schema + ".transaction t " +
-                "WHERE t.user_id = ? AND t.type = ? " +
-                "AND t.date >= ? AND t.date <= ?";
+                       "FROM " + schema + ".transaction t " +
+                       "WHERE t.user_id = ? AND t.type = ? " +
+                       "AND t.date >= ? AND t.date <= ?";
 
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setLong(1, userId);
@@ -307,15 +293,15 @@ public class JdbcTransactionRepository implements TransactionRepository {
     }
 
     @Override
-    public Map<String, BigDecimal> analyzeExpensesByCategory(Long userId, LocalDate from, LocalDate to) throws SQLException {
-        Map<String, BigDecimal> result = new HashMap<>();
+    public List<ExpenseAnalysisDto> analyzeExpensesByCategory(Long userId, LocalDate from, LocalDate to) throws SQLException {
+        List<ExpenseAnalysisDto> result = new ArrayList<>();
 
         String query = "SELECT tc.category_name, SUM(t.amount) AS total_expenses " +
-                "FROM " + schema + ".transaction t " +
-                "JOIN " + schema + ".transaction_category tc ON t.category_id = tc.id " +
-                "WHERE t.user_id = ? AND t.type = ? " +
-                "AND t.date >= ? AND t.date <= ? " +
-                "GROUP BY tc.category_name";
+                       "FROM " + schema + ".transaction t " +
+                       "JOIN " + schema + ".transaction_category tc ON t.category_id = tc.id " +
+                       "WHERE t.user_id = ? AND t.type = ? " +
+                       "AND t.date >= ? AND t.date <= ? " +
+                       "GROUP BY tc.category_name";
 
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setLong(1, userId);
@@ -327,7 +313,7 @@ public class JdbcTransactionRepository implements TransactionRepository {
                 while (resultSet.next()) {
                     String categoryName = resultSet.getString("category_name");
                     BigDecimal totalExpenses = resultSet.getBigDecimal("total_expenses");
-                    result.put(categoryName, totalExpenses);
+                    result.add(new ExpenseAnalysisDto(categoryName, totalExpenses));
                 }
             }
         }
@@ -340,8 +326,8 @@ public class JdbcTransactionRepository implements TransactionRepository {
         BigDecimal totalIncome = BigDecimal.ZERO;
 
         String query = "SELECT SUM(amount) AS total_income " +
-                "FROM " + schema + ".transaction t " +
-                "WHERE t.user_id = ? AND t.category_id = ? AND t.type = ?";
+                       "FROM " + schema + ".transaction t " +
+                       "WHERE t.user_id = ? AND t.category_id = ? AND t.type = ?";
 
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setLong(1, userId);

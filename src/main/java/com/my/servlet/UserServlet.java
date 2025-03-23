@@ -36,9 +36,9 @@ public class UserServlet extends HttpServlet {
                 findById(resp, id.get());
             }
         } catch (EntityNotFoundException e) {
-            servletUtils.handleError(resp, HttpServletResponse.SC_NOT_FOUND, e.getMessage(), null);
+            servletUtils.handleError(resp, HttpServletResponse.SC_NOT_FOUND, e.getMessage());
         }  catch (SQLException | IOException e) {
-            servletUtils.handleError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred. Please try again later.", e);
+            servletUtils.handleError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred. Please try again later.");
         }
     }
 
@@ -62,7 +62,7 @@ public class UserServlet extends HttpServlet {
         try {
             Optional<Long> idOptional = servletUtils.getId(req);
             if (idOptional.isEmpty()) {
-                servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверно указан id", null);
+                servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверно указан id");
                 return;
             }
             long id = idOptional.get();
@@ -75,7 +75,7 @@ public class UserServlet extends HttpServlet {
                 update(req, resp, id);
             }
         } catch (SQLException | IOException e) {
-            servletUtils.handleError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred. Please try again later.", e);
+            servletUtils.handleError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred. Please try again later.");
         }
     }
 
@@ -110,12 +110,12 @@ public class UserServlet extends HttpServlet {
         try {
             Optional<Long> id = servletUtils.getId(req);
             if (id.isEmpty()) {
-                servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверно указан id", null);
+                servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверно указан id");
                 return;
             }
             delete(resp, id.get());
         } catch (SQLException e) {
-            servletUtils.handleError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred. Please try again later.", e);
+            servletUtils.handleError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred. Please try again later.");
         }
     }
 

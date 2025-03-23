@@ -19,15 +19,15 @@ public class Transaction {
     private TransactionType type;
     private BigDecimal amount;
     private String description;
-    private TransactionCategory category;
-    private User user;
+    private Long categoryId;
+    private Long userId;
 
-    public Transaction(LocalDate date, TransactionType type, BigDecimal amount, String description, TransactionCategory category) {
+    public Transaction(LocalDate date, TransactionType type, BigDecimal amount, String description, Long categoryId) {
         this.date = date;
         this.type = type;
         this.amount = amount;
         this.description = description;
-        this.category = category;
+        this.categoryId = categoryId;
     }
 
     @Override
@@ -45,12 +45,12 @@ public class Transaction {
     @Override
     public String toString() {
         return "Transaction{" +
-                "id=" + id +
-                ", date=" + date +
-                ", type=" + type +
-                ", amount=" + amount +
-                ", description='" + description + '\'' +
-                ", categoryId=" + category.getCategoryName() +
-                '}';
+               "id=" + id +
+               ", date=" + date +
+               ", type=" + type +
+               ", amount=" + amount +
+               ", description='" + description + '\'' +
+               ", categoryId=" + categoryId +
+               '}';
     }
 }

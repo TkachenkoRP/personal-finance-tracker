@@ -1,13 +1,18 @@
 package com.my.service;
 
+import com.my.dto.BalanceResponseDto;
+import com.my.dto.ExpenseAnalysisDto;
+import com.my.dto.ExpensesResponseDto;
+import com.my.dto.FullReportResponseDto;
+import com.my.dto.IncomeResponseDto;
+import com.my.dto.TransactionRequestDto;
+import com.my.dto.TransactionResponseDto;
 import com.my.model.Transaction;
 import com.my.model.TransactionFilter;
 
-import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Интерфейс для управления финансовыми транзакциями.
@@ -19,7 +24,9 @@ public interface TransactionService {
      * @param filter фильтр для выборки транзакций
      * @return список транзакций, соответствующих фильтру
      */
-    List<Transaction> getAll(TransactionFilter filter) throws SQLException;
+    List<TransactionResponseDto> getAll(TransactionFilter filter) throws SQLException;
+
+    Transaction getEntityById(Long id) throws SQLException;
 
     /**
      * Получение транзакции по её идентификатору.
@@ -27,7 +34,7 @@ public interface TransactionService {
      * @param id идентификатор транзакции
      * @return транзакция с указанным идентификатором
      */
-    Transaction getById(Long id) throws SQLException;
+    TransactionResponseDto getById(Long id) throws SQLException;
 
     /**
      * Сохранение новой транзакции.
@@ -35,7 +42,7 @@ public interface TransactionService {
      * @param transaction объект транзакции для сохранения
      * @return сохраненная транзакция
      */
-    Transaction save(Transaction transaction) throws SQLException;
+    TransactionResponseDto save(TransactionRequestDto transaction) throws SQLException;
 
     /**
      * Обновление существующей транзакции.
@@ -44,7 +51,7 @@ public interface TransactionService {
      * @param sourceTransaction объект транзакции с обновленной информацией
      * @return обновленная транзакция
      */
-    Transaction update(Long id, Transaction sourceTransaction) throws SQLException;
+    TransactionResponseDto update(Long id, TransactionRequestDto sourceTransaction) throws SQLException;
 
     /**
      * Удаление транзакции по её идентификатору.
@@ -60,7 +67,7 @@ public interface TransactionService {
      * @param userId идентификатор пользователя
      * @return общая сумма расходов за месяц
      */
-    BigDecimal getMonthExpense(Long userId) throws SQLException;
+    ExpensesResponseDto getMonthExpense(Long userId) throws SQLException;
 
     /**
      * Проверка баланса пользователя.
@@ -68,7 +75,7 @@ public interface TransactionService {
      * @param userId идентификатор пользователя
      * @return текущий баланс пользователя
      */
-    BigDecimal getBalance(Long userId) throws SQLException;
+    BalanceResponseDto getBalance(Long userId) throws SQLException;
 
     /**
      * Расчет общего дохода пользователя за указанный период.
@@ -78,7 +85,7 @@ public interface TransactionService {
      * @param to     дата окончания периода
      * @return общая сумма доходов за указанный период
      */
-    BigDecimal getTotalIncome(Long userId, LocalDate from, LocalDate to) throws SQLException;
+    IncomeResponseDto getTotalIncome(Long userId, LocalDate from, LocalDate to) throws SQLException;
 
     /**
      * Расчет общих расходов пользователя за указанный период.
@@ -88,7 +95,7 @@ public interface TransactionService {
      * @param to     дата окончания периода
      * @return общая сумма расходов за указанный период
      */
-    BigDecimal getTotalExpenses(Long userId, LocalDate from, LocalDate to) throws SQLException;
+    ExpensesResponseDto getTotalExpenses(Long userId, LocalDate from, LocalDate to) throws SQLException;
 
     /**
      * Анализ расходов пользователя по категориям за указанный период.
@@ -98,7 +105,7 @@ public interface TransactionService {
      * @param to     дата окончания периода
      * @return карта, где ключи - названия категорий, а значения - суммы расходов по этим категориям
      */
-    Map<String, BigDecimal> analyzeExpensesByCategory(Long userId, LocalDate from, LocalDate to) throws SQLException;
+    List<ExpenseAnalysisDto> analyzeExpensesByCategory(Long userId, LocalDate from, LocalDate to) throws SQLException;
 
     /**
      * Генерация финансового отчета пользователя за указанный период.
@@ -108,7 +115,7 @@ public interface TransactionService {
      * @param to     дата окончания периода
      * @return карта с финансовым отчетом
      */
-    Map<String, BigDecimal> generateFinancialReport(Long userId, LocalDate from, LocalDate to) throws SQLException;
+    FullReportResponseDto generateFinancialReport(Long userId, LocalDate from, LocalDate to) throws SQLException;
 
     /**
      * Обрабатывает транзакцию, проверяя, превышен ли бюджет для расходов

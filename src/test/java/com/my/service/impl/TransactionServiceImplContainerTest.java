@@ -61,7 +61,7 @@ class TransactionServiceImplContainerTest extends AbstractTestContainer {
         newTransaction.setDate(LocalDate.now());
         newTransaction.setType(TransactionType.INCOME);
         TransactionCategory transactionCategory = transactionCategoryService.getById(1L);
-        newTransaction.setCategory(transactionCategory);
+        newTransaction.setCategoryId(transactionCategory);
 
         Transaction savedTransaction = transactionService.save(newTransaction);
         assertThat(savedTransaction).isNotNull();

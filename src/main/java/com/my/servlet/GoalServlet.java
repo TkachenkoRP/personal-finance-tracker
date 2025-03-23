@@ -49,9 +49,9 @@ public class GoalServlet extends HttpServlet {
             long id = optionalId.get();
             findById(resp, id);
         } catch (EntityNotFoundException e) {
-            servletUtils.handleError(resp, HttpServletResponse.SC_NOT_FOUND, e.getMessage(), null);
+            servletUtils.handleError(resp, HttpServletResponse.SC_NOT_FOUND, e.getMessage());
         } catch (SQLException | IOException e) {
-            servletUtils.handleError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred. Please try again later.", e);
+            servletUtils.handleError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred. Please try again later.");
         }
     }
 
@@ -73,7 +73,7 @@ public class GoalServlet extends HttpServlet {
         }
         int contentLength = req.getContentLength();
         if (contentLength <= 0) {
-            servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, "Тело запроса пустое", null);
+            servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, "Тело запроса пустое");
             return;
         }
         try {
@@ -81,9 +81,9 @@ public class GoalServlet extends HttpServlet {
         } catch (AccessDeniedException e) {
             servletUtils.handleAccessDenied(resp);
         } catch (ArgumentNotValidException e) {
-            servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage(), e);
+            servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         } catch (SQLException | IOException e) {
-            servletUtils.handleError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred. Please try again later.", e);
+            servletUtils.handleError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred. Please try again later.");
         }
     }
 
@@ -103,19 +103,22 @@ public class GoalServlet extends HttpServlet {
         try {
             Optional<Long> id = servletUtils.getId(req);
             if (id.isEmpty()) {
-                servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверно указан id", null);
+                servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверно указан id");
                 return;
             }
             update(req, resp, id.get());
         } catch (EntityNotFoundException e) {
-            servletUtils.handleError(resp, HttpServletResponse.SC_NOT_FOUND, e.getMessage(), null);
+            servletUtils.handleError(resp, HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+        } catch (ArgumentNotValidException e) {
+            servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         } catch (SQLException | IOException e) {
-            servletUtils.handleError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred. Please try again later.", e);
+            servletUtils.handleError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred. Please try again later.");
         }
     }
 
     private void update(HttpServletRequest req, HttpServletResponse resp, Long id) throws IOException, SQLException {
         GoalRequestDto goalRequestDto = servletUtils.readRequestBody(req, GoalRequestDto.class);
+        Validation.validationGoal(goalRequestDto);
         GoalResponseDto updated = goalService.update(id, goalRequestDto);
         servletUtils.writeResponse(resp, updated);
     }
@@ -128,12 +131,12 @@ public class GoalServlet extends HttpServlet {
         try {
             Optional<Long> id = servletUtils.getId(req);
             if (id.isEmpty()) {
-                servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверно указан id", null);
+                servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверно указан id");
                 return;
             }
             delete(resp, id.get());
         } catch (SQLException e) {
-            servletUtils.handleError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred. Please try again later.", e);
+            servletUtils.handleError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred. Please try again later.");
         }
     }
 

@@ -1,5 +1,6 @@
 package com.my.repository;
 
+import com.my.dto.ExpenseAnalysisDto;
 import com.my.model.Transaction;
 import com.my.model.TransactionFilter;
 
@@ -7,7 +8,6 @@ import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 public interface TransactionRepository {
@@ -31,7 +31,7 @@ public interface TransactionRepository {
 
     BigDecimal getTotalExpenses(Long userId, LocalDate from, LocalDate to) throws SQLException;
 
-    Map<String, BigDecimal> analyzeExpensesByCategory(Long userId, LocalDate from, LocalDate to) throws SQLException;
+    List<ExpenseAnalysisDto> analyzeExpensesByCategory(Long userId, LocalDate from, LocalDate to) throws SQLException;
 
     BigDecimal getGoalExceeded(Long userId, Long transactionCategoryId) throws SQLException;
 }

@@ -1,12 +1,14 @@
 package com.my.servlet;
 
 import com.my.dto.UserRegisterRequestDto;
+import com.my.exception.ArgumentNotValidException;
 import com.my.exception.UserException;
 import com.my.mapper.UserMapper;
 import com.my.model.User;
 import com.my.service.UserManager;
 import com.my.service.UserService;
 import com.my.service.impl.UserServiceImpl;
+import com.my.util.Validation;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,19 +32,20 @@ public class RegisterServlet extends HttpServlet {
         servletUtils.setJsonContentType(resp);
         try {
             if (req.getContentLength() <= 0) {
-                servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, "Тело запроса пустое", null);
+                servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, "Тело запроса пустое");
                 return;
             }
             save(req, resp);
-        } catch (UserException e) {
-            servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage(), e);
-        } catch (SQLException | IOException e) {
+        } catch (UserException | ArgumentNotValidException e) {
+            servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+        }   catch (SQLException | IOException e) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }
 
     private void save(HttpServletRequest req, HttpServletResponse resp) throws SQLException, IOException {
         UserRegisterRequestDto userRegisterRequestDto = servletUtils.readRequestBody(req, UserRegisterRequestDto.class);
+        Validation.validationUserRegistry(userRegisterRequestDto);
         User registeredUser = userService.registration(userRegisterRequestDto.getPassword(), userRegisterRequestDto.getName(), userRegisterRequestDto.getPassword());
         UserManager.setLoggedInUser(registeredUser);
         resp.setStatus(HttpServletResponse.SC_CREATED);

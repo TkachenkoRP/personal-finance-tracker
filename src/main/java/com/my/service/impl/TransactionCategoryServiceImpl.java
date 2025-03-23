@@ -53,7 +53,7 @@ public class TransactionCategoryServiceImpl implements TransactionCategoryServic
         TransactionCategory transactionCategory = transactionCategoryRepository.getById(id).orElseThrow(
                 () -> new EntityNotFoundException(MessageFormat.format(CATEGORY_NOT_FOUND, id))
         );
-        logger.log(Level.DEBUG, "Get entity transaction categoryId by id: {}", transactionCategory);
+        logger.log(Level.DEBUG, "Get entity transaction category by id: {}", transactionCategory);
         return transactionCategory;
     }
 
@@ -65,7 +65,7 @@ public class TransactionCategoryServiceImpl implements TransactionCategoryServic
         TransactionCategory requestEntity = TransactionCategoryMapper.INSTANCE.toEntity(request);
         TransactionCategory saved = transactionCategoryRepository.save(requestEntity);
         TransactionCategoryResponseDto categoryResponseDto = TransactionCategoryMapper.INSTANCE.toDto(saved);
-        logger.log(Level.DEBUG, "Save transaction categoryId: {}", categoryResponseDto);
+        logger.log(Level.DEBUG, "Save transaction category: {}", categoryResponseDto);
         return categoryResponseDto;
     }
 
@@ -78,7 +78,7 @@ public class TransactionCategoryServiceImpl implements TransactionCategoryServic
         TransactionCategoryMapper.INSTANCE.updateTransaction(sourceTransactionCategory, updatedTransactionCategory);
         TransactionCategory updated = transactionCategoryRepository.update(updatedTransactionCategory);
         TransactionCategoryResponseDto categoryResponseDto = TransactionCategoryMapper.INSTANCE.toDto(updated);
-        logger.log(Level.DEBUG, "Update transaction categoryId: {}", categoryResponseDto);
+        logger.log(Level.DEBUG, "Update transaction category: {}", categoryResponseDto);
         return categoryResponseDto;
     }
 

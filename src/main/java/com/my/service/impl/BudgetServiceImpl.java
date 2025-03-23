@@ -14,6 +14,7 @@ import com.my.repository.TransactionRepository;
 import com.my.repository.impl.JdbcBudgetRepositoryImpl;
 import com.my.repository.impl.JdbcTransactionRepository;
 import com.my.service.BudgetService;
+import com.my.service.NotificationService;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -27,16 +28,18 @@ public class BudgetServiceImpl implements BudgetService {
     private static final Logger logger = LogManager.getRootLogger();
     private final BudgetRepository budgetRepository;
     private final TransactionRepository transactionRepository;
+    private final NotificationService emailNotificationService;
 
     private static final String BUDGET_NOT_FOUND = "Бюджет с id {0} не найден";
 
     public BudgetServiceImpl() {
-        this(new JdbcBudgetRepositoryImpl(), new JdbcTransactionRepository());
+        this(new JdbcBudgetRepositoryImpl(), new JdbcTransactionRepository(), new EmailNotificationServiceImpl());
     }
 
-    public BudgetServiceImpl(BudgetRepository budgetRepository, TransactionRepository transactionRepository) {
+    public BudgetServiceImpl(BudgetRepository budgetRepository, TransactionRepository transactionRepository, NotificationService emailNotificationService) {
         this.budgetRepository = budgetRepository;
         this.transactionRepository = transactionRepository;
+        this.emailNotificationService = emailNotificationService;
     }
 
     @Override
@@ -103,19 +106,20 @@ public class BudgetServiceImpl implements BudgetService {
     @Override
     public String getBudgetsExceededInfo(Long userId, Long categoryId) throws SQLException {
         Budget budget = getActiveBudgetByUserIdAndCategoryId(userId, categoryId);
-        String result = "";
+        String info = "";
         if (budget != null) {
             TransactionFilter transactionFilter = new TransactionFilter(userId, null, budget.getPeriodStart(), budget.getPeriodEnd(), categoryId, TransactionType.EXPENSE);
             List<Transaction> transactions = transactionRepository.getAll(transactionFilter);
             BigDecimal sum = transactions.stream().map(Transaction::getAmount)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             if (budget.getTotalAmount().compareTo(sum) >= 0) {
-                result = MessageFormat
+                info = MessageFormat
                         .format("#{0}: Перерасход для %name%! Ваши расходы: {1}, установленный бюджет: {2}",
                                 budget.getId(), sum, budget.getTotalAmount());
+                emailNotificationService.sendNotification(info);
             }
         }
-        return result;
+        return info;
     }
 
     @Override
