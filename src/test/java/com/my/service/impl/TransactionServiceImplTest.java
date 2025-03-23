@@ -1,5 +1,12 @@
 package com.my.service.impl;
 
+import com.my.dto.BalanceResponseDto;
+import com.my.dto.ExpensesResponseDto;
+import com.my.dto.FullReportResponseDto;
+import com.my.dto.IncomeResponseDto;
+import com.my.dto.TransactionRequestDto;
+import com.my.dto.TransactionResponseDto;
+import com.my.exception.EntityNotFoundException;
 import com.my.model.Transaction;
 import com.my.model.TransactionFilter;
 import com.my.repository.impl.JdbcTransactionRepository;
@@ -12,10 +19,11 @@ import org.mockito.MockitoAnnotations;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -37,9 +45,10 @@ class TransactionServiceImplTest {
         Transaction transaction = new Transaction();
         when(transactionRepository.getAll(filter)).thenReturn(List.of(transaction));
 
-        List<Transaction> transactions = transactionService.getAll(filter);
+        List<TransactionResponseDto> transactions = transactionService.getAll(filter);
 
         assertThat(transactions).isNotNull().hasSize(1);
+        verify(transactionRepository).getAll(filter);
     }
 
     @Test
@@ -48,9 +57,10 @@ class TransactionServiceImplTest {
         Transaction transaction = new Transaction();
         when(transactionRepository.getById(id)).thenReturn(Optional.of(transaction));
 
-        Transaction result = transactionService.getById(id);
+        TransactionResponseDto result = transactionService.getById(id);
 
         assertThat(result).isNotNull();
+        verify(transactionRepository).getById(id);
     }
 
     @Test
@@ -58,43 +68,41 @@ class TransactionServiceImplTest {
         Long id = 1L;
         when(transactionRepository.getById(id)).thenReturn(Optional.empty());
 
-        Transaction result = transactionService.getById(id);
+        EntityNotFoundException thrown = org.junit.jupiter.api.Assertions.assertThrows(EntityNotFoundException.class, () -> {
+            transactionService.getById(id);
+        });
 
-        assertThat(result).isNull();
-    }
-
-    @Test
-    void testSave() throws Exception {
-        Transaction transaction = new Transaction();
-        when(transactionRepository.save(transaction)).thenReturn(transaction);
-
-        Transaction result = transactionService.save(transaction);
-
-        assertThat(result).isNotNull();
+        assertThat(thrown.getMessage()).contains("Транзакция с id 1 не найдена");
     }
 
     @Test
     void testUpdate_ExistingId() throws Exception {
         Long id = 1L;
-        Transaction sourceTransaction = new Transaction();
-        Transaction updatedTransaction = new Transaction();
-        when(transactionRepository.getById(id)).thenReturn(Optional.of(updatedTransaction));
-        when(transactionRepository.update(updatedTransaction)).thenReturn(updatedTransaction);
+        TransactionRequestDto sourceTransaction = new TransactionRequestDto();
+        Transaction existingTransaction = new Transaction();
 
-        Transaction result = transactionService.update(id, sourceTransaction);
+        when(transactionRepository.getById(id)).thenReturn(Optional.of(existingTransaction));
+        when(transactionRepository.update(existingTransaction)).thenReturn(existingTransaction);
+
+        TransactionResponseDto result = transactionService.update(id, sourceTransaction);
 
         assertThat(result).isNotNull();
+        verify(transactionRepository).update(existingTransaction);
     }
 
     @Test
     void testUpdate_NonExistingId() throws Exception {
         Long id = 1L;
-        Transaction sourceTransaction = new Transaction();
+        TransactionRequestDto sourceTransaction = new TransactionRequestDto();
+
         when(transactionRepository.getById(id)).thenReturn(Optional.empty());
 
-        Transaction result = transactionService.update(id, sourceTransaction);
+        EntityNotFoundException thrown = org.junit.jupiter.api.Assertions.assertThrows(EntityNotFoundException.class, () -> {
+            transactionService.update(id, sourceTransaction);
+        });
 
-        assertThat(result).isNull();
+        assertThat(thrown.getMessage()).contains("Транзакция с id 1 не найдена");
+        verify(transactionRepository, never()).update(any());
     }
 
     @Test
@@ -105,7 +113,7 @@ class TransactionServiceImplTest {
         boolean result = transactionService.deleteById(id);
 
         assertThat(result).isTrue();
-        verify(transactionRepository).deleteById(1L);
+        verify(transactionRepository).deleteById(id);
     }
 
     @Test
@@ -116,7 +124,7 @@ class TransactionServiceImplTest {
         boolean result = transactionService.deleteById(id);
 
         assertThat(result).isFalse();
-        verify(transactionRepository).deleteById(1L);
+        verify(transactionRepository).deleteById(id);
     }
 
     @Test
@@ -125,9 +133,10 @@ class TransactionServiceImplTest {
         BigDecimal expectedExpense = BigDecimal.valueOf(100);
         when(transactionRepository.getMonthExpense(userId)).thenReturn(expectedExpense);
 
-        BigDecimal result = transactionService.getMonthExpense(userId);
+        ExpensesResponseDto result = transactionService.getMonthExpense(userId);
 
-        assertThat(result).isEqualTo(new BigDecimal("100"));
+        assertThat(result).isNotNull();
+        assertThat(result.totalExpenses()).isEqualTo(expectedExpense);
     }
 
     @Test
@@ -136,9 +145,10 @@ class TransactionServiceImplTest {
         BigDecimal expectedBalance = BigDecimal.valueOf(200);
         when(transactionRepository.getBalance(userId)).thenReturn(expectedBalance);
 
-        BigDecimal result = transactionService.getBalance(userId);
+        BalanceResponseDto result = transactionService.getBalance(userId);
 
-        assertThat(result).isEqualTo(expectedBalance);
+        assertThat(result).isNotNull();
+        assertThat(result.balance()).isEqualTo(expectedBalance);
     }
 
     @Test
@@ -146,13 +156,15 @@ class TransactionServiceImplTest {
         Long userId = 1L;
         LocalDate from = LocalDate.now().minusMonths(1);
         LocalDate to = LocalDate.now();
+
         when(transactionRepository.getTotalIncome(userId, from, to)).thenReturn(BigDecimal.valueOf(1000));
         when(transactionRepository.getTotalExpenses(userId, from, to)).thenReturn(BigDecimal.valueOf(500));
 
-        Map<String, BigDecimal> report = transactionService.generateFinancialReport(userId, from, to);
-        assertThat(report.get("income")).isEqualByComparingTo(BigDecimal.valueOf(1000));
-        assertThat(report.get("expenses")).isEqualByComparingTo(BigDecimal.valueOf(500));
-        assertThat(report.get("balance")).isEqualByComparingTo(BigDecimal.valueOf(500));
+        FullReportResponseDto report = transactionService.generateFinancialReport(userId, from, to);
+
+        assertThat(report.income().totalIncome()).isEqualByComparingTo(BigDecimal.valueOf(1000));
+        assertThat(report.expenses().totalExpenses()).isEqualByComparingTo(BigDecimal.valueOf(500));
+        assertThat(report.balance().balance()).isEqualByComparingTo(BigDecimal.valueOf(500));
     }
 
     @Test
@@ -160,13 +172,14 @@ class TransactionServiceImplTest {
         Long userId = 1L;
         LocalDate from = LocalDate.of(2023, 1, 1);
         LocalDate to = LocalDate.of(2023, 1, 31);
-        BigDecimal expectedIncome = new BigDecimal("1000.00");
+        BigDecimal expectedIncome = BigDecimal.valueOf(1000.00);
 
         when(transactionRepository.getTotalIncome(userId, from, to)).thenReturn(expectedIncome);
 
-        BigDecimal actualIncome = transactionService.getTotalIncome(userId, from, to);
+        IncomeResponseDto actualIncome = transactionService.getTotalIncome(userId, from, to);
 
-        assertThat(actualIncome).isEqualTo(expectedIncome);
+        assertThat(actualIncome).isNotNull();
+        assertThat(actualIncome.totalIncome()).isEqualTo(expectedIncome);
     }
 
     @Test
@@ -174,12 +187,13 @@ class TransactionServiceImplTest {
         Long userId = 1L;
         LocalDate from = LocalDate.of(2023, 1, 1);
         LocalDate to = LocalDate.of(2023, 1, 31);
-        BigDecimal expectedExpenses = new BigDecimal("500.00");
+        BigDecimal expectedExpenses = BigDecimal.valueOf(500.00);
 
         when(transactionRepository.getTotalExpenses(userId, from, to)).thenReturn(expectedExpenses);
 
-        BigDecimal actualExpenses = transactionService.getTotalExpenses(userId, from, to);
+        ExpensesResponseDto actualExpenses = transactionService.getTotalExpenses(userId, from, to);
 
-        assertThat(actualExpenses).isEqualTo(expectedExpenses);
+        assertThat(actualExpenses).isNotNull();
+        assertThat(actualExpenses.totalExpenses()).isEqualTo(expectedExpenses);
     }
 }

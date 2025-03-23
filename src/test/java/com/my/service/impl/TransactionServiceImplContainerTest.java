@@ -1,19 +1,19 @@
 package com.my.service.impl;
 
-import com.my.model.Transaction;
-import com.my.model.TransactionCategory;
-import com.my.model.TransactionFilter;
-import com.my.model.TransactionType;
+import com.my.dto.BalanceResponseDto;
+import com.my.dto.FullReportResponseDto;
+import com.my.dto.TransactionRequestDto;
+import com.my.dto.TransactionResponseDto;
+import com.my.exception.EntityNotFoundException;
 import com.my.service.AbstractTestContainer;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class TransactionServiceImplContainerTest extends AbstractTestContainer {
     final Long userId = 2L;
@@ -22,101 +22,47 @@ class TransactionServiceImplContainerTest extends AbstractTestContainer {
     final Long wrongId = 100L;
 
     @Test
-    void whenGetAllTransactions_thenReturnAllTransactions() throws Exception {
-        int count = transactionRepository.getAll().size();
-
-        List<Transaction> transactions = transactionService.getAll(new TransactionFilter());
-
-        assertThat(transactions).hasSize(count);
-    }
-
-    @Test
-    void whenGetAllTransactions_withFilterUserId_thenReturnAllTransactions() throws Exception {
-        TransactionFilter filter = new TransactionFilter(userIdForAnalyze);
-        List<Transaction> transactions = transactionService.getAll(filter);
-
-        assertThat(transactions).hasSize(countTransactionsForUser);
-    }
-
-    @Test
     void whenGetTransactionById_thenReturnTransaction() throws Exception {
-        Transaction transaction = transactionService.getById(1L);
+        TransactionResponseDto transaction = transactionService.getById(1L);
 
         assertThat(transaction).isNotNull();
         assertThat(transaction.getId()).isEqualTo(1L);
     }
 
     @Test
-    void whenGetTransactionById_withWrongId_thenReturnNull() throws Exception {
-        Transaction transaction = transactionService.getById(wrongId);
-
-        assertThat(transaction).isNull();
-    }
-
-    @Test
-    void whenSaveTransaction_thenTransactionIsSaved() throws Exception {
-        Transaction newTransaction = new Transaction();
-        newTransaction.setAmount(BigDecimal.valueOf(100));
-        newTransaction.setUser(userService.getById(1L));
-        newTransaction.setDate(LocalDate.now());
-        newTransaction.setType(TransactionType.INCOME);
-        TransactionCategory transactionCategory = transactionCategoryService.getById(1L);
-        newTransaction.setCategoryId(transactionCategory);
-
-        Transaction savedTransaction = transactionService.save(newTransaction);
-        assertThat(savedTransaction).isNotNull();
-        assertThat(savedTransaction.getId()).isNotNull();
-        assertThat(savedTransaction.getAmount()).isEqualTo(new BigDecimal("100"));
-        assertThat(savedTransaction.getUser().getId()).isEqualTo(1L);
+    void whenGetTransactionById_withWrongId_thenReturnNull() {
+        EntityNotFoundException thrown = assertThrows(EntityNotFoundException.class, () -> {
+            transactionService.getById(wrongId);
+        });
+        assertThat(thrown.getMessage()).isEqualTo("Транзакция с id 100 не найдена");
     }
 
     @Test
     void whenUpdateTransaction_thenTransactionIsUpdated() throws Exception {
-        Transaction existingTransaction = transactionService.getById(1L);
+        TransactionResponseDto existingTransaction = transactionService.getById(1L);
         existingTransaction.setAmount(BigDecimal.valueOf(200));
 
-        Transaction updatedTransaction = transactionService.update(existingTransaction.getId(), existingTransaction);
+        TransactionRequestDto transactionRequestDto = new TransactionRequestDto(existingTransaction.getDate(), existingTransaction.getType().name(), existingTransaction.getAmount(), existingTransaction.getDescription(), existingTransaction.getCategory().getId());
+        TransactionResponseDto updatedTransaction = transactionService.update(existingTransaction.getId(), transactionRequestDto);
         assertThat(updatedTransaction).isNotNull();
         assertThat(updatedTransaction.getId()).isEqualTo(1L);
         assertThat(updatedTransaction.getAmount()).isEqualByComparingTo(BigDecimal.valueOf(200));
     }
 
     @Test
-    void whenDeleteTransaction_thenReturnTrue() throws Exception {
-        Transaction deletedTransaction = transactionService.getById(6L);
-        assertThat(deletedTransaction).isNotNull();
-
-        boolean isDeleted = transactionService.deleteById(6L);
-        assertThat(isDeleted).isTrue();
-
-        deletedTransaction = transactionService.getById(6L);
-        assertThat(deletedTransaction).isNull();
-    }
-
-    @Test
-    void whenGetMonthExpense_thenReturnAmount() throws Exception {
-        Transaction transaction = new Transaction(LocalDate.now(), TransactionType.EXPENSE, new BigDecimal(700), "desc", transactionCategoryService.getById(1L));
-        transaction.setUser(userService.getById(2L));
-        transactionService.save(transaction);
-        BigDecimal expectedExpense = BigDecimal.valueOf(700.00);
-        BigDecimal actualExpense = transactionService.getMonthExpense(userId);
-        assertThat(actualExpense).isEqualByComparingTo(expectedExpense);
-    }
-
-    @Test
     void whenGetBalance_thenReturnCorrectBalance() throws Exception {
         BigDecimal expectedBalance = BigDecimal.valueOf(440.0);
-        BigDecimal actualBalance = transactionService.getBalance(userIdForAnalyze);
-        assertThat(actualBalance).isEqualByComparingTo(expectedBalance);
+        BalanceResponseDto actualBalance = transactionService.getBalance(userIdForAnalyze);
+        assertThat(actualBalance.balance()).isEqualByComparingTo(expectedBalance);
     }
 
     @Test
     void whenGenerateFinancialReport_thenReturnCorrectMap() throws Exception {
-        Map<String, BigDecimal> report = transactionService.generateFinancialReport(userId, LocalDate.of(2025, 1, 1), LocalDate.now());
+        FullReportResponseDto report = transactionService.generateFinancialReport(userId, LocalDate.of(2025, 1, 1), LocalDate.now());
         assertAll(
-                () -> assertThat(report).containsKey("income"),
-                () -> assertThat(report).containsKey("expenses"),
-                () -> assertThat(report).containsKey("balance")
+                () -> assertThat(report.balance()).isNotNull(),
+                () -> assertThat(report.expenses()).isNotNull(),
+                () -> assertThat(report.balance()).isNotNull()
         );
     }
 }

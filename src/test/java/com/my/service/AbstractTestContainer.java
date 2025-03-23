@@ -83,7 +83,7 @@ public abstract class AbstractTestContainer {
         userService = new UserServiceImpl(userRepository);
 
         transactionRepository = new JdbcTransactionRepository(testConnection);
-        transactionService = new TransactionServiceImpl(transactionRepository, null, null);
+        transactionService = new TransactionServiceImpl(transactionRepository, budgetService, goalService);
     }
 
     @AfterAll

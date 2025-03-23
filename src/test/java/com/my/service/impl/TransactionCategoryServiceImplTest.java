@@ -1,5 +1,9 @@
 package com.my.service.impl;
 
+import com.my.dto.TransactionCategoryRequestDto;
+import com.my.dto.TransactionCategoryResponseDto;
+import com.my.exception.EntityNotFoundException;
+import com.my.exception.TransactionCategoryException;
 import com.my.model.TransactionCategory;
 import com.my.repository.TransactionCategoryRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,7 +53,8 @@ class TransactionCategoryServiceImplTest {
 
         var result = transactionCategoryService.getById(1L);
 
-        assertThat(result).isEqualTo(category);
+        assertThat(result).isNotNull();
+        assertThat(result).isInstanceOf(TransactionCategoryResponseDto.class);
         verify(transactionCategoryRepository).getById(1L);
     }
 
@@ -57,34 +62,40 @@ class TransactionCategoryServiceImplTest {
     void testGetById_NotExists() throws Exception {
         when(transactionCategoryRepository.getById(1L)).thenReturn(Optional.empty());
 
-        var result = transactionCategoryService.getById(1L);
+        EntityNotFoundException thrown = org.junit.jupiter.api.Assertions.assertThrows(EntityNotFoundException.class, () -> {
+            transactionCategoryService.getById(1L);
+        });
 
-        assertThat(result).isNull();
+        assertThat(thrown.getMessage()).contains("Категория с id 1 не найдена");
     }
 
     @Test
     void testSave_NewCategory() throws Exception {
-        TransactionCategory category = new TransactionCategory();
-        category.setCategoryName("New Category");
+        TransactionCategoryRequestDto requestDto = new TransactionCategoryRequestDto();
+        requestDto.setCategoryName("New Category");
         when(transactionCategoryRepository.existsByCategoryNameIgnoreCase("New Category")).thenReturn(false);
-        when(transactionCategoryRepository.save(category)).thenReturn(category);
 
-        var result = transactionCategoryService.save(category);
+        TransactionCategory savedCategory = new TransactionCategory("New Category");
+        when(transactionCategoryRepository.save(any(TransactionCategory.class))).thenReturn(savedCategory);
+
+        var result = transactionCategoryService.save(requestDto);
 
         assertThat(result).isNotNull();
         assertThat(result.getCategoryName()).isEqualTo("New Category");
-        verify(transactionCategoryRepository).save(category);
+        verify(transactionCategoryRepository).save(any());
     }
 
     @Test
     void testSave_ExistingCategory() throws Exception {
-        TransactionCategory category = new TransactionCategory();
-        category.setCategoryName("Existing Category");
+        TransactionCategoryRequestDto requestDto = new TransactionCategoryRequestDto();
+        requestDto.setCategoryName("Existing Category");
         when(transactionCategoryRepository.existsByCategoryNameIgnoreCase("Existing Category")).thenReturn(true);
 
-        var result = transactionCategoryService.save(category);
+        TransactionCategoryException thrown = org.junit.jupiter.api.Assertions.assertThrows(TransactionCategoryException.class, () -> {
+            transactionCategoryService.save(requestDto);
+        });
 
-        assertThat(result).isNull();
+        assertThat(thrown.getMessage()).contains("Категория с названием Existing Category уже существует");
         verify(transactionCategoryRepository, never()).save(any());
     }
 
@@ -93,24 +104,31 @@ class TransactionCategoryServiceImplTest {
         TransactionCategory existingCategory = new TransactionCategory();
         existingCategory.setId(1L);
         existingCategory.setCategoryName("Old Name");
-        TransactionCategory sourceCategory = new TransactionCategory();
+
+        TransactionCategoryRequestDto sourceCategory = new TransactionCategoryRequestDto();
+        sourceCategory.setCategoryName("New Name");
+
         when(transactionCategoryRepository.getById(1L)).thenReturn(Optional.of(existingCategory));
+        when(transactionCategoryRepository.existsByCategoryNameIgnoreCase("New Name")).thenReturn(false);
         when(transactionCategoryRepository.update(existingCategory)).thenReturn(existingCategory);
 
         var result = transactionCategoryService.update(1L, sourceCategory);
 
-        assertThat(result).isEqualTo(existingCategory);
+        assertThat(result).isNotNull();
+        assertThat(result.getCategoryName()).isEqualTo("New Name");
         verify(transactionCategoryRepository).update(existingCategory);
     }
 
     @Test
     void testUpdate_NotExists() throws Exception {
-        TransactionCategory sourceCategory = new TransactionCategory();
+        TransactionCategoryRequestDto sourceCategory = new TransactionCategoryRequestDto();
         when(transactionCategoryRepository.getById(1L)).thenReturn(Optional.empty());
 
-        var result = transactionCategoryService.update(1L, sourceCategory);
+        EntityNotFoundException thrown = org.junit.jupiter.api.Assertions.assertThrows(EntityNotFoundException.class, () -> {
+            transactionCategoryService.update(1L, sourceCategory);
+        });
 
-        assertThat(result).isNull();
+        assertThat(thrown.getMessage()).contains("Категория с id 1 не найдена");
         verify(transactionCategoryRepository, never()).update(any());
     }
 

@@ -1,18 +1,22 @@
 package com.my.service.impl;
 
-import com.my.model.TransactionCategory;
+import com.my.dto.TransactionCategoryRequestDto;
+import com.my.dto.TransactionCategoryResponseDto;
+import com.my.exception.EntityNotFoundException;
+import com.my.exception.TransactionCategoryException;
 import com.my.service.AbstractTestContainer;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class TransactionCategoryServiceImplContainerTest extends AbstractTestContainer {
     final Long id = 1L;
     final String newCategoryName = "new name";
     final Long wrongId = 100L;
-    TransactionCategory transactionCategoryTester;
+    TransactionCategoryResponseDto transactionCategoryTester;
     final Long idForUpdate = 3L;
     final String categoryNameForWrongUpdate = "Investments";
     final Long idForDelete = 4L;
@@ -20,34 +24,36 @@ class TransactionCategoryServiceImplContainerTest extends AbstractTestContainer 
 
     @Test
     void whenGetAllCategories_thenReturnAllCategories() throws Exception {
-        List<TransactionCategory> transactionCategories = transactionCategoryService.getAll();
+        List<TransactionCategoryResponseDto> transactionCategories = transactionCategoryService.getAll();
         assertThat(transactionCategories).hasSize(4);
     }
 
     @Test
     void whenFindCategoryById_thenReturnCategory() throws Exception {
-        TransactionCategory transactionCategory = transactionCategoryService.getById(id);
+        TransactionCategoryResponseDto transactionCategory = transactionCategoryService.getById(id);
         assertThat(transactionCategory).isNotNull();
         assertThat(transactionCategory.getId()).isEqualTo(id);
     }
 
     @Test
-    void whenFindCategoryById_withWrongId_thenReturnNull() throws Exception {
-        TransactionCategory transactionCategory = transactionCategoryService.getById(wrongId);
-        assertThat(transactionCategory).isNull();
+    void whenFindCategoryById_withWrongId_thenReturnNull() {
+        EntityNotFoundException thrown = assertThrows(EntityNotFoundException.class, () -> transactionCategoryService.getById(wrongId));
+        assertThat(thrown.getMessage()).isEqualTo("Категория с id 100 не найдена");
     }
 
     @Test
     void whenSaveCategory_theReturnNewCategory() throws Exception {
-        TransactionCategory transactionCategory = transactionCategoryService.save(new TransactionCategory(newCategoryName));
+        TransactionCategoryResponseDto transactionCategory = transactionCategoryService.save(new TransactionCategoryRequestDto(newCategoryName));
         assertThat(transactionCategory).isNotNull();
         assertThat(transactionCategory.getId()).isNotNull().isEqualTo(newId);
     }
 
     @Test
-    void whenSaveCategory_withWrongName_theReturnNull() throws Exception {
-        TransactionCategory transactionCategory = transactionCategoryService.save(new TransactionCategory(categoryNameForWrongUpdate));
-        assertThat(transactionCategory).isNull();
+    void whenSaveCategory_withExistingName_thenThrowTransactionCategoryException() {
+        TransactionCategoryException thrown = assertThrows(TransactionCategoryException.class, () -> {
+            transactionCategoryService.save(new TransactionCategoryRequestDto(categoryNameForWrongUpdate));
+        });
+        assertThat(thrown.getMessage()).isEqualTo("Категория с названием Investments уже существует");
     }
 
     @Test
@@ -58,7 +64,7 @@ class TransactionCategoryServiceImplContainerTest extends AbstractTestContainer 
         assertThat(transactionCategoryTester.getCategoryName()).isEqualTo(categoryNameForWrongUpdate);
 
         transactionCategoryTester.setCategoryName(newCategoryName + idForUpdate);
-        TransactionCategory updated = transactionCategoryService.update(idForUpdate, transactionCategoryTester);
+        TransactionCategoryResponseDto updated = transactionCategoryService.update(idForUpdate, new TransactionCategoryRequestDto(transactionCategoryTester.getCategoryName()));
 
         assertThat(updated).isNotNull();
         assertThat(updated.getId()).isEqualTo(idForUpdate);
@@ -68,8 +74,7 @@ class TransactionCategoryServiceImplContainerTest extends AbstractTestContainer 
     @Test
     void whenUpdateCategory_withWrongId_thenReturnNull() throws Exception {
         transactionCategoryTester = transactionCategoryService.getById(id);
-        TransactionCategory updated = transactionCategoryService.update(wrongId, transactionCategoryTester);
-        assertThat(updated).isNull();
+        assertThrows(EntityNotFoundException.class, () -> transactionCategoryService.update(wrongId, new TransactionCategoryRequestDto(transactionCategoryTester.getCategoryName())));
     }
 
     @Test

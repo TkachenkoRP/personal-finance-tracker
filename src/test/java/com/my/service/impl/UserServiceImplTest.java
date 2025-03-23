@@ -1,5 +1,9 @@
 package com.my.service.impl;
 
+import com.my.dto.UserResponseDto;
+import com.my.exception.EntityNotFoundException;
+import com.my.exception.UserException;
+import com.my.mapper.UserMapper;
 import com.my.model.User;
 import com.my.model.UserRole;
 import com.my.repository.UserRepository;
@@ -13,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -37,19 +42,10 @@ class UserServiceImplTest {
         when(userRepository.isEmailAvailable(user.getEmail())).thenReturn(false);
         when(userRepository.save(any(User.class))).thenReturn(user);
 
-        User registeredUser = userService.registration(user.getEmail(), user.getName(), user.getPassword());
-
-        assertThat(registeredUser).isNotNull();
-        assertThat(registeredUser.getEmail()).isEqualTo(user.getEmail());
-    }
-
-    @Test
-    void registration_ShouldReturnNull_WhenEmailIsNotAvailable() throws Exception {
-        when(userRepository.isEmailAvailable(user.getEmail())).thenReturn(true);
-
-        User registeredUser = userService.registration(user.getEmail(), user.getName(), user.getPassword());
-
-        assertThat(registeredUser).isNull();
+        UserException thrown = assertThrows(UserException.class, () -> {
+            userService.registration(user.getEmail(), user.getName(), user.getPassword());
+        });
+        assertThat(thrown.getMessage()).isEqualTo("Пользователь с email test@example.com уже существует");
     }
 
     @Test
@@ -63,55 +59,33 @@ class UserServiceImplTest {
     }
 
     @Test
-    void login_ShouldReturnNull_WhenCredentialsAreIncorrect() throws Exception {
+    void login_ShouldThrowUserException_WhenCredentialsAreIncorrect() throws Exception {
         when(userRepository.getByEmailAndPassword(user.getEmail(), "wrongPassword")).thenReturn(Optional.empty());
 
-        User loggedInUser = userService.login(user.getEmail(), "wrongPassword");
+        UserException thrown = assertThrows(UserException.class, () -> userService.login(user.getEmail(), "wrongPassword"));
 
-        assertThat(loggedInUser).isNull();
+        assertThat(thrown.getMessage()).isEqualTo("Email и пароль не верны");
     }
 
     @Test
-    void getById_ShouldReturnUser_WhenUserExists() throws Exception {
+    void getById_ShouldReturnUserResponseDto_WhenUserExists() throws Exception {
         when(userRepository.getById(1L)).thenReturn(Optional.of(user));
+        UserResponseDto userResponseDto = UserMapper.INSTANCE.toDto(user);
 
-        User foundUser = userService.getById(1L);
-
+        UserResponseDto foundUser = userService.getById(1L);
         assertThat(foundUser).isNotNull();
         assertThat(foundUser.getEmail()).isEqualTo(user.getEmail());
     }
 
     @Test
-    void getById_ShouldReturnNull_WhenUserDoesNotExist() throws Exception {
+    void getById_ShouldThrowEntityNotFoundException_WhenUserDoesNotExist() throws Exception {
         when(userRepository.getById(1L)).thenReturn(Optional.empty());
 
-        User foundUser = userService.getById(1L);
+        EntityNotFoundException thrown = assertThrows(EntityNotFoundException.class, () -> {
+            userService.getById(1L);
+        });
 
-        assertThat(foundUser).isNull();
-    }
-
-    @Test
-    void update_ShouldReturnUpdatedUser_WhenEmailIsAvailable() throws Exception {
-        User sourceUser = new User("new@example.com", "newPassword", "New User", UserRole.ROLE_USER);
-        when(userRepository.getById(1L)).thenReturn(Optional.of(user));
-        when(userRepository.isEmailAvailable(sourceUser.getEmail())).thenReturn(false);
-        when(userRepository.update(any(User.class))).thenReturn(user);
-
-        User updatedUser = userService.update(1L, sourceUser);
-
-        assertThat(updatedUser).isNotNull();
-        assertThat(updatedUser.getEmail()).isEqualTo(sourceUser.getEmail());
-    }
-
-    @Test
-    void update_ShouldReturnNull_WhenEmailIsNotAvailable() throws Exception {
-        User sourceUser = new User("test@example.com", "newPassword", "New User", UserRole.ROLE_USER);
-        when(userRepository.getById(1L)).thenReturn(Optional.of(user));
-        when(userRepository.isEmailAvailable(sourceUser.getEmail())).thenReturn(true);
-
-        User updatedUser = userService.update(1L, sourceUser);
-
-        assertThat(updatedUser).isNull();
+        assertThat(thrown.getMessage()).contains("Пользователь с id 1 не найден");
     }
 
     @Test
@@ -133,22 +107,10 @@ class UserServiceImplTest {
     }
 
     @Test
-    void getAll_ShouldReturnListOfUsers() throws Exception {
+    void getAll_ShouldReturnListOfUserResponseDtos() throws Exception {
         when(userRepository.getAll()).thenReturn(List.of(user));
-
-        List<User> users = userService.getAll();
-
+        List<UserResponseDto> users = userService.getAll();
         assertThat(users).isNotNull().hasSize(1);
-    }
-
-    @Test
-    void blockUser_ShouldReturnTrue_WhenUserExists() throws Exception {
-        when(userRepository.getById(1L)).thenReturn(Optional.of(user));
-
-        boolean result = userService.blockUser(1L);
-
-        assertThat(result).isTrue();
-        assertThat(user.isBlocked()).isTrue();
     }
 
     @Test

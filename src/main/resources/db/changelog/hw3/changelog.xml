@@ -10,4 +10,5 @@
     <include file="009-add-isActive-in-goal.xml" relativeToChangelogFile="true"/>
     <include file="010-remove-budget-from-user.xml" relativeToChangelogFile="true"/>
     <include file="011-remove-spent-from-budget.xml" relativeToChangelogFile="true"/>
+    <include file="012-add-data-for-test.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
