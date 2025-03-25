@@ -25,7 +25,7 @@ class UserServiceImplContainerTest extends AbstractTestContainer {
     final String newUsername = "NewUserName";
     UserResponseDto userTest;
     final Long wrongId = 100L;
-    final Long newId = 5L;
+    final Long newId = 6L;
     final Long idForDelete = 4L;
 
     @Test
@@ -60,7 +60,7 @@ class UserServiceImplContainerTest extends AbstractTestContainer {
     }
 
     @Test
-    void whenRegistrationUser_withWrongEmail_thenReturnNull() throws Exception {
+    void whenRegistrationUser_withWrongEmail_thenReturnNull() {
         UserException thrown = assertThrows(UserException.class, () -> {
             userService.registration(adminEmail, userName, userPassword);
         });

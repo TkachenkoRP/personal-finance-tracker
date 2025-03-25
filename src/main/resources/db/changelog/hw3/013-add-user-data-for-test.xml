@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
+
+    <changeSet id="013-addUserDataForTest" author="Rodion Tkachenko" context="test">
+        <insert schemaName="tracker" tableName="user">
+            <column name="id" value="5"/>
+            <column name="email" value="user4@example.com"/>
+            <column name="password" value="password4"/>
+            <column name="name" value="User Four"/>
+            <column name="role" value="ROLE_USER"/>
+            <column name="blocked" value="true"/>
+        </insert>
+
+        <sql>
+            <![CDATA[
+            SELECT setval('tracker.user_id_seq', (SELECT MAX(id) FROM tracker.user));
+            ]]>
+        </sql>
+    </changeSet>
+</databaseChangeLog>

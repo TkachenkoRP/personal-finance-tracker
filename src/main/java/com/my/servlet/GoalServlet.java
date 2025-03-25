@@ -128,7 +128,7 @@ public class GoalServlet extends HttpServlet {
     }
 
     @Override
-    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) {
         if (!servletUtils.checkAuthentication(resp)) {
             return;
         }

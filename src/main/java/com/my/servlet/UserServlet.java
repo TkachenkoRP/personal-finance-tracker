@@ -5,6 +5,7 @@ import com.my.annotation.Loggable;
 import com.my.dto.UserRequestDto;
 import com.my.dto.UserResponseDto;
 import com.my.exception.EntityNotFoundException;
+import com.my.exception.UserException;
 import com.my.service.UserService;
 import com.my.service.impl.UserServiceImpl;
 import jakarta.servlet.annotation.WebServlet;
@@ -26,7 +27,6 @@ public class UserServlet extends HttpServlet {
 
     public UserServlet() {
         this(new UserServiceImpl());
-
     }
 
     public UserServlet(UserService userService) {
@@ -39,6 +39,7 @@ public class UserServlet extends HttpServlet {
         servletUtils.setJsonContentType(resp);
         try {
             Optional<Long> id = servletUtils.getId(req);
+            resp.setStatus(HttpServletResponse.SC_OK);
             if (id.isEmpty()) {
                 findAll(resp);
             } else {
@@ -75,14 +76,19 @@ public class UserServlet extends HttpServlet {
                 return;
             }
             long id = idOptional.get();
+            resp.setStatus(HttpServletResponse.SC_OK);
             String action = req.getParameter("action");
-            if ("block".equals(action)) {
+            if ("block".equalsIgnoreCase(action)) {
                 block(resp, id);
-            } else if ("unBlock".equals(action)) {
+            } else if ("unBlock".equalsIgnoreCase(action)) {
                 unBlock(resp, id);
             } else {
                 update(req, resp, id);
             }
+        } catch (EntityNotFoundException e) {
+            servletUtils.handleError(resp, HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+        } catch (UserException e) {
+            servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         } catch (SQLException | IOException e) {
             servletUtils.handleError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred. Please try again later.");
         }
@@ -96,7 +102,7 @@ public class UserServlet extends HttpServlet {
         }
     }
 
-    private void block(HttpServletResponse resp, long id) throws SQLException, IOException {
+    private void block(HttpServletResponse resp, long id) throws SQLException {
         if (servletUtils.checkAdminAccess(resp)) {
             boolean blocked = userService.blockUser(id);
             if (!blocked) {
@@ -105,7 +111,7 @@ public class UserServlet extends HttpServlet {
         }
     }
 
-    private void unBlock(HttpServletResponse resp, long id) throws IOException, SQLException {
+    private void unBlock(HttpServletResponse resp, long id) throws SQLException {
         if (servletUtils.checkAdminAccess(resp)) {
             boolean blocked = userService.unBlockUser(id);
             if (!blocked) {
@@ -129,11 +135,13 @@ public class UserServlet extends HttpServlet {
     }
 
     private void delete(HttpServletResponse resp, Long id) throws SQLException {
-        boolean deleted = userService.delete(id);
-        if (deleted) {
-            resp.setStatus(HttpServletResponse.SC_OK);
-        } else {
-            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+        if (servletUtils.checkAdminAccess(resp)) {
+            boolean deleted = userService.delete(id);
+            if (deleted) {
+                resp.setStatus(HttpServletResponse.SC_OK);
+            } else {
+                resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            }
         }
     }
 }

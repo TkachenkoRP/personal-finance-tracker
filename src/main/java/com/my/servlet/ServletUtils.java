@@ -44,7 +44,7 @@ public class ServletUtils {
     }
 
     public boolean checkAuthorizationToUpdate(HttpServletResponse resp, long id) {
-        if (UserManager.isAdmin() || UserManager.getLoggedInUser().getId() == id) {
+        if (UserManager.isAdmin() || (UserManager.isLoggedIn() && UserManager.getLoggedInUser().getId() == id)) {
             return true;
         }
         handleAccessDenied(resp);

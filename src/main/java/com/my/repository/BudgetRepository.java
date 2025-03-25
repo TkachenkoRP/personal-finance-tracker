@@ -11,7 +11,7 @@ public interface BudgetRepository {
 
     Optional<Budget> getById(Long id) throws SQLException;
 
-    Budget save(Long userId, Budget entity) throws SQLException;
+    Budget save(Long userId, Budget entity);
 
     Budget update(Budget entity) throws SQLException;
 
