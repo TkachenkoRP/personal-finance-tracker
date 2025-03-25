@@ -25,7 +25,12 @@ public class UserServlet extends HttpServlet {
     private final ServletUtils servletUtils;
 
     public UserServlet() {
-        this.userService = new UserServiceImpl();
+        this(new UserServiceImpl());
+
+    }
+
+    public UserServlet(UserService userService) {
+        this.userService = userService;
         this.servletUtils = new ServletUtils();
     }
 
@@ -41,7 +46,7 @@ public class UserServlet extends HttpServlet {
             }
         } catch (EntityNotFoundException e) {
             servletUtils.handleError(resp, HttpServletResponse.SC_NOT_FOUND, e.getMessage());
-        }  catch (SQLException | IOException e) {
+        } catch (SQLException | IOException e) {
             servletUtils.handleError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred. Please try again later.");
         }
     }

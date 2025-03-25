@@ -4,7 +4,7 @@ import com.my.dto.TransactionCategoryRequestDto;
 import com.my.dto.TransactionCategoryResponseDto;
 import com.my.exception.EntityNotFoundException;
 import com.my.exception.TransactionCategoryException;
-import com.my.service.AbstractTestContainer;
+import com.my.AbstractTestContainer;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

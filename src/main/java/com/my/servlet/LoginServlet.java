@@ -24,7 +24,11 @@ public class LoginServlet extends HttpServlet {
     private final ServletUtils servletUtils;
 
     public LoginServlet() {
-        this.userService = new UserServiceImpl();
+        this(new UserServiceImpl());
+    }
+
+    public LoginServlet(UserService userService) {
+        this.userService = userService;
         this.servletUtils = new ServletUtils();
     }
 

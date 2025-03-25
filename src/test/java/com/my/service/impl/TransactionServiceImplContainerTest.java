@@ -5,7 +5,7 @@ import com.my.dto.FullReportResponseDto;
 import com.my.dto.TransactionRequestDto;
 import com.my.dto.TransactionResponseDto;
 import com.my.exception.EntityNotFoundException;
-import com.my.service.AbstractTestContainer;
+import com.my.AbstractTestContainer;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;

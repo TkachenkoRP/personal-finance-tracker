@@ -6,7 +6,7 @@ import com.my.exception.EntityNotFoundException;
 import com.my.exception.UserException;
 import com.my.model.User;
 import com.my.model.UserRole;
-import com.my.service.AbstractTestContainer;
+import com.my.AbstractTestContainer;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.my.service;
+package com.my;
 
 import com.my.configuration.AppConfiguration;
 import com.my.repository.BudgetRepository;
@@ -11,11 +11,17 @@ import com.my.repository.impl.JdbcGoalRepositoryImpl;
 import com.my.repository.impl.JdbcTransactionCategoryRepository;
 import com.my.repository.impl.JdbcTransactionRepository;
 import com.my.repository.impl.JdbcUserRepository;
+import com.my.service.BudgetService;
+import com.my.service.GoalService;
+import com.my.service.TransactionCategoryService;
+import com.my.service.TransactionService;
+import com.my.service.UserService;
 import com.my.service.impl.BudgetServiceImpl;
 import com.my.service.impl.GoalServiceImpl;
 import com.my.service.impl.TransactionCategoryServiceImpl;
 import com.my.service.impl.TransactionServiceImpl;
 import com.my.service.impl.UserServiceImpl;
+import com.my.servlet.LoginServlet;
 import com.my.util.DBUtil;
 import liquibase.Contexts;
 import liquibase.Liquibase;
@@ -24,7 +30,6 @@ import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.LiquibaseException;
 import liquibase.resource.ClassLoaderResourceAccessor;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -36,7 +41,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 @Testcontainers
-public abstract class AbstractTestContainer {
+public abstract class AbstractTestContainer extends TestData {
     @Container
     private static final PostgreSQLContainer<?> postgresContainer =
             new PostgreSQLContainer<>("postgres:17.4")
@@ -54,10 +59,10 @@ public abstract class AbstractTestContainer {
     public static BudgetService budgetService;
     public static GoalRepository goalRepository;
     public static GoalService goalService;
+    public static LoginServlet loginServlet;
 
     @BeforeAll
     static void setUp() throws SQLException, LiquibaseException {
-        postgresContainer.start();
         String jdbcUrl = postgresContainer.getJdbcUrl();
         String username = postgresContainer.getUsername();
         String password = postgresContainer.getPassword();
@@ -75,20 +80,15 @@ public abstract class AbstractTestContainer {
 
         transactionCategoryRepository = new JdbcTransactionCategoryRepository(testConnection);
         transactionCategoryService = new TransactionCategoryServiceImpl(transactionCategoryRepository);
-        budgetRepository = new JdbcBudgetRepositoryImpl();
+        budgetRepository = new JdbcBudgetRepositoryImpl(testConnection);
         budgetService = new BudgetServiceImpl(budgetRepository, transactionRepository, null);
-        goalRepository = new JdbcGoalRepositoryImpl();
+        goalRepository = new JdbcGoalRepositoryImpl(testConnection);
         goalService = new GoalServiceImpl(goalRepository, transactionRepository, null);
         userRepository = new JdbcUserRepository(testConnection, budgetRepository, goalRepository);
         userService = new UserServiceImpl(userRepository);
-
         transactionRepository = new JdbcTransactionRepository(testConnection);
         transactionService = new TransactionServiceImpl(transactionRepository, budgetService, goalService);
-    }
 
-    @AfterAll
-    static void tearDown() throws SQLException {
-        testConnection.close();
-        postgresContainer.stop();
+        loginServlet = new LoginServlet(userService);
     }
 }
