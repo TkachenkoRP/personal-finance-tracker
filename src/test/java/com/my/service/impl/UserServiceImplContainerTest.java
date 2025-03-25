@@ -61,9 +61,8 @@ class UserServiceImplContainerTest extends AbstractTestContainer {
 
     @Test
     void whenRegistrationUser_withWrongEmail_thenReturnNull() {
-        UserException thrown = assertThrows(UserException.class, () -> {
-            userService.registration(adminEmail, userName, userPassword);
-        });
+        UserException thrown = assertThrows(UserException.class,
+                () -> userService.registration(adminEmail, userName, userPassword));
         assertThat(thrown.getMessage()).isEqualTo("Пользователь с email admin@admin уже существует");
     }
 
@@ -83,9 +82,9 @@ class UserServiceImplContainerTest extends AbstractTestContainer {
 
     @Test
     void whenLogin_withTruePasswordUpperCase_thenReturnNull() {
-        UserException thrown = assertThrows(UserException.class, () -> {
-            userService.login(adminEmail, adminPassword.toUpperCase());
-        });
+        UserException thrown = assertThrows(UserException.class, () ->
+                userService.login(adminEmail, adminPassword.toUpperCase())
+        );
         assertThat(thrown.getMessage()).isEqualTo("Email и пароль не верны");
     }
 
@@ -96,12 +95,12 @@ class UserServiceImplContainerTest extends AbstractTestContainer {
         assertThat(userTest.getId()).isEqualTo(idForUpdate);
         assertThat(userTest.getRole()).isEqualTo(UserRole.ROLE_USER);
 
-        userTest.setName(newUsername+idForUpdate);
+        userTest.setName(newUsername + idForUpdate);
         UserRequestDto userRequestDto = new UserRequestDto(userTest.getEmail(), userTest.getName());
         UserResponseDto updatedUser = userService.update(idForUpdate, userRequestDto);
 
         assertThat(updatedUser.getId()).isEqualTo(idForUpdate);
-        assertThat(updatedUser.getName()).isEqualTo(newUsername+idForUpdate);
+        assertThat(updatedUser.getName()).isEqualTo(newUsername + idForUpdate);
         assertThat(updatedUser.getRole()).isEqualTo(UserRole.ROLE_USER);
         assertThat(userRepository.getAll()).hasSize(count);
     }

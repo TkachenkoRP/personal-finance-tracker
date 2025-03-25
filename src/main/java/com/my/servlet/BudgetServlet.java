@@ -41,7 +41,7 @@ public class BudgetServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
         servletUtils.setJsonContentType(resp);
-        if (!servletUtils.checkAuthentication(resp)) {
+        if (servletUtils.checkAuthentication(resp)) {
             return;
         }
         try {
@@ -82,7 +82,7 @@ public class BudgetServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) {
         servletUtils.setJsonContentType(resp);
-        if (!servletUtils.checkAuthentication(resp)) {
+        if (servletUtils.checkAuthentication(resp)) {
             return;
         }
         int contentLength = req.getContentLength();
@@ -96,12 +96,12 @@ public class BudgetServlet extends HttpServlet {
             servletUtils.handleAccessDenied(resp);
         } catch (ArgumentNotValidException e) {
             servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-        } catch (SQLException | IOException e) {
+        } catch (IOException e) {
             servletUtils.handleError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred. Please try again later.");
         }
     }
 
-    private void save(HttpServletRequest req, HttpServletResponse resp) throws IOException, SQLException, ArgumentNotValidException {
+    private void save(HttpServletRequest req, HttpServletResponse resp) throws IOException, ArgumentNotValidException {
         BudgetRequestDto budgetRequestDto = servletUtils.readRequestBody(req, BudgetRequestDto.class);
         Validation.validationBudget(budgetRequestDto);
         BudgetResponseDto saved = budgetService.save(UserManager.getLoggedInUser().getId(), budgetRequestDto);
@@ -111,7 +111,7 @@ public class BudgetServlet extends HttpServlet {
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) {
         servletUtils.setJsonContentType(resp);
-        if (!servletUtils.checkAuthentication(resp)) {
+        if (servletUtils.checkAuthentication(resp)) {
             return;
         }
         try {
@@ -139,7 +139,7 @@ public class BudgetServlet extends HttpServlet {
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) {
-        if (!servletUtils.checkAuthentication(resp)) {
+        if (servletUtils.checkAuthentication(resp)) {
             return;
         }
         try {

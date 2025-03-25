@@ -14,8 +14,8 @@ public interface UserService {
     /**
      * Регистрация нового пользователя.
      *
-     * @param email адрес электронной почты пользователя
-     * @param name имя пользователя
+     * @param email    адрес электронной почты пользователя
+     * @param name     имя пользователя
      * @param password пароль пользователя
      * @return зарегистрированный пользователь
      */
@@ -24,7 +24,7 @@ public interface UserService {
     /**
      * Вход пользователя в систему.
      *
-     * @param email адрес электронной почты пользователя
+     * @param email    адрес электронной почты пользователя
      * @param password пароль пользователя
      * @return пользователь, который вошел в систему
      */
@@ -41,7 +41,7 @@ public interface UserService {
     /**
      * Обновление информации о пользователе.
      *
-     * @param id идентификатор пользователя
+     * @param id         идентификатор пользователя
      * @param sourceUser объект пользователя с обновленной информацией
      * @return обновленный пользователь
      */
@@ -70,5 +70,11 @@ public interface UserService {
      */
     boolean blockUser(Long userId) throws SQLException;
 
+    /**
+     * Разблокировка пользователя по его идентификатору.
+     *
+     * @param userId идентификатор пользователя
+     * @return true, если пользователь был успешно разблокирован, иначе false
+     */
     boolean unBlockUser(long userId) throws SQLException;
 }

@@ -68,9 +68,8 @@ class TransactionServiceImplTest {
         Long id = 1L;
         when(transactionRepository.getById(id)).thenReturn(Optional.empty());
 
-        EntityNotFoundException thrown = org.junit.jupiter.api.Assertions.assertThrows(EntityNotFoundException.class, () -> {
-            transactionService.getById(id);
-        });
+        EntityNotFoundException thrown = org.junit.jupiter.api.Assertions.assertThrows(EntityNotFoundException.class,
+                () -> transactionService.getById(id));
 
         assertThat(thrown.getMessage()).contains("Транзакция с id 1 не найдена");
     }
@@ -97,9 +96,8 @@ class TransactionServiceImplTest {
 
         when(transactionRepository.getById(id)).thenReturn(Optional.empty());
 
-        EntityNotFoundException thrown = org.junit.jupiter.api.Assertions.assertThrows(EntityNotFoundException.class, () -> {
-            transactionService.update(id, sourceTransaction);
-        });
+        EntityNotFoundException thrown = org.junit.jupiter.api.Assertions.assertThrows(EntityNotFoundException.class,
+                () -> transactionService.update(id, sourceTransaction));
 
         assertThat(thrown.getMessage()).contains("Транзакция с id 1 не найдена");
         verify(transactionRepository, never()).update(any());

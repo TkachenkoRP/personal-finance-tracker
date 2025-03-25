@@ -16,6 +16,9 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class Validation {
+    private Validation() {
+    }
+
     public static void validationBudget(BudgetRequestDto budget) throws ArgumentNotValidException {
         StringBuilder msg = new StringBuilder();
         if (budget.getTotalAmount() == null) {

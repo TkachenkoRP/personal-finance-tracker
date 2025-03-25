@@ -50,9 +50,9 @@ class TransactionCategoryServiceImplContainerTest extends AbstractTestContainer 
 
     @Test
     void whenSaveCategory_withExistingName_thenThrowTransactionCategoryException() {
-        TransactionCategoryException thrown = assertThrows(TransactionCategoryException.class, () -> {
-            transactionCategoryService.save(new TransactionCategoryRequestDto(categoryNameForWrongUpdate));
-        });
+        TransactionCategoryException thrown = assertThrows(TransactionCategoryException.class, () ->
+                transactionCategoryService.save(new TransactionCategoryRequestDto(categoryNameForWrongUpdate))
+        );
         assertThat(thrown.getMessage()).isEqualTo("Категория с названием Investments уже существует");
     }
 
@@ -74,7 +74,10 @@ class TransactionCategoryServiceImplContainerTest extends AbstractTestContainer 
     @Test
     void whenUpdateCategory_withWrongId_thenReturnNull() throws Exception {
         transactionCategoryTester = transactionCategoryService.getById(id);
-        assertThrows(EntityNotFoundException.class, () -> transactionCategoryService.update(wrongId, new TransactionCategoryRequestDto(transactionCategoryTester.getCategoryName())));
+        assertThrows(EntityNotFoundException.class, () ->
+                transactionCategoryService.update(wrongId,
+                        new TransactionCategoryRequestDto(transactionCategoryTester.getCategoryName()))
+        );
     }
 
     @Test

@@ -70,7 +70,7 @@ public class BudgetServiceImpl implements BudgetService {
     }
 
     @Override
-    public BudgetResponseDto save(Long userId, BudgetRequestDto budget) throws SQLException {
+    public BudgetResponseDto save(Long userId, BudgetRequestDto budget) {
         if (userId == null) {
             throw new AccessDeniedException("У Вас нет права доступа");
         }

@@ -37,7 +37,7 @@ public class TransactionCategoryServiceImpl implements TransactionCategoryServic
     @Override
     public List<TransactionCategoryResponseDto> getAll() throws SQLException {
         List<TransactionCategory> transactionCategoryList = transactionCategoryRepository.getAll();
-        List<TransactionCategoryResponseDto> responseDtoList = transactionCategoryList.stream().map(TransactionCategoryMapper.INSTANCE::toDto).toList();
+        List<TransactionCategoryResponseDto> responseDtoList = TransactionCategoryMapper.INSTANCE.toDto(transactionCategoryList);
         logger.log(Level.DEBUG, "Get all transaction categories");
         return responseDtoList;
     }

@@ -66,7 +66,7 @@ public class TransactionCategoryServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) {
         servletUtils.setJsonContentType(resp);
-        if (!servletUtils.checkAuthentication(resp)) {
+        if (servletUtils.checkAuthentication(resp)) {
             return;
         }
         int contentLength = req.getContentLength();
@@ -76,11 +76,9 @@ public class TransactionCategoryServlet extends HttpServlet {
         }
         try {
             save(req, resp);
-        } catch (TransactionCategoryException e) {
+        } catch (TransactionCategoryException | ArgumentNotValidException e) {
             servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-        } catch (ArgumentNotValidException e) {
-            servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-        } catch (SQLException | IOException e) {
+        }  catch (SQLException | IOException e) {
             servletUtils.handleError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error during saving");
         }
     }
@@ -95,7 +93,7 @@ public class TransactionCategoryServlet extends HttpServlet {
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) {
         servletUtils.setJsonContentType(resp);
-        if (!servletUtils.checkAuthentication(resp)) {
+        if (servletUtils.checkAuthentication(resp)) {
             return;
         }
         try {
@@ -107,11 +105,9 @@ public class TransactionCategoryServlet extends HttpServlet {
             update(req, resp, id.get());
         } catch (EntityNotFoundException e) {
             servletUtils.handleError(resp, HttpServletResponse.SC_NOT_FOUND, e.getMessage());
-        } catch (TransactionCategoryException e) {
+        } catch (TransactionCategoryException | ArgumentNotValidException e) {
             servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-        } catch (ArgumentNotValidException e) {
-            servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-        } catch (SQLException | IOException e) {
+        }  catch (SQLException | IOException e) {
             servletUtils.handleError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred. Please try again later.");
         }
     }
@@ -126,7 +122,7 @@ public class TransactionCategoryServlet extends HttpServlet {
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) {
         servletUtils.setJsonContentType(resp);
-        if (!servletUtils.checkAuthentication(resp)) {
+        if (servletUtils.checkAuthentication(resp)) {
             return;
         }
         try {

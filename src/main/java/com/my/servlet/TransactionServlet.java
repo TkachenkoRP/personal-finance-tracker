@@ -46,7 +46,7 @@ public class TransactionServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
         servletUtils.setJsonContentType(resp);
-        if (!servletUtils.checkAuthentication(resp)) {
+        if (servletUtils.checkAuthentication(resp)) {
             return;
         }
         TransactionFilter filter = servletUtils.getTransactionFilter(req);
@@ -139,7 +139,7 @@ public class TransactionServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) {
         servletUtils.setJsonContentType(resp);
-        if (!servletUtils.checkAuthentication(resp)) {
+        if (servletUtils.checkAuthentication(resp)) {
             return;
         }
         int contentLength = req.getContentLength();
@@ -166,7 +166,7 @@ public class TransactionServlet extends HttpServlet {
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) {
         servletUtils.setJsonContentType(resp);
-        if (!servletUtils.checkAuthentication(resp)) {
+        if (servletUtils.checkAuthentication(resp)) {
             return;
         }
         try {

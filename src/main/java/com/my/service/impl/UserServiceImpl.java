@@ -84,7 +84,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserResponseDto> getAll() throws SQLException {
-        return userRepository.getAll().stream().map(UserMapper.INSTANCE::toDto).toList();
+        List<User> users = userRepository.getAll();
+        List<UserResponseDto> responseDtoList = UserMapper.INSTANCE.toDto(users);
+        logger.log(Level.DEBUG, "Get all users");
+        return responseDtoList;
     }
 
     private User getUserByLoginAndPassword(String email, String password) throws SQLException {

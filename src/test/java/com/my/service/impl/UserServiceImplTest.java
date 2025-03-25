@@ -3,7 +3,6 @@ package com.my.service.impl;
 import com.my.dto.UserResponseDto;
 import com.my.exception.EntityNotFoundException;
 import com.my.exception.UserException;
-import com.my.mapper.UserMapper;
 import com.my.model.User;
 import com.my.model.UserRole;
 import com.my.repository.UserRepository;
@@ -42,9 +41,8 @@ class UserServiceImplTest {
         when(userRepository.isEmailAvailable(user.getEmail())).thenReturn(false);
         when(userRepository.save(any(User.class))).thenReturn(user);
 
-        UserException thrown = assertThrows(UserException.class, () -> {
-            userService.registration(user.getEmail(), user.getName(), user.getPassword());
-        });
+        UserException thrown = assertThrows(UserException.class,
+                () -> userService.registration(user.getEmail(), user.getName(), user.getPassword()));
         assertThat(thrown.getMessage()).isEqualTo("Пользователь с email test@example.com уже существует");
     }
 
@@ -70,8 +68,6 @@ class UserServiceImplTest {
     @Test
     void getById_ShouldReturnUserResponseDto_WhenUserExists() throws Exception {
         when(userRepository.getById(1L)).thenReturn(Optional.of(user));
-        UserResponseDto userResponseDto = UserMapper.INSTANCE.toDto(user);
-
         UserResponseDto foundUser = userService.getById(1L);
         assertThat(foundUser).isNotNull();
         assertThat(foundUser.getEmail()).isEqualTo(user.getEmail());
@@ -81,9 +77,8 @@ class UserServiceImplTest {
     void getById_ShouldThrowEntityNotFoundException_WhenUserDoesNotExist() throws Exception {
         when(userRepository.getById(1L)).thenReturn(Optional.empty());
 
-        EntityNotFoundException thrown = assertThrows(EntityNotFoundException.class, () -> {
-            userService.getById(1L);
-        });
+        EntityNotFoundException thrown = assertThrows(EntityNotFoundException.class,
+                () -> userService.getById(1L));
 
         assertThat(thrown.getMessage()).contains("Пользователь с id 1 не найден");
     }

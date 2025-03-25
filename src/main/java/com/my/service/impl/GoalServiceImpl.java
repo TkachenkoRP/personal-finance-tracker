@@ -45,11 +45,6 @@ public class GoalServiceImpl implements GoalService {
     }
 
     @Override
-    public List<Goal> geAll() throws SQLException {
-        return goalRepository.getAll();
-    }
-
-    @Override
     public Goal getEntityById(Long id) throws SQLException {
         Goal goal = goalRepository.getById(id).orElseThrow(
                 () -> new EntityNotFoundException(MessageFormat.format(GOAL_NOT_FOUND, id))

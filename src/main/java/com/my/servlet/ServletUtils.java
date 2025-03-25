@@ -29,10 +29,10 @@ public class ServletUtils {
 
     public boolean checkAuthentication(HttpServletResponse resp) {
         if (UserManager.isLoggedIn()) {
-            return true;
+            return false;
         }
         handleAccessDenied(resp);
-        return false;
+        return true;
     }
 
     public boolean checkAdminAccess(HttpServletResponse resp) {

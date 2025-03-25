@@ -20,9 +20,8 @@ class TransactionServiceImplContainerTest extends AbstractTestContainer {
 
     @Test
     void whenGetTransactionById_withWrongId_thenReturnNull() {
-        EntityNotFoundException thrown = assertThrows(EntityNotFoundException.class, () -> {
-            transactionService.getById(wrongId);
-        });
+        EntityNotFoundException thrown = assertThrows(EntityNotFoundException.class,
+                () -> transactionService.getById(wrongId));
         assertThat(thrown.getMessage()).isEqualTo("Транзакция с id 100 не найдена");
     }
 

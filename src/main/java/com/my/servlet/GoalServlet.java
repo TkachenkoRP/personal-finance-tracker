@@ -11,7 +11,6 @@ import com.my.service.GoalService;
 import com.my.service.UserManager;
 import com.my.service.impl.GoalServiceImpl;
 import com.my.util.Validation;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -41,7 +40,7 @@ public class GoalServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
         servletUtils.setJsonContentType(resp);
-        if (!servletUtils.checkAuthentication(resp)) {
+        if (servletUtils.checkAuthentication(resp)) {
             return;
         }
         try {
@@ -72,7 +71,7 @@ public class GoalServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) {
         servletUtils.setJsonContentType(resp);
-        if (!servletUtils.checkAuthentication(resp)) {
+        if (servletUtils.checkAuthentication(resp)) {
             return;
         }
         int contentLength = req.getContentLength();
@@ -101,7 +100,7 @@ public class GoalServlet extends HttpServlet {
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) {
         servletUtils.setJsonContentType(resp);
-        if (!servletUtils.checkAuthentication(resp)) {
+        if (servletUtils.checkAuthentication(resp)) {
             return;
         }
         try {
@@ -129,7 +128,7 @@ public class GoalServlet extends HttpServlet {
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) {
-        if (!servletUtils.checkAuthentication(resp)) {
+        if (servletUtils.checkAuthentication(resp)) {
             return;
         }
         try {
