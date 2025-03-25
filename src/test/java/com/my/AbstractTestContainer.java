@@ -1,5 +1,7 @@
 package com.my;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.my.configuration.AppConfiguration;
 import com.my.repository.BudgetRepository;
 import com.my.repository.GoalRepository;
@@ -23,6 +25,7 @@ import com.my.service.impl.TransactionServiceImpl;
 import com.my.service.impl.UserServiceImpl;
 import com.my.servlet.LoginServlet;
 import com.my.servlet.LogoutServlet;
+import com.my.servlet.RegisterServlet;
 import com.my.util.DBUtil;
 import liquibase.Contexts;
 import liquibase.Liquibase;
@@ -49,6 +52,7 @@ public abstract class AbstractTestContainer extends TestData {
                     .waitingFor(Wait.forListeningPort());
 
     public static Connection testConnection;
+    public static ObjectMapper objectMapper;
 
     public static UserRepository userRepository;
     public static UserService userService;
@@ -60,8 +64,10 @@ public abstract class AbstractTestContainer extends TestData {
     public static BudgetService budgetService;
     public static GoalRepository goalRepository;
     public static GoalService goalService;
+
     public static LoginServlet loginServlet;
     public static LogoutServlet logoutServlet;
+    public static RegisterServlet registerServlet;
 
     @BeforeAll
     static void setUp() throws SQLException, LiquibaseException {
@@ -80,6 +86,9 @@ public abstract class AbstractTestContainer extends TestData {
         Liquibase liquibase = new Liquibase(changelogFile, new ClassLoaderResourceAccessor(), database);
         liquibase.update(contexts);
 
+        objectMapper = new ObjectMapper();
+        objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+
         transactionCategoryRepository = new JdbcTransactionCategoryRepository(testConnection);
         transactionCategoryService = new TransactionCategoryServiceImpl(transactionCategoryRepository);
         budgetRepository = new JdbcBudgetRepositoryImpl(testConnection);
@@ -93,5 +102,6 @@ public abstract class AbstractTestContainer extends TestData {
 
         loginServlet = new LoginServlet(userService);
         logoutServlet = new LogoutServlet();
+        registerServlet = new RegisterServlet(userService);
     }
 }

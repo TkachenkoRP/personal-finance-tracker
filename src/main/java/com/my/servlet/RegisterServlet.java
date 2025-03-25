@@ -27,7 +27,11 @@ public class RegisterServlet extends HttpServlet {
     private final ServletUtils servletUtils;
 
     public RegisterServlet() {
-        this.userService = new UserServiceImpl();
+        this(new UserServiceImpl());
+    }
+
+    public RegisterServlet(UserService userService) {
+        this.userService = userService;
         this.servletUtils = new ServletUtils();
     }
 
@@ -35,14 +39,10 @@ public class RegisterServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) {
         servletUtils.setJsonContentType(resp);
         try {
-            if (req.getContentLength() <= 0) {
-                servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, "Тело запроса пустое");
-                return;
-            }
             save(req, resp);
         } catch (UserException | ArgumentNotValidException e) {
             servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-        }   catch (SQLException | IOException e) {
+        } catch (SQLException | IOException e) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }

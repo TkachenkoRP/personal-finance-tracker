@@ -15,4 +15,7 @@ public class TestData {
     public static final String USER_NAME = "User One";
     public static final UserRole USER_ROLE = UserRole.ROLE_USER;
 
+    public static final String NEW_USER_EMAIL = "new@new";
+    public static final String NEW_USER_PASSWORD = "newPassword";
+    public static final String NEW_USER_NAME = "New Name";
 }
