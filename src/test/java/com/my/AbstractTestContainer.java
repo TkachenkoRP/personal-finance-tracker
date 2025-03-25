@@ -22,6 +22,7 @@ import com.my.service.impl.TransactionCategoryServiceImpl;
 import com.my.service.impl.TransactionServiceImpl;
 import com.my.service.impl.UserServiceImpl;
 import com.my.servlet.LoginServlet;
+import com.my.servlet.LogoutServlet;
 import com.my.util.DBUtil;
 import liquibase.Contexts;
 import liquibase.Liquibase;
@@ -60,6 +61,7 @@ public abstract class AbstractTestContainer extends TestData {
     public static GoalRepository goalRepository;
     public static GoalService goalService;
     public static LoginServlet loginServlet;
+    public static LogoutServlet logoutServlet;
 
     @BeforeAll
     static void setUp() throws SQLException, LiquibaseException {
@@ -90,5 +92,6 @@ public abstract class AbstractTestContainer extends TestData {
         transactionService = new TransactionServiceImpl(transactionRepository, budgetService, goalService);
 
         loginServlet = new LoginServlet(userService);
+        logoutServlet = new LogoutServlet();
     }
 }
