@@ -39,8 +39,12 @@ public class TransactionCategoryServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
         servletUtils.setJsonContentType(resp);
+        if (servletUtils.checkAuthentication(resp)){
+            return;
+        }
         try {
             Optional<Long> id = servletUtils.getId(req);
+            resp.setStatus(HttpServletResponse.SC_OK);
             if (id.isEmpty()) {
                 findAll(resp);
             } else {
@@ -69,11 +73,6 @@ public class TransactionCategoryServlet extends HttpServlet {
         if (servletUtils.checkAuthentication(resp)) {
             return;
         }
-        int contentLength = req.getContentLength();
-        if (contentLength <= 0) {
-            servletUtils.handleError(resp, HttpServletResponse.SC_BAD_REQUEST, "Тело запроса пустое");
-            return;
-        }
         try {
             save(req, resp);
         } catch (TransactionCategoryException | ArgumentNotValidException e) {
@@ -87,6 +86,7 @@ public class TransactionCategoryServlet extends HttpServlet {
         TransactionCategoryRequestDto transactionCategoryRequestDto = servletUtils.readRequestBody(req, TransactionCategoryRequestDto.class);
         Validation.validationCategory(transactionCategoryRequestDto);
         TransactionCategoryResponseDto savedCategory = transactionCategoryService.save(transactionCategoryRequestDto);
+        resp.setStatus(HttpServletResponse.SC_CREATED);
         servletUtils.writeResponse(resp, savedCategory);
     }
 
@@ -115,6 +115,7 @@ public class TransactionCategoryServlet extends HttpServlet {
     private void update(HttpServletRequest req, HttpServletResponse resp, long id) throws IOException, SQLException {
         TransactionCategoryRequestDto transactionCategoryRequestDto = servletUtils.readRequestBody(req, TransactionCategoryRequestDto.class);
         Validation.validationCategory(transactionCategoryRequestDto);
+        resp.setStatus(HttpServletResponse.SC_OK);
         TransactionCategoryResponseDto updatedTransactionCategory = transactionCategoryService.update(id, transactionCategoryRequestDto);
         servletUtils.writeResponse(resp, updatedTransactionCategory);
     }

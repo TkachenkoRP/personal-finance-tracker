@@ -26,6 +26,7 @@ import com.my.service.impl.UserServiceImpl;
 import com.my.servlet.LoginServlet;
 import com.my.servlet.LogoutServlet;
 import com.my.servlet.RegisterServlet;
+import com.my.servlet.TransactionCategoryServlet;
 import com.my.servlet.UserServlet;
 import com.my.util.DBUtil;
 import liquibase.Contexts;
@@ -70,6 +71,7 @@ public abstract class AbstractTestContainer extends TestData {
     public static LogoutServlet logoutServlet;
     public static RegisterServlet registerServlet;
     public static UserServlet userServlet;
+    public static TransactionCategoryServlet transactionCategoryServlet;
 
     @BeforeAll
     static void setUp() throws SQLException, LiquibaseException {
@@ -106,5 +108,6 @@ public abstract class AbstractTestContainer extends TestData {
         logoutServlet = new LogoutServlet();
         registerServlet = new RegisterServlet(userService);
         userServlet = new UserServlet(userService);
+        transactionCategoryServlet = new TransactionCategoryServlet(transactionCategoryService);
     }
 }

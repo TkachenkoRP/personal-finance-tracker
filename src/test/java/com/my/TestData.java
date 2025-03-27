@@ -35,10 +35,15 @@ public class TestData {
     public static final String NEW_USER_EMAIL = "new@new";
     public static final String NEW_USER_PASSWORD = "newPassword";
     public static final String NEW_USER_NAME = "New Name";
-
     public static final Long USER_ID_FOR_UPDATE = 3L;
-
     public static final Long USER_ID_FOR_DELETE = 4L;
-
     public static final Long USER_ID_FOR_UNBLOCK = 5L;
+
+    public static final Long CATEGORY_ID = 1L;
+    public static final String CATEGORY_NAME = "Salary";
+    public static final String NEW_CATEGORY_NAME = "New Category";
+    public static final Long CATEGORY_ID_FOR_UPDATE = 2L;
+    public static final String CATEGORY_NAME_FOR_UPDATE = "Freelance";
+    public static final Long CATEGORY_ID_FOR_DELETE = 4L;
+
 }
