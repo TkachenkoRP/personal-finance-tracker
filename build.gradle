@@ -1,7 +1,6 @@
 plugins {
     id 'java'
     id 'war'
-    id 'io.freefair.aspectj.post-compile-weaving' version '8.6'
     id 'io.freefair.lombok' version '8.6'
 }
 
@@ -23,9 +22,7 @@ ext {
     lombokVersion = '1.18.36'
     lombokMapstructVersion = '0.2.0'
     log4jVersion = '2.24.3'
-    servletVersion = '6.1.0'
     jacksonVersion = '2.18.3'
-    aspectjVersion = '1.9.23'
 }
 
 dependencies {
@@ -38,10 +35,7 @@ dependencies {
     annotationProcessor "org.projectlombok:lombok-mapstruct-binding:${lombokMapstructVersion}"
     implementation "org.apache.logging.log4j:log4j-api:${log4jVersion}"
     implementation "org.apache.logging.log4j:log4j-core:${log4jVersion}"
-    compileOnly "jakarta.servlet:jakarta.servlet-api:${servletVersion}"
     implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
-    runtimeOnly "org.aspectj:aspectjweaver:${aspectjVersion}"
-    implementation "org.aspectj:aspectjtools:${aspectjVersion}"
     testImplementation platform("org.junit:junit-bom:${junitVersion}")
     testImplementation "org.junit.jupiter:junit-jupiter"
     testImplementation "org.assertj:assertj-core:${assertjVersion}"
@@ -52,7 +46,6 @@ dependencies {
     testImplementation "org.testcontainers:junit-jupiter:${testContainerVersion}"
     testCompileOnly("org.projectlombok:lombok:${lombokVersion}")
     testAnnotationProcessor("org.projectlombok:lombok:${lombokVersion}")
-    testImplementation("jakarta.servlet:jakarta.servlet-api:${servletVersion}")
 }
 
 test {

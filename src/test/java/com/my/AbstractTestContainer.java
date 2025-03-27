@@ -23,11 +23,6 @@ import com.my.service.impl.GoalServiceImpl;
 import com.my.service.impl.TransactionCategoryServiceImpl;
 import com.my.service.impl.TransactionServiceImpl;
 import com.my.service.impl.UserServiceImpl;
-import com.my.servlet.LoginServlet;
-import com.my.servlet.LogoutServlet;
-import com.my.servlet.RegisterServlet;
-import com.my.servlet.TransactionCategoryServlet;
-import com.my.servlet.UserServlet;
 import com.my.util.DBUtil;
 import liquibase.Contexts;
 import liquibase.Liquibase;
@@ -67,12 +62,6 @@ public abstract class AbstractTestContainer extends TestData {
     public static GoalRepository goalRepository;
     public static GoalService goalService;
 
-    public static LoginServlet loginServlet;
-    public static LogoutServlet logoutServlet;
-    public static RegisterServlet registerServlet;
-    public static UserServlet userServlet;
-    public static TransactionCategoryServlet transactionCategoryServlet;
-
     @BeforeAll
     static void setUp() throws SQLException, LiquibaseException {
         String jdbcUrl = postgresContainer.getJdbcUrl();
@@ -103,11 +92,5 @@ public abstract class AbstractTestContainer extends TestData {
         userService = new UserServiceImpl(userRepository);
         transactionRepository = new JdbcTransactionRepository(testConnection);
         transactionService = new TransactionServiceImpl(transactionRepository, budgetService, goalService);
-
-        loginServlet = new LoginServlet(userService);
-        logoutServlet = new LogoutServlet();
-        registerServlet = new RegisterServlet(userService);
-        userServlet = new UserServlet(userService);
-        transactionCategoryServlet = new TransactionCategoryServlet(transactionCategoryService);
     }
 }
