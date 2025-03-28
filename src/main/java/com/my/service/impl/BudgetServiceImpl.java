@@ -12,56 +12,48 @@ import com.my.model.TransactionFilter;
 import com.my.model.TransactionType;
 import com.my.repository.BudgetRepository;
 import com.my.repository.TransactionRepository;
-import com.my.repository.impl.JdbcBudgetRepositoryImpl;
-import com.my.repository.impl.JdbcTransactionRepository;
 import com.my.service.BudgetService;
 import com.my.service.NotificationService;
+import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.List;
 
 @Loggable
+@Service
+@RequiredArgsConstructor
 public class BudgetServiceImpl implements BudgetService {
     private static final Logger logger = LogManager.getRootLogger();
     private final BudgetRepository budgetRepository;
     private final TransactionRepository transactionRepository;
     private final NotificationService emailNotificationService;
+    private final BudgetMapper budgetMapper;
 
     private static final String BUDGET_NOT_FOUND = "Бюджет с id {0} не найден";
 
-    public BudgetServiceImpl() {
-        this(new JdbcBudgetRepositoryImpl(), new JdbcTransactionRepository(), new EmailNotificationServiceImpl());
-    }
-
-    public BudgetServiceImpl(BudgetRepository budgetRepository, TransactionRepository transactionRepository, NotificationService emailNotificationService) {
-        this.budgetRepository = budgetRepository;
-        this.transactionRepository = transactionRepository;
-        this.emailNotificationService = emailNotificationService;
-    }
-
     @Override
-    public List<BudgetResponseDto> geAll() throws SQLException {
+    public List<BudgetResponseDto> geAll() {
         List<Budget> budgets = budgetRepository.getAll();
-        List<BudgetResponseDto> responseDtoList = BudgetMapper.INSTANCE.toDto(budgets);
+        List<BudgetResponseDto> responseDtoList = budgetMapper.toDto(budgets);
         logger.log(Level.DEBUG, "Get all budgets");
         return responseDtoList;
     }
 
     @Override
-    public BudgetResponseDto getById(Long id) throws SQLException {
+    public BudgetResponseDto getById(Long id) {
         Budget budget = getEntityById(id);
-        BudgetResponseDto responseDto = BudgetMapper.INSTANCE.toDto(budget);
+        BudgetResponseDto responseDto = budgetMapper.toDto(budget);
         logger.log(Level.DEBUG, "Get budget by id: {}", responseDto);
         return responseDto;
     }
 
     @Override
-    public Budget getEntityById(Long id) throws SQLException {
+    public Budget getEntityById(Long id) {
         Budget budget = budgetRepository.getById(id).orElseThrow(
                 () -> new EntityNotFoundException(MessageFormat.format(BUDGET_NOT_FOUND, id))
         );
@@ -74,39 +66,39 @@ public class BudgetServiceImpl implements BudgetService {
         if (userId == null) {
             throw new AccessDeniedException("У Вас нет права доступа");
         }
-        Budget requestEntity = BudgetMapper.INSTANCE.toEntity(budget);
+        Budget requestEntity = budgetMapper.toEntity(budget);
         requestEntity.setActive(true);
         Budget saved = budgetRepository.save(userId, requestEntity);
-        BudgetResponseDto responseDto = BudgetMapper.INSTANCE.toDto(saved);
+        BudgetResponseDto responseDto = budgetMapper.toDto(saved);
         logger.log(Level.DEBUG, "Save budget: {}", responseDto);
         return responseDto;
     }
 
     @Override
-    public BudgetResponseDto update(Long id, BudgetRequestDto sourceBudget) throws SQLException {
+    public BudgetResponseDto update(Long id, BudgetRequestDto sourceBudget) {
         Budget updatedBudget = getEntityById(id);
-        BudgetMapper.INSTANCE.updateBudget(sourceBudget, updatedBudget);
+        budgetMapper.updateBudget(sourceBudget, updatedBudget);
         Budget updated = budgetRepository.update(updatedBudget);
-        BudgetResponseDto responseDto = BudgetMapper.INSTANCE.toDto(updated);
+        BudgetResponseDto responseDto = budgetMapper.toDto(updated);
         logger.log(Level.DEBUG, "Update budget: {}", responseDto);
         return responseDto;
     }
 
     @Override
-    public boolean deleteById(Long id) throws SQLException {
+    public boolean deleteById(Long id) {
         return budgetRepository.deleteById(id);
     }
 
     @Override
-    public List<BudgetResponseDto> getAllBudgetsByUserId(Long userId) throws SQLException {
+    public List<BudgetResponseDto> getAllBudgetsByUserId(Long userId) {
         List<Budget> budgets = budgetRepository.getAllByUserId(userId);
-        List<BudgetResponseDto> responseDtoList = BudgetMapper.INSTANCE.toDto(budgets);
+        List<BudgetResponseDto> responseDtoList = budgetMapper.toDto(budgets);
         logger.log(Level.DEBUG, "Get Budget by user id: {}", responseDtoList);
         return responseDtoList;
     }
 
     @Override
-    public String getBudgetsExceededInfo(Long userId, Long categoryId) throws SQLException {
+    public String getBudgetsExceededInfo(Long userId, Long categoryId) {
         Budget budget = getActiveBudgetByUserIdAndCategoryId(userId, categoryId);
         String info = "";
         if (budget != null) {
@@ -125,11 +117,11 @@ public class BudgetServiceImpl implements BudgetService {
     }
 
     @Override
-    public boolean deactivateBudget(Long id) throws SQLException {
+    public boolean deactivateBudget(Long id) {
         return budgetRepository.deactivateBudgetById(id);
     }
 
-    private Budget getActiveBudgetByUserIdAndCategoryId(Long userId, Long categoryId) throws SQLException {
+    private Budget getActiveBudgetByUserIdAndCategoryId(Long userId, Long categoryId) {
         return budgetRepository.getActiveBudgetByUserIdAndCategoryId(userId, categoryId).orElse(null);
     }
 }

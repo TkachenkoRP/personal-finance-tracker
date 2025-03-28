@@ -7,7 +7,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.ReportingPolicy;
-import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 
@@ -15,14 +14,9 @@ import java.util.List;
  * Интерфейс TransactionMapper для преобразования объектов типа Transaction.
  * Использует MapStruct для автоматизации процесса маппинга.
  */
-@Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE,
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE,
         uses = {TransactionCategoryMap.class, UserMap.class})
 public interface TransactionMapper {
-    /**
-     * Экземпляр TransactionMapper для использования в приложении.
-     */
-    TransactionMapper INSTANCE = Mappers.getMapper(TransactionMapper.class);
-
     /**
      * Обновляет существующий объект Transaction на основе данных из TransactionRequestDto.
      *

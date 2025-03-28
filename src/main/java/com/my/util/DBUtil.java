@@ -1,24 +1,28 @@
 package com.my.util;
 
-import com.my.configuration.AppConfiguration;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+@Component
 public class DBUtil {
+    @Value("database.url")
+    private String url;
+    @Value("database.username")
+    private String username;
+    @Value("database.password")
+    private String password;
+    @Value("datasource.schema")
+    private String schema;
 
-    private DBUtil() {
+    public Connection getConnection() {
+        return getConnection(schema);
     }
 
-    public static Connection getConnection() {
-        return getConnection(AppConfiguration.getProperty("database.schema"));
-    }
-
-    public static Connection getConnection(String schema) {
-        String url = AppConfiguration.getProperty("database.url");
-        String username = AppConfiguration.getProperty("database.username");
-        String password = AppConfiguration.getProperty("database.password");
+    public Connection getConnection(String schema) {
         return getConnection(url, username, password, schema);
     }
 

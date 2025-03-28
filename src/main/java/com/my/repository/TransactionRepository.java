@@ -5,7 +5,6 @@ import com.my.model.Transaction;
 import com.my.model.TransactionFilter;
 
 import java.math.BigDecimal;
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -18,72 +17,64 @@ public interface TransactionRepository {
      * Получение всех транзакций.
      *
      * @return список всех транзакций
-     * @throws SQLException если происходит ошибка при доступе к базе данных
      */
-    List<Transaction> getAll() throws SQLException;
+    List<Transaction> getAll();
 
     /**
      * Получение всех транзакций с применением фильтра.
      *
      * @param filter объект фильтра для применения к выборке транзакций
      * @return список транзакций, соответствующих фильтру
-     * @throws SQLException если происходит ошибка при доступе к базе данных
      */
-    List<Transaction> getAll(TransactionFilter filter) throws SQLException;
+    List<Transaction> getAll(TransactionFilter filter);
 
     /**
      * Получение транзакции по ее идентификатору.
      *
      * @param id идентификатор транзакции
      * @return объект Optional, содержащий найденную транзакцию, или пустой, если транзакция не найдена
-     * @throws SQLException если происходит ошибка при доступе к базе данных
      */
-    Optional<Transaction> getById(Long id) throws SQLException;
+    Optional<Transaction> getById(Long id);
 
     /**
      * Сохранение новой транзакции.
      *
      * @param entity объект транзакции для сохранения
      * @return сохраненный объект транзакции
-     * @throws SQLException если происходит ошибка при доступе к базе данных
      */
-    Transaction save(Transaction entity) throws SQLException;
+    Transaction save(Transaction entity);
 
     /**
      * Обновление существующей транзакции.
      *
      * @param entity объект транзакции с обновленными данными
      * @return обновленный объект транзакции
-     * @throws SQLException если происходит ошибка при доступе к базе данных
      */
-    Transaction update(Transaction entity) throws SQLException;
+    Transaction update(Transaction entity);
 
     /**
      * Удаление транзакции по ее идентификатору.
      *
      * @param id идентификатор транзакции для удаления
      * @return true, если транзакция была успешно удалена, иначе false
-     * @throws SQLException если происходит ошибка при доступе к базе данных
      */
-    boolean deleteById(Long id) throws SQLException;
+    boolean deleteById(Long id);
 
     /**
      * Получение общих расходов за месяц для указанного пользователя.
      *
      * @param userId идентификатор пользователя
      * @return общая сумма расходов за месяц
-     * @throws SQLException если происходит ошибка при доступе к базе данных
      */
-    BigDecimal getMonthExpense(Long userId) throws SQLException;
+    BigDecimal getMonthExpense(Long userId);
 
     /**
      * Получение баланса для указанного пользователя.
      *
      * @param userId идентификатор пользователя
      * @return текущий баланс пользователя
-     * @throws SQLException если происходит ошибка при доступе к базе данных
      */
-    BigDecimal getBalance(Long userId) throws SQLException;
+    BigDecimal getBalance(Long userId);
 
     /**
      * Получение общей суммы доходов за указанный период для указанного пользователя.
@@ -92,9 +83,8 @@ public interface TransactionRepository {
      * @param from   начальная дата периода
      * @param to     конечная дата периода
      * @return общая сумма доходов за указанный период
-     * @throws SQLException если происходит ошибка при доступе к базе данных
      */
-    BigDecimal getTotalIncome(Long userId, LocalDate from, LocalDate to) throws SQLException;
+    BigDecimal getTotalIncome(Long userId, LocalDate from, LocalDate to);
 
     /**
      * Получение общей суммы расходов за указанный период для указанного пользователя.
@@ -103,9 +93,8 @@ public interface TransactionRepository {
      * @param from   начальная дата периода
      * @param to     конечная дата периода
      * @return общая сумма расходов за указанный период
-     * @throws SQLException если происходит ошибка при доступе к базе данных
      */
-    BigDecimal getTotalExpenses(Long userId, LocalDate from, LocalDate to) throws SQLException;
+    BigDecimal getTotalExpenses(Long userId, LocalDate from, LocalDate to);
 
     /**
      * Анализ расходов по категориям за указанный период для указанного пользователя.
@@ -114,9 +103,8 @@ public interface TransactionRepository {
      * @param from   начальная дата периода
      * @param to     конечная дата периода
      * @return список анализа расходов по категориям
-     * @throws SQLException если происходит ошибка при доступе к базе данных
      */
-    List<ExpenseAnalysisDto> analyzeExpensesByCategory(Long userId, LocalDate from, LocalDate to) throws SQLException;
+    List<ExpenseAnalysisDto> analyzeExpensesByCategory(Long userId, LocalDate from, LocalDate to);
 
     /**
      * Получение суммы превышения цели для указанного пользователя и категории транзакции.
@@ -124,7 +112,6 @@ public interface TransactionRepository {
      * @param userId                идентификатор пользователя
      * @param transactionCategoryId идентификатор категории транзакции
      * @return сумма превышения цели
-     * @throws SQLException если происходит ошибка при доступе к базе данных
      */
-    BigDecimal getGoalExceeded(Long userId, Long transactionCategoryId) throws SQLException;
+    BigDecimal getGoalExceeded(Long userId, Long transactionCategoryId);
 }

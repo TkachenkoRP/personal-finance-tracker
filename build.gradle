@@ -12,6 +12,7 @@ repositories {
 }
 
 ext {
+    springVersion = '7.0.0-M3'
     mapstructVersion = '1.6.3'
     junitVersion = '5.10.0'
     assertjVersion = '3.27.3'
@@ -22,10 +23,16 @@ ext {
     lombokVersion = '1.18.36'
     lombokMapstructVersion = '0.2.0'
     log4jVersion = '2.24.3'
+    servletVersion = '6.1.0'
     jacksonVersion = '2.18.3'
+    snakeYmlVersion = '2.2'
+    hibernateVersion = '9.0.0.CR1'
 }
 
 dependencies {
+    implementation "org.springframework:spring-webmvc:${springVersion}"
+    implementation "org.springframework:spring-jdbc:${springVersion}"
+    implementation "org.yaml:snakeyaml:${snakeYmlVersion}"
     implementation "org.postgresql:postgresql:${postgresqlVersion}"
     implementation "org.liquibase:liquibase-core:${liquibaseVersion}"
     implementation "org.mapstruct:mapstruct:${mapstructVersion}"
@@ -35,7 +42,10 @@ dependencies {
     annotationProcessor "org.projectlombok:lombok-mapstruct-binding:${lombokMapstructVersion}"
     implementation "org.apache.logging.log4j:log4j-api:${log4jVersion}"
     implementation "org.apache.logging.log4j:log4j-core:${log4jVersion}"
+    compileOnly "jakarta.servlet:jakarta.servlet-api:${servletVersion}"
     implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+    implementation "org.hibernate.validator:hibernate-validator:${hibernateVersion}"
+    implementation 'org.glassfish.expressly:expressly:6.0.0-M1'
     testImplementation platform("org.junit:junit-bom:${junitVersion}")
     testImplementation "org.junit.jupiter:junit-jupiter"
     testImplementation "org.assertj:assertj-core:${assertjVersion}"
@@ -46,6 +56,8 @@ dependencies {
     testImplementation "org.testcontainers:junit-jupiter:${testContainerVersion}"
     testCompileOnly("org.projectlombok:lombok:${lombokVersion}")
     testAnnotationProcessor("org.projectlombok:lombok:${lombokVersion}")
+    testImplementation "jakarta.servlet:jakarta.servlet-api:${servletVersion}"
+    testImplementation "org.springframework:spring-test:${springVersion}"
 }
 
 test {

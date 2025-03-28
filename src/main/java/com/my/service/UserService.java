@@ -2,9 +2,7 @@ package com.my.service;
 
 import com.my.dto.UserRequestDto;
 import com.my.dto.UserResponseDto;
-import com.my.model.User;
 
-import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -19,7 +17,7 @@ public interface UserService {
      * @param password пароль пользователя
      * @return зарегистрированный пользователь
      */
-    User registration(String email, String name, String password) throws SQLException;
+    UserResponseDto registration(String email, String name, String password);
 
     /**
      * Вход пользователя в систему.
@@ -28,7 +26,9 @@ public interface UserService {
      * @param password пароль пользователя
      * @return пользователь, который вошел в систему
      */
-    User login(String email, String password) throws SQLException;
+    UserResponseDto login(String email, String password);
+
+    void logout();
 
     /**
      * Получение пользователя по его идентификатору.
@@ -36,7 +36,7 @@ public interface UserService {
      * @param id идентификатор пользователя
      * @return пользователь с указанным идентификатором
      */
-    UserResponseDto getById(Long id) throws SQLException;
+    UserResponseDto getById(Long id);
 
     /**
      * Обновление информации о пользователе.
@@ -45,7 +45,7 @@ public interface UserService {
      * @param sourceUser объект пользователя с обновленной информацией
      * @return обновленный пользователь
      */
-    UserResponseDto update(Long id, UserRequestDto sourceUser) throws SQLException;
+    UserResponseDto update(Long id, UserRequestDto sourceUser);
 
     /**
      * Удаление пользователя по его идентификатору.
@@ -53,14 +53,14 @@ public interface UserService {
      * @param id идентификатор пользователя
      * @return true, если пользователь был успешно удален, иначе false
      */
-    boolean delete(Long id) throws SQLException;
+    boolean delete(Long id);
 
     /**
      * Получение списка всех пользователей.
      *
      * @return список всех пользователей
      */
-    List<UserResponseDto> getAll() throws SQLException;
+    List<UserResponseDto> getAll();
 
     /**
      * Блокировка пользователя по его идентификатору.
@@ -68,7 +68,7 @@ public interface UserService {
      * @param userId идентификатор пользователя
      * @return true, если пользователь был успешно заблокирован, иначе false
      */
-    boolean blockUser(Long userId) throws SQLException;
+    boolean blockUser(Long userId);
 
     /**
      * Разблокировка пользователя по его идентификатору.
@@ -76,5 +76,5 @@ public interface UserService {
      * @param userId идентификатор пользователя
      * @return true, если пользователь был успешно разблокирован, иначе false
      */
-    boolean unBlockUser(long userId) throws SQLException;
+    boolean unbBlockUser(long userId);
 }

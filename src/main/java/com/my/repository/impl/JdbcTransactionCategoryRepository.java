@@ -1,97 +1,77 @@
 package com.my.repository.impl;
 
 import com.my.annotation.Loggable;
-import com.my.configuration.AppConfiguration;
 import com.my.model.TransactionCategory;
 import com.my.repository.TransactionCategoryRepository;
-import com.my.util.DBUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.stereotype.Repository;
 
-import java.sql.Connection;
+import javax.sql.DataSource;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Loggable
+@Repository
 public class JdbcTransactionCategoryRepository implements TransactionCategoryRepository {
+    private final JdbcTemplate jdbcTemplate;
+    @Value("${datasource.schema}")
+    private String schema;
 
-    private final Connection connection;
-    private final String schema;
-
-    public JdbcTransactionCategoryRepository() {
-        this(DBUtil.getConnection());
-    }
-
-    public JdbcTransactionCategoryRepository(Connection connection) {
-        this.connection = connection;
-        schema = AppConfiguration.getProperty("database.schema");
+    @Autowired
+    public JdbcTransactionCategoryRepository(DataSource dataSource) {
+        this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
     @Override
-    public boolean existsByCategoryNameIgnoreCase(String categoryName) throws SQLException {
+    public boolean existsByCategoryNameIgnoreCase(String categoryName) {
         String query = "SELECT COUNT(*) FROM " + schema + ".transaction_category WHERE LOWER(category_name) = LOWER(?)";
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setString(1, categoryName);
-            ResultSet resultSet = statement.executeQuery();
-            if (resultSet.next()) {
-                return resultSet.getInt(1) > 0;
-            }
-        }
-        return false;
+        Integer count = jdbcTemplate.queryForObject(query, new Object[]{categoryName}, Integer.class);
+        return count != null && count > 0;
     }
 
     @Override
-    public List<TransactionCategory> getAll() throws SQLException {
-        List<TransactionCategory> categories = new ArrayList<>();
+    public List<TransactionCategory> getAll() {
         String query = "SELECT id, category_name FROM " + schema + ".transaction_category";
-        try (PreparedStatement statement = connection.prepareStatement(query);
-             ResultSet resultSet = statement.executeQuery()) {
-            while (resultSet.next()) {
-                TransactionCategory transactionCategory = mapRowToTransactionCategory(resultSet);
-                categories.add(transactionCategory);
-            }
-        }
-        return categories;
+        return jdbcTemplate.query(query, (rs, rowNum) -> new TransactionCategory(
+                rs.getLong("id"),
+                rs.getString("category_name")
+        ));
     }
 
     @Override
-    public Optional<TransactionCategory> getById(Long id) throws SQLException {
+    public Optional<TransactionCategory> getById(Long id) {
         String query = "SELECT id, category_name FROM " + schema + ".transaction_category WHERE id = ?";
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setLong(1, id);
-            ResultSet resultSet = statement.executeQuery();
-            if (resultSet.next()) {
-                TransactionCategory transactionCategory = mapRowToTransactionCategory(resultSet);
-                return Optional.of(transactionCategory);
-            }
-        }
-        return Optional.empty();
-    }
-
-    private TransactionCategory mapRowToTransactionCategory(ResultSet resultSet) throws SQLException {
-        long id = resultSet.getLong("id");
-        String categoryName = resultSet.getString("category_name");
-
-        TransactionCategory transactionCategory = new TransactionCategory();
-        transactionCategory.setId(id);
-        transactionCategory.setCategoryName(categoryName);
-
-        return transactionCategory;
+        return Optional.ofNullable(jdbcTemplate.queryForObject(query, new Object[]{id}, (rs, rowNum) ->
+                new TransactionCategory(
+                        rs.getLong("id"),
+                        rs.getString("category_name")
+                )));
     }
 
     @Override
-    public TransactionCategory save(TransactionCategory entity) throws SQLException {
+    public TransactionCategory save(TransactionCategory entity) {
         String query = "INSERT INTO " + schema + ".transaction_category (category_name) VALUES (?)";
-        try (PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
-            statement.setString(1, entity.getCategoryName());
-            int affectedRows = statement.executeUpdate();
-            if (affectedRows > 0) {
-                ResultSet generatedKeys = statement.getGeneratedKeys();
-                if (generatedKeys.next()) {
-                    entity.setId(generatedKeys.getLong(1));
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        int update = jdbcTemplate.update(con -> {
+            PreparedStatement ps = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, entity.getCategoryName());
+            return ps;
+        }, keyHolder);
+        if (update > 0) {
+            List<Map<String, Object>> keys = keyHolder.getKeyList();
+            if (!keys.isEmpty()) {
+                Map<String, Object> generatedKey = keys.get(0);
+                Number generatedId = (Number) generatedKey.get("id");
+                if (generatedId != null) {
+                    long id = generatedId.longValue();
+                    entity.setId(id);
                     return entity;
                 }
             }
@@ -100,26 +80,19 @@ public class JdbcTransactionCategoryRepository implements TransactionCategoryRep
     }
 
     @Override
-    public TransactionCategory update(TransactionCategory entity) throws SQLException {
+    public TransactionCategory update(TransactionCategory entity) {
         String query = "UPDATE " + schema + ".transaction_category SET category_name = ? WHERE id = ?";
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setString(1, entity.getCategoryName());
-            statement.setLong(2, entity.getId());
-            int affectedRows = statement.executeUpdate();
-            if (affectedRows > 0) {
-                return entity;
-            }
+        int update = jdbcTemplate.update(query, entity.getCategoryName(), entity.getId());
+        if (update > 0) {
+            return entity;
         }
         return null;
     }
 
     @Override
-    public boolean deleteById(Long id) throws SQLException {
+    public boolean deleteById(Long id) {
         String query = "DELETE FROM " + schema + ".transaction_category WHERE id = ?";
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setLong(1, id);
-            int affectedRows = statement.executeUpdate();
-            return affectedRows > 0;
-        }
+        int update = jdbcTemplate.update(query, id);
+        return update > 0;
     }
 }

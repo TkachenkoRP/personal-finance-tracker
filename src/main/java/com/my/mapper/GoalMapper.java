@@ -7,7 +7,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.ReportingPolicy;
-import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 
@@ -15,14 +14,9 @@ import java.util.List;
  * Интерфейс GoalMapper для преобразования объектов типа Goal.
  * Использует MapStruct для автоматизации процесса маппинга.
  */
-@Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE,
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE,
         uses = {TransactionCategoryMap.class})
 public interface GoalMapper {
-    /**
-     * Экземпляр GoalMapper для использования в приложении.
-     */
-    GoalMapper INSTANCE = Mappers.getMapper(GoalMapper.class);
-
     /**
      * Обновляет существующий объект Goal на основе данных из GoalRequestDto.
      *

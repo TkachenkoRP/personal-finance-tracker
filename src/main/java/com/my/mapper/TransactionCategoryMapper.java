@@ -6,7 +6,6 @@ import com.my.model.TransactionCategory;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.ReportingPolicy;
-import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 
@@ -14,14 +13,8 @@ import java.util.List;
  * Интерфейс TransactionCategoryMapper для преобразования объектов типа TransactionCategory.
  * Использует MapStruct для автоматизации процесса маппинга.
  */
-@Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE)
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface TransactionCategoryMapper {
-
-    /**
-     * Экземпляр TransactionCategoryMapper для использования в приложении.
-     */
-    TransactionCategoryMapper INSTANCE = Mappers.getMapper(TransactionCategoryMapper.class);
-
     /**
      * Обновляет существующий объект TransactionCategory на основе данных из TransactionCategoryRequestDto.
      *

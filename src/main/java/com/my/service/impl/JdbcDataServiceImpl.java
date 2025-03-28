@@ -1,6 +1,5 @@
 package com.my.service.impl;
 
-import com.my.configuration.AppConfiguration;
 import com.my.service.JdbcDataService;
 import com.my.util.DBUtil;
 import liquibase.Liquibase;
@@ -9,20 +8,22 @@ import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.LiquibaseException;
 import liquibase.resource.ClassLoaderResourceAccessor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
-import java.sql.Connection;
-
+@Service
+@RequiredArgsConstructor
 public class JdbcDataServiceImpl implements JdbcDataService {
-    private final Connection connection;
+    private final DBUtil dbUtil;
 
-    public JdbcDataServiceImpl() {
-        connection = DBUtil.getConnection(AppConfiguration.getProperty("liquibase.schema"));
-    }
+    @Value("liquibase.change-log")
+    private String liquibaseChangeLog;
 
     @Override
     public void initDb() throws LiquibaseException {
-        Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(connection));
-        Liquibase liquibase = new Liquibase(AppConfiguration.getProperty("liquibase.change-log"), new ClassLoaderResourceAccessor(), database);
+        Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(dbUtil.getConnection()));
+        Liquibase liquibase = new Liquibase(liquibaseChangeLog, new ClassLoaderResourceAccessor(), database);
         liquibase.update("dev");
     }
 }

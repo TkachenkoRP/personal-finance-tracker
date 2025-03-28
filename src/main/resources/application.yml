@@ -1,0 +1,10 @@
+datasource:
+  driver-class-name: org.postgresql.Driver
+  url: jdbc:postgresql://localhost:5432/app_tracker_db
+  schema: tracker
+  username: user76584930yr
+  password: pasSw0rD6239ej
+liquibase:
+  change-log: db/changelog/db.changelog-master.xml
+  schema: service
+  contexts: dev

@@ -4,7 +4,6 @@ import com.my.dto.TransactionCategoryRequestDto;
 import com.my.dto.TransactionCategoryResponseDto;
 import com.my.model.TransactionCategory;
 
-import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -16,7 +15,7 @@ public interface TransactionCategoryService {
      *
      * @return список всех категорий транзакций
      */
-    List<TransactionCategoryResponseDto> getAll() throws SQLException;
+    List<TransactionCategoryResponseDto> getAll();
 
     /**
      * Получение категории транзакции по её идентификатору.
@@ -24,9 +23,9 @@ public interface TransactionCategoryService {
      * @param id идентификатор категории транзакции
      * @return категория транзакции с указанным идентификатором
      */
-    TransactionCategoryResponseDto getById(Long id) throws SQLException;
+    TransactionCategoryResponseDto getById(Long id);
 
-    TransactionCategory getEntityById(Long id) throws SQLException;
+    TransactionCategory getEntityById(Long id);
 
     /**
      * Сохранение новой категории транзакции.
@@ -34,7 +33,7 @@ public interface TransactionCategoryService {
      * @param request объект категории транзакции для сохранения
      * @return сохраненная категория транзакции
      */
-    TransactionCategoryResponseDto save(TransactionCategoryRequestDto request) throws SQLException;
+    TransactionCategoryResponseDto save(TransactionCategoryRequestDto request);
 
     /**
      * Обновление существующей категории транзакции.
@@ -43,7 +42,7 @@ public interface TransactionCategoryService {
      * @param request объект категории транзакции с обновленной информацией
      * @return обновленная категория транзакции
      */
-    TransactionCategoryResponseDto update(Long id, TransactionCategoryRequestDto request) throws SQLException;
+    TransactionCategoryResponseDto update(Long id, TransactionCategoryRequestDto request);
 
     /**
      * Удаление категории транзакции по её идентификатору.
@@ -51,5 +50,5 @@ public interface TransactionCategoryService {
      * @param id идентификатор категории транзакции
      * @return true, если категория транзакции была успешно удалена, иначе false
      */
-    boolean deleteById(Long id) throws SQLException;
+    boolean deleteById(Long id);
 }

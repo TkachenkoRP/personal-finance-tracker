@@ -12,40 +12,32 @@ import com.my.model.TransactionFilter;
 import com.my.model.TransactionType;
 import com.my.repository.GoalRepository;
 import com.my.repository.TransactionRepository;
-import com.my.repository.impl.JdbcGoalRepositoryImpl;
-import com.my.repository.impl.JdbcTransactionRepository;
 import com.my.service.GoalService;
 import com.my.service.NotificationService;
+import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.List;
 
 @Loggable
+@Service
+@RequiredArgsConstructor
 public class GoalServiceImpl implements GoalService {
     private static final Logger logger = LogManager.getRootLogger();
     private final GoalRepository goalRepository;
     private final TransactionRepository transactionRepository;
     private final NotificationService emailNotificationService;
+    private final GoalMapper goalMapper;
 
     private static final String GOAL_NOT_FOUND = "Цель с id {0} не найдена";
 
-    public GoalServiceImpl() {
-        this(new JdbcGoalRepositoryImpl(), new JdbcTransactionRepository(), new EmailNotificationServiceImpl());
-    }
-
-    public GoalServiceImpl(GoalRepository goalRepository, TransactionRepository transactionRepository, NotificationService emailNotificationService) {
-        this.goalRepository = goalRepository;
-        this.transactionRepository = transactionRepository;
-        this.emailNotificationService = emailNotificationService;
-    }
-
     @Override
-    public Goal getEntityById(Long id) throws SQLException {
+    public Goal getEntityById(Long id) {
         Goal goal = goalRepository.getById(id).orElseThrow(
                 () -> new EntityNotFoundException(MessageFormat.format(GOAL_NOT_FOUND, id))
         );
@@ -54,51 +46,51 @@ public class GoalServiceImpl implements GoalService {
     }
 
     @Override
-    public GoalResponseDto getById(Long id) throws SQLException {
+    public GoalResponseDto getById(Long id) {
         Goal goal = getEntityById(id);
-        GoalResponseDto responseDto = GoalMapper.INSTANCE.toDto(goal);
+        GoalResponseDto responseDto = goalMapper.toDto(goal);
         logger.log(Level.DEBUG, "Get goal dto by id: {}", responseDto);
         return responseDto;
     }
 
     @Override
-    public GoalResponseDto save(Long userId, GoalRequestDto goal) throws SQLException {
+    public GoalResponseDto save(Long userId, GoalRequestDto goal) {
         if (userId == null) {
             throw new AccessDeniedException("У Вас нет права доступа");
         }
-        Goal requestEntity = GoalMapper.INSTANCE.toEntity(goal);
+        Goal requestEntity = goalMapper.toEntity(goal);
         requestEntity.setActive(true);
         Goal saved = goalRepository.save(userId, requestEntity);
-        GoalResponseDto responseDto = GoalMapper.INSTANCE.toDto(saved);
+        GoalResponseDto responseDto = goalMapper.toDto(saved);
         logger.log(Level.DEBUG, "Save goal: {}", responseDto);
         return responseDto;
     }
 
     @Override
-    public GoalResponseDto update(Long id, GoalRequestDto sourceGoal) throws SQLException {
+    public GoalResponseDto update(Long id, GoalRequestDto sourceGoal) {
         Goal updatedGoal = getEntityById(id);
-        GoalMapper.INSTANCE.updateGoal(sourceGoal, updatedGoal);
+        goalMapper.updateGoal(sourceGoal, updatedGoal);
         Goal updated = goalRepository.update(updatedGoal);
-        GoalResponseDto responseDto = GoalMapper.INSTANCE.toDto(updated);
+        GoalResponseDto responseDto = goalMapper.toDto(updated);
         logger.log(Level.DEBUG, "Update goal: {}", responseDto);
         return responseDto;
     }
 
     @Override
-    public boolean deleteById(Long id) throws SQLException {
+    public boolean deleteById(Long id) {
         return goalRepository.deleteById(id);
     }
 
     @Override
-    public List<GoalResponseDto> getAllGoalsByUserId(Long userId) throws SQLException {
+    public List<GoalResponseDto> getAllGoalsByUserId(Long userId) {
         List<Goal> goals = goalRepository.getAllByUserId(userId);
-        List<GoalResponseDto> responseDtoList = GoalMapper.INSTANCE.toDto(goals);
+        List<GoalResponseDto> responseDtoList = goalMapper.toDto(goals);
         logger.log(Level.DEBUG, "Get goals by user id: {}", responseDtoList);
         return responseDtoList;
     }
 
     @Override
-    public String getGoalIncomeInfo(Long userId, Long categoryId) throws SQLException {
+    public String getGoalIncomeInfo(Long userId, Long categoryId) {
         Goal goal = getAllActiveGoalByUserIdAndCategoryId(userId, categoryId);
         String info = null;
         if (goal != null) {
@@ -117,7 +109,7 @@ public class GoalServiceImpl implements GoalService {
     }
 
     @Override
-    public Goal getAllActiveGoalByUserIdAndCategoryId(Long userId, Long categoryId) throws SQLException {
+    public Goal getAllActiveGoalByUserIdAndCategoryId(Long userId, Long categoryId) {
         return goalRepository.getActiveGoalByUserIdAndCategoryId(userId, categoryId).orElse(null);
     }
 }

@@ -1,115 +1,96 @@
 package com.my.repository.impl;
 
 import com.my.annotation.Loggable;
-import com.my.configuration.AppConfiguration;
-import com.my.model.Budget;
-import com.my.model.Goal;
 import com.my.model.User;
 import com.my.model.UserRole;
 import com.my.repository.BudgetRepository;
 import com.my.repository.GoalRepository;
 import com.my.repository.UserRepository;
-import com.my.util.DBUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.stereotype.Repository;
 
-import java.sql.Connection;
+import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Loggable
+@Repository
 public class JdbcUserRepository implements UserRepository {
-    private final Connection connection;
+    private final JdbcTemplate jdbcTemplate;
+    @Value("${datasource.schema}")
+    private String schema;
     private final BudgetRepository budgetRepository;
     private final GoalRepository goalRepository;
 
-    private final String schema;
-
-    public JdbcUserRepository() {
-        this(new JdbcBudgetRepositoryImpl(), new JdbcGoalRepositoryImpl());
-    }
-
-    public JdbcUserRepository(BudgetRepository budgetRepository, GoalRepository goalRepository) {
-        this(DBUtil.getConnection(), budgetRepository, goalRepository);
-    }
-
-    public JdbcUserRepository(Connection connection, BudgetRepository budgetRepository, GoalRepository goalRepository) {
-        this.connection = connection;
+    @Autowired
+    public JdbcUserRepository(DataSource dataSource, BudgetRepository budgetRepository, GoalRepository goalRepository) {
+        this.jdbcTemplate = new JdbcTemplate(dataSource);
         this.budgetRepository = budgetRepository;
         this.goalRepository = goalRepository;
-        schema = AppConfiguration.getProperty("database.schema");
     }
 
     @Override
-    public List<User> getAll() throws SQLException {
-        List<User> users = new ArrayList<>();
+    public List<User> getAll() {
         String query = "SELECT * FROM " + schema + ".user";
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    User user = mapRowToUser(resultSet);
-                    users.add(user);
-                }
-            }
-        }
-        return users;
+        return jdbcTemplate.query(query, (rs, rowNum) -> mapUser(rs));
     }
 
     @Override
-    public Optional<User> getById(Long id) throws SQLException {
+    public Optional<User> getById(Long id) {
         String query = "SELECT * FROM " + schema + ".user WHERE id = ?";
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setLong(1, id);
-            try (ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) {
-                    User user = mapRowToUser(resultSet);
-                    return Optional.of(user);
-                }
-            }
+        try {
+            User user = jdbcTemplate.queryForObject(query, (rs, rowNum) -> mapUser(rs), id);
+            return Optional.ofNullable(user);
+        } catch (DataAccessException e) {
+            return Optional.empty();
         }
-        return Optional.empty();
     }
 
-    private User mapRowToUser(ResultSet resultSet) throws SQLException {
-        long id = resultSet.getLong("id");
-        String email = resultSet.getString("email");
-        String password = resultSet.getString("password");
-        String name = resultSet.getString("name");
-        UserRole role = UserRole.valueOf(resultSet.getString("role"));
-        boolean blocked = resultSet.getBoolean("blocked");
-        List<Budget> budgets = budgetRepository.getAllByUserId(id);
-        List<Goal> goals = goalRepository.getAllByUserId(id);
-
-        User user = new User();
-        user.setId(id);
-        user.setEmail(email);
-        user.setPassword(password);
-        user.setName(name);
-        user.setRole(role);
-        user.setBlocked(blocked);
-        user.setBudgets(budgets);
-        user.setGoals(goals);
-
-        return user;
+    private User mapUser(ResultSet rs) throws SQLException {
+        long id = rs.getLong("id");
+        return new User(
+                id,
+                rs.getString("email"),
+                rs.getString("password"),
+                rs.getString("name"),
+                budgetRepository.getAllByUserId(id),
+                goalRepository.getAllByUserId(id),
+                UserRole.valueOf(rs.getString("role")),
+                rs.getBoolean("blocked")
+        );
     }
 
     @Override
-    public User save(User entity) throws SQLException {
+    public User save(User entity) {
         String query = "INSERT INTO " + schema + ".user (email, password, name, role, blocked) VALUES (?, ?, ?, ?, ?)";
-        try (PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
-            statement.setString(1, entity.getEmail());
-            statement.setString(2, entity.getPassword());
-            statement.setString(3, entity.getName());
-            statement.setString(4, entity.getRole().name());
-            statement.setBoolean(5, entity.isBlocked());
-            int affectedRows = statement.executeUpdate();
-            if (affectedRows > 0) {
-                ResultSet generatedKeys = statement.getGeneratedKeys();
-                if (generatedKeys.next()) {
-                    entity.setId(generatedKeys.getLong(1));
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        int update = jdbcTemplate.update(con -> {
+            PreparedStatement ps = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, entity.getEmail());
+            ps.setString(2, entity.getPassword());
+            ps.setString(3, entity.getName());
+            ps.setString(4, entity.getRole().name());
+            ps.setBoolean(5, entity.isBlocked());
+            return ps;
+        }, keyHolder);
+        if (update > 0) {
+            List<Map<String, Object>> keys = keyHolder.getKeyList();
+            if (!keys.isEmpty()) {
+                Map<String, Object> generatedKey = keys.get(0);
+                Number generatedId = (Number) generatedKey.get("id");
+                if (generatedId != null) {
+                    long id = generatedId.longValue();
+                    entity.setId(id);
                     return entity;
                 }
             }
@@ -118,78 +99,55 @@ public class JdbcUserRepository implements UserRepository {
     }
 
     @Override
-    public User update(User entity) throws SQLException {
+    public User update(User entity) {
         String query = "UPDATE " + schema + ".user SET email = ? , password = ?, name = ?, role = ?, blocked = ? WHERE id = ?";
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setString(1, entity.getEmail());
-            statement.setString(2, entity.getPassword());
-            statement.setString(3, entity.getName());
-            statement.setString(4, entity.getRole().name());
-            statement.setBoolean(5, entity.isBlocked());
-            statement.setLong(6, entity.getId());
-            int affectedRows = statement.executeUpdate();
-            if (affectedRows > 0) {
-                return entity;
-            }
-            return null;
+        int update = jdbcTemplate.update(query,
+                entity.getEmail(),
+                entity.getPassword(),
+                entity.getName(),
+                entity.getRole().name(),
+                entity.isBlocked(),
+                entity.getId());
+        if (update > 0) {
+            return entity;
         }
+        return null;
     }
 
     @Override
-    public boolean deleteById(Long id) throws SQLException {
+    public boolean deleteById(Long id) {
         String query = "DELETE FROM " + schema + ".user WHERE id = ?";
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setLong(1, id);
-            int rowsAffected = statement.executeUpdate();
-            return rowsAffected > 0;
-        }
+        int update = jdbcTemplate.update(query, id);
+        return update > 0;
     }
 
     @Override
-    public boolean isEmailAvailable(String email) throws SQLException {
+    public boolean isEmailOccupied(String email) {
         String query = "SELECT COUNT(*) FROM " + schema + ".user WHERE LOWER(email) = LOWER(?)";
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setString(1, email);
-            try (ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) {
-                    return resultSet.getInt(1) == 0;
-                }
-            }
-        }
-        return true;
+        Integer count = jdbcTemplate.queryForObject(query, Integer.class, email);
+        return count != null && count > 0;
     }
 
     @Override
-    public Optional<User> getByEmailAndPassword(String email, String password) throws SQLException {
+    public Optional<User> getByEmailAndPassword(String email, String password) {
         String query = "SELECT * FROM " + schema + ".user WHERE LOWER(email) = LOWER(?) AND password = ?";
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setString(1, email);
-            statement.setString(2, password);
-            try (ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) {
-                    User user = mapRowToUser(resultSet);
-                    return Optional.of(user);
-                }
-            }
+        try {
+            User user = jdbcTemplate.queryForObject(query, (rs, rowNum) -> mapUser(rs), email, password);
+            return Optional.ofNullable(user);
+        } catch (DataAccessException e) {
+            return Optional.empty();
         }
-        return Optional.empty();
     }
 
     @Override
-    public boolean blockUserById(Long userId) throws SQLException {
+    public boolean blockUserById(Long userId) {
         String query = "UPDATE " + schema + ".user SET blocked = true WHERE id = ?";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setLong(1, userId);
-            return preparedStatement.executeUpdate() > 0;
-        }
+        return jdbcTemplate.update(query, userId) > 0;
     }
 
     @Override
-    public boolean unBlockUserById(long userId) throws SQLException {
+    public boolean unBlockUserById(long userId) {
         String query = "UPDATE " + schema + ".user SET blocked = false WHERE id = ?";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setLong(1, userId);
-            return preparedStatement.executeUpdate() > 0;
-        }
+        return jdbcTemplate.update(query, userId) > 0;
     }
 }

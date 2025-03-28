@@ -7,7 +7,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.ReportingPolicy;
-import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 
@@ -15,13 +14,9 @@ import java.util.List;
  * Интерфейс BudgetMapper для преобразования объектов типа Budget.
  * Использует MapStruct для автоматизации процесса маппинга.
  */
-@Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE,
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE,
         uses = {TransactionCategoryMap.class})
 public interface BudgetMapper {
-    /**
-     * Экземпляр BudgetMapper для использования в приложении.
-     */
-    BudgetMapper INSTANCE = Mappers.getMapper(BudgetMapper.class);
 
     /**
      * Обновляет существующий объект Budget на основе данных из BudgetRequestDto.
