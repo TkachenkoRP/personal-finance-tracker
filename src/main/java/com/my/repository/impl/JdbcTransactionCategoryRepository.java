@@ -5,6 +5,7 @@ import com.my.model.TransactionCategory;
 import com.my.repository.TransactionCategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -12,6 +13,8 @@ import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
@@ -32,27 +35,32 @@ public class JdbcTransactionCategoryRepository implements TransactionCategoryRep
     @Override
     public boolean existsByCategoryNameIgnoreCase(String categoryName) {
         String query = "SELECT COUNT(*) FROM " + schema + ".transaction_category WHERE LOWER(category_name) = LOWER(?)";
-        Integer count = jdbcTemplate.queryForObject(query, new Object[]{categoryName}, Integer.class);
+        Integer count = jdbcTemplate.queryForObject(query, Integer.class, categoryName);
         return count != null && count > 0;
     }
 
     @Override
     public List<TransactionCategory> getAll() {
         String query = "SELECT id, category_name FROM " + schema + ".transaction_category";
-        return jdbcTemplate.query(query, (rs, rowNum) -> new TransactionCategory(
-                rs.getLong("id"),
-                rs.getString("category_name")
-        ));
+        return jdbcTemplate.query(query, (rs, rowNum) -> mapCategory(rs));
     }
 
     @Override
     public Optional<TransactionCategory> getById(Long id) {
         String query = "SELECT id, category_name FROM " + schema + ".transaction_category WHERE id = ?";
-        return Optional.ofNullable(jdbcTemplate.queryForObject(query, new Object[]{id}, (rs, rowNum) ->
-                new TransactionCategory(
-                        rs.getLong("id"),
-                        rs.getString("category_name")
-                )));
+        try {
+            TransactionCategory transactionCategory = jdbcTemplate.queryForObject(query, (rs, rowNum) -> mapCategory(rs), id);
+            return Optional.ofNullable(transactionCategory);
+        } catch (DataAccessException e) {
+            return Optional.empty();
+        }
+    }
+
+    private TransactionCategory mapCategory(ResultSet rs) throws SQLException {
+        return new TransactionCategory(
+                rs.getLong("id"),
+                rs.getString("category_name")
+        );
     }
 
     @Override

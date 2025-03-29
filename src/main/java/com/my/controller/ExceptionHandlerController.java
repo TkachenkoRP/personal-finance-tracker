@@ -2,6 +2,7 @@ package com.my.controller;
 
 import com.my.dto.ErrorResponseDto;
 import com.my.exception.EntityNotFoundException;
+import com.my.exception.TransactionCategoryException;
 import com.my.exception.UserException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
@@ -36,9 +37,9 @@ public class ExceptionHandlerController {
         return new ErrorResponseDto(errorMessage);
     }
 
-    @ExceptionHandler(UserException.class)
+    @ExceptionHandler({UserException.class, TransactionCategoryException.class})
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-    public ErrorResponseDto handleUserException(UserException e) {
+    public ErrorResponseDto handleUserException(Exception e) {
         return new ErrorResponseDto(e.getLocalizedMessage());
     }
 }

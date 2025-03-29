@@ -12,9 +12,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserLoginRequestDto {
-    @NotBlank(message = "Укажите email пользователя.")
-    @Email(message = "Введите корректный email.")
+    @NotBlank(message = "Поле email должно быть заполнено!")
+    @Email(message = "Введите корректный email!")
     private String email;
-    @NotBlank(message = "Укажите пароль пользователя.")
+    @NotBlank(message = "Поле password должно быть заполнено!")
     private String password;
 }

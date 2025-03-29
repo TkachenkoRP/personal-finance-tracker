@@ -13,12 +13,12 @@ import org.hibernate.validator.constraints.Length;
 @Builder
 @Data
 public class UserRegisterRequestDto {
-    @NotBlank(message = "Укажите email пользователя.")
-    @Email(message = "Введите корректный email.")
+    @NotBlank(message = "Поле email должно быть заполнено!")
+    @Email(message = "Введите корректный email!")
     private String email;
-    @NotBlank(message = "Укажите имя пользователя.")
+    @NotBlank(message = "Поле name должно быть заполнено!")
     private String name;
-    @NotBlank(message = "Укажите пароль пользователя.")
-    @Length(min = 6, message = "Пароль должен содержать минимум {min} знаков")
+    @NotBlank(message = "Поле password должно быть заполнено!")
+    @Length(min = 6, message = "Пароль должен содержать минимум {min} знаков!")
     private String password;
 }
