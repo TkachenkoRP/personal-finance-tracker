@@ -5,6 +5,11 @@ import com.my.model.UserRole;
 
 public class TestData {
 
+    public static final String API_URL_REGISTER = "/api/auth/register";
+    public static final String API_URL_LOGIN = "/api/auth/login";
+    public static final String API_URL_LOGOUT = "/api/auth/logout";
+    public static final String API_URL_USER = "/api/user";
+
     public static final Long WRONG_ID = Long.MAX_VALUE;
 
     public static final Long ADMIN_ID = 1L;

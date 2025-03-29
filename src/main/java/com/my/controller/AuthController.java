@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
     private final UserService userService;
 
-    @GetMapping("/login")
+    @PostMapping("/login")
     public UserResponseDto login(@Valid @RequestBody UserLoginRequestDto request) {
         return userService.login(request.getEmail(), request.getPassword());
     }

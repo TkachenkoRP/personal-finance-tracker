@@ -6,26 +6,20 @@ import com.my.dto.UserRegisterRequestDto;
 import com.my.dto.UserResponseDto;
 import com.my.repository.impl.JdbcUserRepository;
 import com.my.service.UserManager;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class AuthControllerTest extends AbstractTestContainer {
 
     private final JdbcUserRepository userRepository;
     private final AuthController authController;
     private final ExceptionHandlerController exceptionHandlerController;
-    private MockMvc mockMvc;
 
     @Autowired
     public AuthControllerTest(JdbcUserRepository userRepository, AuthController authController, ExceptionHandlerController exceptionHandlerController) {
@@ -36,14 +30,7 @@ class AuthControllerTest extends AbstractTestContainer {
 
     @BeforeEach
     public void setUpMockMvc() {
-        mockMvc = MockMvcBuilders.standaloneSetup(authController)
-                .setControllerAdvice(exceptionHandlerController)
-                .build();
-    }
-
-    @AfterEach
-    public void tearDown() {
-        mockMvc = null;
+        setUpMockMvc(authController, exceptionHandlerController);
     }
 
     @Test
@@ -51,14 +38,9 @@ class AuthControllerTest extends AbstractTestContainer {
         UserManager.setLoggedInUser(null);
         int count = userRepository.getAll().size();
         UserRegisterRequestDto request = new UserRegisterRequestDto(NEW_USER_EMAIL, NEW_USER_NAME, NEW_USER_PASSWORD);
-        var actualResponse = mockMvc.perform(post("/api/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andReturn()
-                .getResponse();
-        actualResponse.setCharacterEncoding("UTF-8");
-        UserResponseDto response = objectMapper.readValue(actualResponse.getContentAsString(), UserResponseDto.class);
+        var actualResponse = performRequest(HttpMethod.POST, API_URL_REGISTER, request, HttpStatus.OK);
+        UserResponseDto response = fromResponse(actualResponse, UserResponseDto.class);
+
         assertAll(
                 () -> assertThat(response.getEmail()).isEqualTo(NEW_USER_EMAIL),
                 () -> assertThat(response.getRole()).isEqualTo(USER_ROLE),
@@ -74,10 +56,8 @@ class AuthControllerTest extends AbstractTestContainer {
         UserManager.setLoggedInUser(null);
         int count = userRepository.getAll().size();
         UserRegisterRequestDto request = new UserRegisterRequestDto(USER_EMAIL, NEW_USER_NAME, NEW_USER_PASSWORD);
-        mockMvc.perform(post("/api/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
+        performRequest(HttpMethod.POST, API_URL_REGISTER, request, HttpStatus.BAD_REQUEST);
+
         assertThat(userRepository.getAll()).hasSize(count);
         assertThat(UserManager.getLoggedInUser()).isNull();
     }
@@ -87,10 +67,8 @@ class AuthControllerTest extends AbstractTestContainer {
         UserManager.setLoggedInUser(null);
         int count = userRepository.getAll().size();
         UserRegisterRequestDto request = new UserRegisterRequestDto("", NEW_USER_NAME, NEW_USER_PASSWORD);
-        mockMvc.perform(post("/api/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
+        performRequest(HttpMethod.POST, API_URL_REGISTER, request, HttpStatus.BAD_REQUEST);
+
         assertThat(userRepository.getAll()).hasSize(count);
         assertThat(UserManager.getLoggedInUser()).isNull();
     }
@@ -100,10 +78,8 @@ class AuthControllerTest extends AbstractTestContainer {
         UserManager.setLoggedInUser(null);
         int count = userRepository.getAll().size();
         UserRegisterRequestDto request = new UserRegisterRequestDto(NEW_USER_EMAIL, NEW_USER_NAME, "");
-        mockMvc.perform(post("/api/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
+        performRequest(HttpMethod.POST, API_URL_REGISTER, request, HttpStatus.BAD_REQUEST);
+
         assertThat(userRepository.getAll()).hasSize(count);
         assertThat(UserManager.getLoggedInUser()).isNull();
     }
@@ -113,10 +89,8 @@ class AuthControllerTest extends AbstractTestContainer {
         UserManager.setLoggedInUser(null);
         int count = userRepository.getAll().size();
         UserRegisterRequestDto request = new UserRegisterRequestDto(NEW_USER_EMAIL, "", NEW_USER_PASSWORD);
-        mockMvc.perform(post("/api/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
+        performRequest(HttpMethod.POST, API_URL_REGISTER, request, HttpStatus.BAD_REQUEST);
+
         assertThat(userRepository.getAll()).hasSize(count);
         assertThat(UserManager.getLoggedInUser()).isNull();
     }
@@ -126,10 +100,8 @@ class AuthControllerTest extends AbstractTestContainer {
         UserManager.setLoggedInUser(null);
         int count = userRepository.getAll().size();
         UserRegisterRequestDto request = new UserRegisterRequestDto("", "", "");
-        mockMvc.perform(post("/api/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
+        performRequest(HttpMethod.POST, API_URL_REGISTER, request, HttpStatus.BAD_REQUEST);
+
         assertThat(userRepository.getAll()).hasSize(count);
         assertThat(UserManager.getLoggedInUser()).isNull();
     }
@@ -138,10 +110,8 @@ class AuthControllerTest extends AbstractTestContainer {
     void whenRegistrationUser_withNullData_thenReturnBadRequest() throws Exception {
         UserManager.setLoggedInUser(null);
         int count = userRepository.getAll().size();
-        mockMvc.perform(post("/api/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(null)))
-                .andExpect(status().isBadRequest());
+        performRequest(HttpMethod.POST, API_URL_REGISTER, HttpStatus.BAD_REQUEST);
+
         assertThat(userRepository.getAll()).hasSize(count);
         assertThat(UserManager.getLoggedInUser()).isNull();
     }
@@ -150,14 +120,9 @@ class AuthControllerTest extends AbstractTestContainer {
     void whenLogin_withCorrectData_thenReturnUser() throws Exception {
         UserManager.setLoggedInUser(null);
         UserLoginRequestDto request = new UserLoginRequestDto(USER_EMAIL, USER_PASSWORD);
-        var actualResponse = mockMvc.perform(get("/api/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andReturn()
-                .getResponse();
-        actualResponse.setCharacterEncoding("UTF-8");
-        UserResponseDto response = objectMapper.readValue(actualResponse.getContentAsString(), UserResponseDto.class);
+        var actualResponse = performRequest(HttpMethod.POST, API_URL_LOGIN, request, HttpStatus.OK);
+        UserResponseDto response = fromResponse(actualResponse, UserResponseDto.class);
+
         assertAll(
                 () -> assertThat(response.getId()).isEqualTo(USER_ID),
                 () -> assertThat(response.getEmail()).isEqualTo(USER_EMAIL),
@@ -172,14 +137,9 @@ class AuthControllerTest extends AbstractTestContainer {
     void whenLogin_withCorrectDataUpperCaseEmail_thenReturnUser() throws Exception {
         UserManager.setLoggedInUser(null);
         UserLoginRequestDto request = new UserLoginRequestDto(USER_EMAIL.toUpperCase(), USER_PASSWORD);
-        var actualResponse = mockMvc.perform(get("/api/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andReturn()
-                .getResponse();
-        actualResponse.setCharacterEncoding("UTF-8");
-        UserResponseDto response = objectMapper.readValue(actualResponse.getContentAsString(), UserResponseDto.class);
+        var actualResponse = performRequest(HttpMethod.POST, API_URL_LOGIN, request, HttpStatus.OK);
+        UserResponseDto response = fromResponse(actualResponse, UserResponseDto.class);
+
         assertAll(
                 () -> assertThat(response.getId()).isEqualTo(USER_ID),
                 () -> assertThat(response.getEmail()).isEqualTo(USER_EMAIL),
@@ -194,10 +154,8 @@ class AuthControllerTest extends AbstractTestContainer {
     void whenLogin_withWrongEmail_thenReturnBadRequest() throws Exception {
         UserManager.setLoggedInUser(null);
         UserLoginRequestDto request = new UserLoginRequestDto(USER_EMAIL + 1, USER_PASSWORD);
-        mockMvc.perform(get("/api/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
+        performRequest(HttpMethod.POST, API_URL_LOGIN, request, HttpStatus.BAD_REQUEST);
+
         assertThat(UserManager.getLoggedInUser()).isNull();
     }
 
@@ -205,10 +163,8 @@ class AuthControllerTest extends AbstractTestContainer {
     void whenLogin_withWrongPassword_thenReturnBadRequest() throws Exception {
         UserManager.setLoggedInUser(null);
         UserLoginRequestDto request = new UserLoginRequestDto(USER_EMAIL, USER_PASSWORD + 1);
-        mockMvc.perform(get("/api/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
+        performRequest(HttpMethod.POST, API_URL_LOGIN, request, HttpStatus.BAD_REQUEST);
+
         assertThat(UserManager.getLoggedInUser()).isNull();
     }
 
@@ -216,10 +172,8 @@ class AuthControllerTest extends AbstractTestContainer {
     void whenLogin_withWrongUpperCasePassword_thenReturnBadRequest() throws Exception {
         UserManager.setLoggedInUser(null);
         UserLoginRequestDto request = new UserLoginRequestDto(USER_EMAIL, USER_PASSWORD.toUpperCase());
-        mockMvc.perform(get("/api/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
+        performRequest(HttpMethod.POST, API_URL_LOGIN, request, HttpStatus.BAD_REQUEST);
+
         assertThat(UserManager.getLoggedInUser()).isNull();
     }
 
@@ -227,8 +181,8 @@ class AuthControllerTest extends AbstractTestContainer {
     void whenLogout_thenUserManagerNull() throws Exception {
         UserManager.setLoggedInUser(getUserRole(USER_ID));
         assertThat(UserManager.getLoggedInUser()).isNotNull();
-        mockMvc.perform(get("/api/auth/logout"))
-                .andExpect(status().isOk());
+        performRequest(HttpMethod.GET, API_URL_LOGOUT, HttpStatus.OK);
+
         assertThat(UserManager.getLoggedInUser()).isNull();
     }
 }
