@@ -1,5 +1,7 @@
 package com.my.controller;
 
+import com.my.annotation.Audition;
+import com.my.annotation.Loggable;
 import com.my.dto.UserLoginRequestDto;
 import com.my.dto.UserRegisterRequestDto;
 import com.my.dto.UserResponseDto;
@@ -15,6 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@Audition
+@Loggable
 public class AuthController {
     private final UserService userService;
 

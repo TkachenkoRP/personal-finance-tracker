@@ -16,9 +16,7 @@ import com.my.repository.TransactionRepository;
 import com.my.service.BudgetService;
 import com.my.service.NotificationService;
 import lombok.RequiredArgsConstructor;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -28,8 +26,8 @@ import java.util.List;
 @Loggable
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BudgetServiceImpl implements BudgetService {
-    private static final Logger logger = LogManager.getRootLogger();
     private final BudgetRepository budgetRepository;
     private final TransactionRepository transactionRepository;
     private final NotificationService emailNotificationService;
@@ -41,7 +39,7 @@ public class BudgetServiceImpl implements BudgetService {
     public List<BudgetResponseDto> geAll() {
         List<Budget> budgets = budgetRepository.getAll();
         List<BudgetResponseDto> responseDtoList = budgetMapper.toDto(budgets);
-        logger.log(Level.DEBUG, "Get all budgets");
+        log.debug("Get all budgets");
         return responseDtoList;
     }
 
@@ -49,7 +47,7 @@ public class BudgetServiceImpl implements BudgetService {
     public BudgetResponseDto getById(Long id) {
         Budget budget = getEntityById(id);
         BudgetResponseDto responseDto = budgetMapper.toDto(budget);
-        logger.log(Level.DEBUG, "Get budget by id: {}", responseDto);
+        log.debug("Get budget by id: {}", responseDto);
         return responseDto;
     }
 
@@ -58,7 +56,7 @@ public class BudgetServiceImpl implements BudgetService {
         Budget budget = budgetRepository.getById(id).orElseThrow(
                 () -> new EntityNotFoundException(MessageFormat.format(BUDGET_NOT_FOUND, id))
         );
-        logger.log(Level.DEBUG, "Get entity budget by id: {}", budget);
+        log.debug("Get entity budget by id: {}", budget);
         return budget;
     }
 
@@ -71,7 +69,7 @@ public class BudgetServiceImpl implements BudgetService {
         requestEntity.setActive(true);
         Budget saved = budgetRepository.save(userId, requestEntity);
         BudgetResponseDto responseDto = budgetMapper.toDto(saved);
-        logger.log(Level.DEBUG, "Save budget: {}", responseDto);
+        log.debug("Save budget: {}", responseDto);
         return responseDto;
     }
 
@@ -81,7 +79,7 @@ public class BudgetServiceImpl implements BudgetService {
         budgetMapper.updateBudget(sourceBudget, updatedBudget);
         Budget updated = budgetRepository.update(updatedBudget);
         BudgetResponseDto responseDto = budgetMapper.toDto(updated);
-        logger.log(Level.DEBUG, "Update budget: {}", responseDto);
+        log.debug("Update budget: {}", responseDto);
         return responseDto;
     }
 
@@ -94,7 +92,7 @@ public class BudgetServiceImpl implements BudgetService {
     public List<BudgetResponseDto> getAllBudgetsByUserId(Long userId) {
         List<Budget> budgets = budgetRepository.getAllByUserId(userId);
         List<BudgetResponseDto> responseDtoList = budgetMapper.toDto(budgets);
-        logger.log(Level.DEBUG, "Get Budget by user id: {}", responseDtoList);
+        log.debug("Get Budget by user id: {}", responseDtoList);
         return responseDtoList;
     }
 

@@ -2,7 +2,6 @@ package com.my.repository.impl;
 
 import com.my.annotation.Loggable;
 import com.my.model.Budget;
-import com.my.model.TransactionCategory;
 import com.my.repository.BudgetRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;

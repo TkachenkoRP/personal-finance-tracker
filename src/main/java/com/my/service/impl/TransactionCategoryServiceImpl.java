@@ -10,9 +10,7 @@ import com.my.model.TransactionCategory;
 import com.my.repository.TransactionCategoryRepository;
 import com.my.service.TransactionCategoryService;
 import lombok.RequiredArgsConstructor;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;
@@ -21,8 +19,8 @@ import java.util.List;
 @Loggable
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TransactionCategoryServiceImpl implements TransactionCategoryService {
-    private static final Logger logger = LogManager.getRootLogger();
     private final TransactionCategoryRepository transactionCategoryRepository;
     private final TransactionCategoryMapper transactionCategoryMapper;
 
@@ -33,7 +31,7 @@ public class TransactionCategoryServiceImpl implements TransactionCategoryServic
     public List<TransactionCategoryResponseDto> getAll() {
         List<TransactionCategory> transactionCategoryList = transactionCategoryRepository.getAll();
         List<TransactionCategoryResponseDto> responseDtoList = transactionCategoryMapper.toDto(transactionCategoryList);
-        logger.log(Level.DEBUG, "Get all transaction categories");
+        log.debug("Get all transaction categories");
         return responseDtoList;
     }
 
@@ -41,7 +39,7 @@ public class TransactionCategoryServiceImpl implements TransactionCategoryServic
     public TransactionCategoryResponseDto getById(Long id) {
         TransactionCategory transactionCategory = getEntityById(id);
         TransactionCategoryResponseDto categoryResponseDto = transactionCategoryMapper.toDto(transactionCategory);
-        logger.log(Level.DEBUG, "Get transaction categoryId by id: {}", categoryResponseDto);
+        log.debug("Get transaction categoryId by id: {}", categoryResponseDto);
         return categoryResponseDto;
     }
 
@@ -49,7 +47,7 @@ public class TransactionCategoryServiceImpl implements TransactionCategoryServic
         TransactionCategory transactionCategory = transactionCategoryRepository.getById(id).orElseThrow(
                 () -> new EntityNotFoundException(MessageFormat.format(CATEGORY_NOT_FOUND, id))
         );
-        logger.log(Level.DEBUG, "Get entity transaction category by id: {}", transactionCategory);
+        log.debug("Get entity transaction category by id: {}", transactionCategory);
         return transactionCategory;
     }
 
@@ -61,7 +59,7 @@ public class TransactionCategoryServiceImpl implements TransactionCategoryServic
         TransactionCategory requestEntity = transactionCategoryMapper.toEntity(request);
         TransactionCategory saved = transactionCategoryRepository.save(requestEntity);
         TransactionCategoryResponseDto categoryResponseDto = transactionCategoryMapper.toDto(saved);
-        logger.log(Level.DEBUG, "Save transaction category: {}", categoryResponseDto);
+        log.debug("Save transaction category: {}", categoryResponseDto);
         return categoryResponseDto;
     }
 
@@ -74,7 +72,7 @@ public class TransactionCategoryServiceImpl implements TransactionCategoryServic
         transactionCategoryMapper.updateTransaction(sourceTransactionCategory, updatedTransactionCategory);
         TransactionCategory updated = transactionCategoryRepository.update(updatedTransactionCategory);
         TransactionCategoryResponseDto categoryResponseDto = transactionCategoryMapper.toDto(updated);
-        logger.log(Level.DEBUG, "Update transaction category: {}", categoryResponseDto);
+        log.debug("Update transaction category: {}", categoryResponseDto);
         return categoryResponseDto;
     }
 

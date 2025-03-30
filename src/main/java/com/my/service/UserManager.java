@@ -17,21 +17,15 @@ public class UserManager {
     private UserManager() {
     }
 
-    /**
-     * Проверяет, является ли пользователь вошедшим в систему.
-     *
-     * @return true, если пользователь вошел в систему, иначе false
-     */
     public static boolean isLoggedIn() {
         return loggedInUser != null;
     }
 
-    /**
-     * Проверяет, является ли текущий вошедший пользователь администратором.
-     *
-     * @return true, если пользователь вошел в систему и имеет роль администратора, иначе false
-     */
     public static boolean isAdmin() {
         return isLoggedIn() && loggedInUser.getRole().equals(UserRole.ROLE_ADMIN);
+    }
+
+    public static boolean canWork(long id) {
+        return isLoggedIn() && (loggedInUser.getId().equals(id) || isAdmin());
     }
 }

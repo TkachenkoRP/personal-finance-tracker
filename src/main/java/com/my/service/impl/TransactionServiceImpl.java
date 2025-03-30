@@ -19,9 +19,7 @@ import com.my.service.GoalService;
 import com.my.service.TransactionService;
 import com.my.service.UserManager;
 import lombok.RequiredArgsConstructor;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -32,8 +30,8 @@ import java.util.List;
 @Loggable
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TransactionServiceImpl implements TransactionService {
-    private static final Logger logger = LogManager.getRootLogger();
     private final JdbcTransactionRepository transactionRepository;
     private final BudgetService budgetService;
     private final GoalService goalService;
@@ -45,7 +43,7 @@ public class TransactionServiceImpl implements TransactionService {
     public List<TransactionResponseDto> getAll(TransactionFilter filter) {
         List<Transaction> transactions = transactionRepository.getAll(filter);
         List<TransactionResponseDto> responseDtoList = transactionMapper.toDto(transactions);
-        logger.log(Level.DEBUG, "Get all transactions");
+        log.debug("Get all transactions");
         return responseDtoList;
     }
 
@@ -54,7 +52,7 @@ public class TransactionServiceImpl implements TransactionService {
         Transaction transaction = transactionRepository.getById(id).orElseThrow(
                 () -> new EntityNotFoundException(MessageFormat.format(TRANSACTION_NOT_FOUND, id))
         );
-        logger.log(Level.DEBUG, "Get entity transaction by id: {}", transaction);
+        log.debug("Get entity transaction by id: {}", transaction);
         return transaction;
     }
 
@@ -62,7 +60,7 @@ public class TransactionServiceImpl implements TransactionService {
     public TransactionResponseDto getById(Long id) {
         Transaction transaction = getEntityById(id);
         TransactionResponseDto transactionResponseDto = transactionMapper.toDto(transaction);
-        logger.log(Level.DEBUG, "Get transaction by id: {}", transactionResponseDto);
+        log.debug("Get transaction by id: {}", transactionResponseDto);
         return transactionResponseDto;
     }
 
@@ -73,7 +71,7 @@ public class TransactionServiceImpl implements TransactionService {
         Transaction saved = transactionRepository.save(requestEntity);
         TransactionResponseDto responseDto = transactionMapper.toDto(saved);
         processTransaction(saved);
-        logger.log(Level.DEBUG, "Save transaction: {}", responseDto);
+        log.debug("Save transaction: {}", responseDto);
         return responseDto;
     }
 
@@ -83,7 +81,7 @@ public class TransactionServiceImpl implements TransactionService {
         transactionMapper.updateTransaction(sourceTransaction, updatedTransaction);
         Transaction updated = transactionRepository.update(updatedTransaction);
         TransactionResponseDto transactionResponseDto = transactionMapper.toDto(updated);
-        logger.log(Level.DEBUG, "Update transaction: {}", transactionResponseDto);
+        log.debug("Update transaction: {}", transactionResponseDto);
         return transactionResponseDto;
     }
 
@@ -119,7 +117,7 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     public List<ExpenseAnalysisDto> analyzeExpensesByCategory(Long userId, LocalDate from, LocalDate to) {
         List<ExpenseAnalysisDto> expenseAnalysisDtos = transactionRepository.analyzeExpensesByCategory(userId, from, to);
-        logger.log(Level.DEBUG, "Get analyze: {}", expenseAnalysisDtos);
+        log.debug("Get analyze: {}", expenseAnalysisDtos);
         return expenseAnalysisDtos;
     }
 
@@ -129,7 +127,7 @@ public class TransactionServiceImpl implements TransactionService {
         ExpensesResponseDto totalExpenses = getTotalExpenses(userId, from, to);
         BalanceResponseDto totalBalance = new BalanceResponseDto(totalIncome.totalIncome().subtract(totalExpenses.totalExpenses()));
         FullReportResponseDto report = new FullReportResponseDto(totalIncome, totalExpenses, totalBalance);
-        logger.log(Level.DEBUG, "Get report: {}", report);
+        log.debug("Get report: {}", report);
         return report;
     }
 

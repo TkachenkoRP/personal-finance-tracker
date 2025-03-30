@@ -15,9 +15,7 @@ import com.my.repository.TransactionRepository;
 import com.my.service.GoalService;
 import com.my.service.NotificationService;
 import lombok.RequiredArgsConstructor;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -27,8 +25,8 @@ import java.util.List;
 @Loggable
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class GoalServiceImpl implements GoalService {
-    private static final Logger logger = LogManager.getRootLogger();
     private final GoalRepository goalRepository;
     private final TransactionRepository transactionRepository;
     private final NotificationService emailNotificationService;
@@ -41,7 +39,7 @@ public class GoalServiceImpl implements GoalService {
         Goal goal = goalRepository.getById(id).orElseThrow(
                 () -> new EntityNotFoundException(MessageFormat.format(GOAL_NOT_FOUND, id))
         );
-        logger.log(Level.DEBUG, "Get entity goal by id: {}", goal);
+        log.debug("Get entity goal by id: {}", goal);
         return goal;
     }
 
@@ -49,7 +47,7 @@ public class GoalServiceImpl implements GoalService {
     public GoalResponseDto getById(Long id) {
         Goal goal = getEntityById(id);
         GoalResponseDto responseDto = goalMapper.toDto(goal);
-        logger.log(Level.DEBUG, "Get goal dto by id: {}", responseDto);
+        log.debug("Get goal dto by id: {}", responseDto);
         return responseDto;
     }
 
@@ -62,7 +60,7 @@ public class GoalServiceImpl implements GoalService {
         requestEntity.setActive(true);
         Goal saved = goalRepository.save(userId, requestEntity);
         GoalResponseDto responseDto = goalMapper.toDto(saved);
-        logger.log(Level.DEBUG, "Save goal: {}", responseDto);
+        log.debug("Save goal: {}", responseDto);
         return responseDto;
     }
 
@@ -72,7 +70,7 @@ public class GoalServiceImpl implements GoalService {
         goalMapper.updateGoal(sourceGoal, updatedGoal);
         Goal updated = goalRepository.update(updatedGoal);
         GoalResponseDto responseDto = goalMapper.toDto(updated);
-        logger.log(Level.DEBUG, "Update goal: {}", responseDto);
+        log.debug("Update goal: {}", responseDto);
         return responseDto;
     }
 
@@ -85,7 +83,7 @@ public class GoalServiceImpl implements GoalService {
     public List<GoalResponseDto> getAllGoalsByUserId(Long userId) {
         List<Goal> goals = goalRepository.getAllByUserId(userId);
         List<GoalResponseDto> responseDtoList = goalMapper.toDto(goals);
-        logger.log(Level.DEBUG, "Get goals by user id: {}", responseDtoList);
+        log.debug("Get goals by user id: {}", responseDtoList);
         return responseDtoList;
     }
 
@@ -98,7 +96,7 @@ public class GoalServiceImpl implements GoalService {
             List<Transaction> transactions = transactionRepository.getAll(transactionFilter);
             BigDecimal sum = transactions.stream().map(Transaction::getAmount)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
-            if (goal.getTargetAmount().compareTo(sum) >= 0) {
+            if (goal.getTargetAmount().compareTo(sum) <= 0) {
                 info = MessageFormat
                         .format("#{0}: Выполнена цель {1}, для %name%",
                                 goal.getId(), goal.getTargetAmount());

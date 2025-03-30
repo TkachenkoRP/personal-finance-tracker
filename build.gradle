@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'war'
     id 'io.freefair.lombok' version '8.6'
+    id 'io.freefair.aspectj.post-compile-weaving' version "8.6"
 }
 
 group = 'com.my'
@@ -22,16 +23,22 @@ ext {
     testContainerVersion = '1.20.6'
     lombokVersion = '1.18.36'
     lombokMapstructVersion = '0.2.0'
-    log4jVersion = '2.24.3'
     servletVersion = '6.1.0'
     jacksonVersion = '2.18.3'
     snakeYmlVersion = '2.2'
     hibernateVersion = '9.0.0.CR1'
+    glassfishVersion = '6.0.0-M1'
+    logbackVersion = '1.5.18'
+    aspectjVersion = '1.9.23'
 }
 
 dependencies {
     implementation "org.springframework:spring-webmvc:${springVersion}"
     implementation "org.springframework:spring-jdbc:${springVersion}"
+    implementation("org.springframework:spring-context:${springVersion}") {
+        exclude group: "commons-logging", module: "commons-logging"
+    }
+    implementation "org.springframework:spring-aop:${springVersion}"
     implementation "org.yaml:snakeyaml:${snakeYmlVersion}"
     implementation "org.postgresql:postgresql:${postgresqlVersion}"
     implementation "org.liquibase:liquibase-core:${liquibaseVersion}"
@@ -40,12 +47,14 @@ dependencies {
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
     annotationProcessor "org.projectlombok:lombok-mapstruct-binding:${lombokMapstructVersion}"
-    implementation "org.apache.logging.log4j:log4j-api:${log4jVersion}"
-    implementation "org.apache.logging.log4j:log4j-core:${log4jVersion}"
+    implementation "ch.qos.logback:logback-classic:${logbackVersion}"
+    implementation "ch.qos.logback:logback-core:${logbackVersion}"
     compileOnly "jakarta.servlet:jakarta.servlet-api:${servletVersion}"
     implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
     implementation "org.hibernate.validator:hibernate-validator:${hibernateVersion}"
-    implementation 'org.glassfish.expressly:expressly:6.0.0-M1'
+    implementation "org.glassfish.expressly:expressly:${glassfishVersion}"
+    runtimeOnly("org.aspectj:aspectjweaver:${aspectjVersion}")
+    implementation("org.aspectj:aspectjtools:${aspectjVersion}")
     testImplementation platform("org.junit:junit-bom:${junitVersion}")
     testImplementation "org.junit.jupiter:junit-jupiter"
     testImplementation "org.assertj:assertj-core:${assertjVersion}"

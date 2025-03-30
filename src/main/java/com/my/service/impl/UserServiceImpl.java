@@ -12,9 +12,7 @@ import com.my.repository.UserRepository;
 import com.my.service.UserManager;
 import com.my.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;
@@ -23,8 +21,8 @@ import java.util.List;
 @Loggable
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserServiceImpl implements UserService {
-    private static final Logger logger = LogManager.getRootLogger();
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
@@ -41,7 +39,7 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.save(new User(email, password, name, UserRole.ROLE_USER));
         UserManager.setLoggedInUser(user);
         UserResponseDto userResponseDto = userMapper.toDto(user);
-        logger.log(Level.DEBUG, "Registration user: {}", userResponseDto);
+        log.debug("Registration user: {}", userResponseDto);
         return userResponseDto;
     }
 
@@ -50,7 +48,7 @@ public class UserServiceImpl implements UserService {
         User user = getUserByLoginAndPassword(email, password);
         UserManager.setLoggedInUser(user);
         UserResponseDto userResponseDto = userMapper.toDto(user);
-        logger.log(Level.DEBUG, "Login user: {}", userResponseDto);
+        log.debug("Login user: {}", userResponseDto);
         return userResponseDto;
     }
 
@@ -63,7 +61,7 @@ public class UserServiceImpl implements UserService {
     public UserResponseDto getById(Long id) {
         User user = getEntityUserById(id);
         UserResponseDto userResponseDto = userMapper.toDto(user);
-        logger.log(Level.DEBUG, "Get user by id: {}", userResponseDto);
+        log.debug("Get user by id: {}", userResponseDto);
         return userResponseDto;
     }
 
@@ -78,7 +76,7 @@ public class UserServiceImpl implements UserService {
         userMapper.updateUser(sourceUser, updatedUser);
         User updated = userRepository.update(updatedUser);
         UserResponseDto userResponseDto = userMapper.toDto(updated);
-        logger.log(Level.DEBUG, "Update user: {}", userResponseDto);
+        log.debug("Update user: {}", userResponseDto);
         return userResponseDto;
     }
 
@@ -91,7 +89,7 @@ public class UserServiceImpl implements UserService {
     public List<UserResponseDto> getAll() {
         List<User> users = userRepository.getAll();
         List<UserResponseDto> responseDtoList = userMapper.toDto(users);
-        logger.log(Level.DEBUG, "Get all users");
+        log.debug("Get all users");
         return responseDtoList;
     }
 

@@ -1,5 +1,6 @@
 package com.my.controller;
 
+import com.my.annotation.Audition;
 import com.my.dto.TransactionCategoryRequestDto;
 import com.my.dto.TransactionCategoryResponseDto;
 import com.my.service.TransactionCategoryService;
@@ -19,6 +20,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/category")
 @RequiredArgsConstructor
+@Audition
 public class TransactionCategoryController {
     private final TransactionCategoryService transactionCategoryService;
 
