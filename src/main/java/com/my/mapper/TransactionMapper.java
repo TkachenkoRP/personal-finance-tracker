@@ -3,9 +3,11 @@ package com.my.mapper;
 import com.my.dto.TransactionRequestDto;
 import com.my.dto.TransactionResponseDto;
 import com.my.model.Transaction;
+import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
@@ -23,6 +25,7 @@ public interface TransactionMapper {
      * @param sourceUser объект TransactionRequestDto, содержащий данные для обновления
      * @param targetUser объект Transaction, который будет обновлен
      */
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "type", ignore = true)
     @Mapping(target = "date", source = "date", dateFormat = "d.M.yyyy")
     void updateTransaction(TransactionRequestDto sourceUser, @MappingTarget Transaction targetUser);

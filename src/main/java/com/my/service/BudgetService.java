@@ -2,6 +2,7 @@ package com.my.service;
 
 import com.my.dto.BudgetRequestDto;
 import com.my.dto.BudgetResponseDto;
+import com.my.dto.ReportResponseDto;
 import com.my.model.Budget;
 
 import java.util.List;
@@ -72,9 +73,9 @@ public interface BudgetService {
      *
      * @param userId     идентификатор пользователя
      * @param categoryId идентификатор категории бюджета
-     * @return строка с информацией о превышении бюджета
+     * @return информация о превышении бюджета
      */
-    String getBudgetsExceededInfo(Long userId, Long categoryId);
+    ReportResponseDto getBudgetsExceededInfo(Long userId, Long categoryId);
 
     /**
      * Деактивация бюджета по его идентификатору.

@@ -2,8 +2,10 @@ package com.my.repository.impl;
 
 import com.my.annotation.Loggable;
 import com.my.model.Goal;
+import com.my.model.TransactionCategory;
 import com.my.repository.GoalRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -109,12 +111,16 @@ public class JdbcGoalRepositoryImpl implements GoalRepository {
     @Override
     public Optional<Goal> getActiveGoalByUserIdAndCategoryId(Long userId, Long categoryId) {
         String query = "SELECT * FROM " + schema + ".goal WHERE user_id = ? AND category_id = ? AND is_active = true";
-        return Optional.ofNullable(jdbcTemplate.queryForObject(query, new Object[]{userId, categoryId}, (rs, rowNum) ->
-                new Goal(
-                        rs.getLong("id"),
-                        rs.getBigDecimal("amount"),
-                        rs.getLong("category_id"),
-                        rs.getBoolean("is_active")
-                )));
+        try {
+            return Optional.ofNullable(jdbcTemplate.queryForObject(query, new Object[]{userId, categoryId}, (rs, rowNum) ->
+                    new Goal(
+                            rs.getLong("id"),
+                            rs.getBigDecimal("amount"),
+                            rs.getLong("category_id"),
+                            rs.getBoolean("is_active")
+                    )));
+        } catch (DataAccessException e) {
+            return Optional.empty();
+        }
     }
 }

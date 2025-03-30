@@ -29,7 +29,7 @@ class AuthControllerTest extends AbstractTestContainer {
     }
 
     @BeforeEach
-    public void setUpMockMvc() {
+    void setUpMockMvc() {
         setUpMockMvc(authController, exceptionHandlerController);
     }
 

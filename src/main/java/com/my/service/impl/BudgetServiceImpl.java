@@ -3,6 +3,7 @@ package com.my.service.impl;
 import com.my.annotation.Loggable;
 import com.my.dto.BudgetRequestDto;
 import com.my.dto.BudgetResponseDto;
+import com.my.dto.ReportResponseDto;
 import com.my.exception.AccessDeniedException;
 import com.my.exception.EntityNotFoundException;
 import com.my.mapper.BudgetMapper;
@@ -98,9 +99,9 @@ public class BudgetServiceImpl implements BudgetService {
     }
 
     @Override
-    public String getBudgetsExceededInfo(Long userId, Long categoryId) {
+    public ReportResponseDto getBudgetsExceededInfo(Long userId, Long categoryId) {
         Budget budget = getActiveBudgetByUserIdAndCategoryId(userId, categoryId);
-        String info = "";
+        String info = "Нет установленного бюджета!";
         if (budget != null) {
             TransactionFilter transactionFilter = new TransactionFilter(userId, null, budget.getPeriodStart(), budget.getPeriodEnd(), categoryId, TransactionType.EXPENSE);
             List<Transaction> transactions = transactionRepository.getAll(transactionFilter);
@@ -113,7 +114,7 @@ public class BudgetServiceImpl implements BudgetService {
                 emailNotificationService.sendNotification(info);
             }
         }
-        return info;
+        return new ReportResponseDto(info);
     }
 
     @Override

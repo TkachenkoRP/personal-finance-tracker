@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.my.configuration.ApplicationConfig;
 import com.my.controller.ExceptionHandlerController;
+import com.my.service.UserManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,12 +24,14 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Map;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -68,6 +71,7 @@ public abstract class AbstractTestContainer extends TestData {
     @AfterEach
     public void tearDown() {
         mockMvc = null;
+        UserManager.setLoggedInUser(null);
     }
 
     protected void setUpMockMvc(Object controller, ExceptionHandlerController exceptionHandlerController) {
@@ -77,11 +81,26 @@ public abstract class AbstractTestContainer extends TestData {
     }
 
     protected MockHttpServletResponse performRequest(HttpMethod method, String url, HttpStatus expectedStatus) throws Exception {
-        return performRequest(method, url, null, expectedStatus);
+        return performRequest(method, url, null, expectedStatus, null);
     }
 
     protected MockHttpServletResponse performRequest(HttpMethod method, String url, Object content, HttpStatus expectedStatus) throws Exception {
+        return performRequest(method, url, content, expectedStatus, null);
+    }
+
+    protected MockHttpServletResponse performRequest(HttpMethod method, String url, HttpStatus expectedStatus, Map<String, String> pathVariables) throws Exception {
+        return performRequest(method, url, null, expectedStatus, pathVariables);
+    }
+
+    protected MockHttpServletResponse performRequest(HttpMethod method, String url, Object content, HttpStatus expectedStatus, Map<String, String> pathVariables) throws Exception {
         MockHttpServletRequestBuilder requestBuilder;
+
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(url);
+        if (pathVariables != null) {
+            for (Map.Entry<String, String> entry : pathVariables.entrySet()) {
+                url = uriBuilder.queryParam(entry.getKey(), entry.getValue()).toUriString();
+            }
+        }
         if (method == HttpMethod.GET) {
             requestBuilder = get(url);
         } else if (method == HttpMethod.POST) {

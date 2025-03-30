@@ -77,6 +77,7 @@ class TransactionCategoryControllerTest extends AbstractTestContainer {
         int count = transactionCategoryRepository.getAll().size();
         TransactionCategoryRequestDto request = new TransactionCategoryRequestDto(CATEGORY_NAME);
         performRequest(HttpMethod.POST, API_URL_CATEGORY, request, HttpStatus.BAD_REQUEST);
+
         assertThat(transactionCategoryRepository.getAll()).hasSize(count);
     }
 

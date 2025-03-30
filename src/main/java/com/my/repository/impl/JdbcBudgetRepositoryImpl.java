@@ -12,6 +12,8 @@ import org.springframework.stereotype.Repository;
 import javax.sql.DataSource;
 import java.sql.Date;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
@@ -31,29 +33,24 @@ public class JdbcBudgetRepositoryImpl implements BudgetRepository {
     @Override
     public List<Budget> getAll() {
         String query = "SELECT * FROM " + schema + ".budget";
-        return jdbcTemplate.query(query, (rs, rowNum) ->
-                new Budget(
-                        rs.getLong("id"),
-                        rs.getBigDecimal("total_amount"),
-                        rs.getDate("period_start").toLocalDate(),
-                        rs.getDate("period_end").toLocalDate(),
-                        rs.getLong("category_id"),
-                        rs.getBoolean("is_active")
-                ));
+        return jdbcTemplate.query(query, (rs, rowNum) -> mapBudget(rs));
     }
 
     @Override
     public Optional<Budget> getById(Long id) {
         String query = "SELECT * FROM " + schema + ".budget WHERE id = ?";
-        return Optional.ofNullable(jdbcTemplate.queryForObject(query, (rs, rowNum) ->
-                new Budget(
-                        rs.getLong("id"),
-                        rs.getBigDecimal("total_amount"),
-                        rs.getDate("period_start").toLocalDate(),
-                        rs.getDate("period_end").toLocalDate(),
-                        rs.getLong("category_id"),
-                        rs.getBoolean("is_active")
-                ), id));
+        return Optional.ofNullable(jdbcTemplate.queryForObject(query, (rs, rowNum) -> mapBudget(rs), id));
+    }
+
+    private Budget mapBudget(ResultSet rs) throws SQLException {
+        return new Budget(
+                rs.getLong("id"),
+                rs.getBigDecimal("total_amount"),
+                rs.getDate("period_start").toLocalDate(),
+                rs.getDate("period_end").toLocalDate(),
+                rs.getLong("category_id"),
+                rs.getBoolean("is_active")
+        );
     }
 
     @Override
@@ -105,29 +102,13 @@ public class JdbcBudgetRepositoryImpl implements BudgetRepository {
     @Override
     public List<Budget> getAllByUserId(Long userId) {
         String query = "SELECT * FROM " + schema + ".budget WHERE user_id = ?";
-        return jdbcTemplate.query(query, (rs, rowNum) ->
-                new Budget(
-                        rs.getLong("id"),
-                        rs.getBigDecimal("total_amount"),
-                        rs.getDate("period_start").toLocalDate(),
-                        rs.getDate("period_end").toLocalDate(),
-                        rs.getLong("category_id"),
-                        rs.getBoolean("is_active")
-                ), userId);
+        return jdbcTemplate.query(query, (rs, rowNum) -> mapBudget(rs), userId);
     }
 
     @Override
     public Optional<Budget> getActiveBudgetByUserIdAndCategoryId(Long userId, Long categoryId) {
         String query = "SELECT * FROM " + schema + ".budget WHERE user_id = ? AND category_id = ? AND is_active = true";
-        return Optional.ofNullable(jdbcTemplate.queryForObject(query, (rs, rowNum) ->
-                new Budget(
-                        rs.getLong("id"),
-                        rs.getBigDecimal("total_amount"),
-                        rs.getDate("period_start").toLocalDate(),
-                        rs.getDate("period_end").toLocalDate(),
-                        rs.getLong("category_id"),
-                        rs.getBoolean("is_active")
-                ), userId, categoryId));
+        return Optional.ofNullable(jdbcTemplate.queryForObject(query, (rs, rowNum) -> mapBudget(rs), userId, categoryId));
     }
 
     @Override

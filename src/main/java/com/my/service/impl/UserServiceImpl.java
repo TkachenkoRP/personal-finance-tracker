@@ -111,6 +111,7 @@ public class UserServiceImpl implements UserService {
         return userRepository.isEmailOccupied(email);
     }
 
+    @Override
     public boolean blockUser(Long userId) {
         return userRepository.blockUserById(userId);
     }

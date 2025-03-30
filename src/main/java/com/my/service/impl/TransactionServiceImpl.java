@@ -17,6 +17,7 @@ import com.my.repository.impl.JdbcTransactionRepository;
 import com.my.service.BudgetService;
 import com.my.service.GoalService;
 import com.my.service.TransactionService;
+import com.my.service.UserManager;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -68,6 +69,7 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     public TransactionResponseDto save(TransactionRequestDto request) {
         Transaction requestEntity = transactionMapper.toEntity(request);
+        requestEntity.setUserId(UserManager.getLoggedInUser().getId());
         Transaction saved = transactionRepository.save(requestEntity);
         TransactionResponseDto responseDto = transactionMapper.toDto(saved);
         processTransaction(saved);
@@ -93,7 +95,7 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     public ExpensesResponseDto getMonthExpense(Long userId) {
         BigDecimal monthExpense = transactionRepository.getMonthExpense(userId);
-        return new ExpensesResponseDto(monthExpense);
+        return new ExpensesResponseDto(monthExpense == null ? BigDecimal.ZERO : monthExpense);
     }
 
     @Override
@@ -135,7 +137,7 @@ public class TransactionServiceImpl implements TransactionService {
     public String processTransaction(Transaction transaction) {
         String msg;
         if (transaction.getType() == TransactionType.EXPENSE) {
-            msg = budgetService.getBudgetsExceededInfo(transaction.getUserId(), transaction.getCategoryId());
+            msg = budgetService.getBudgetsExceededInfo(transaction.getUserId(), transaction.getCategoryId()).getMessage();
         } else {
             msg = goalService.getGoalIncomeInfo(transaction.getUserId(), transaction.getCategoryId());
         }

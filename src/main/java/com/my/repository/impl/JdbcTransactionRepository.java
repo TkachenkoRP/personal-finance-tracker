@@ -7,6 +7,7 @@ import com.my.model.TransactionFilter;
 import com.my.model.TransactionType;
 import com.my.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -16,6 +17,8 @@ import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -89,16 +92,7 @@ public class JdbcTransactionRepository implements TransactionRepository {
             }
         }
 
-        return jdbcTemplate.query(query.toString(), parameters.toArray(), (rs, rowNum) ->
-                new Transaction(
-                        rs.getLong("id"),
-                        rs.getDate("date").toLocalDate(),
-                        TransactionType.valueOf(rs.getString("type")),
-                        rs.getBigDecimal("amount"),
-                        rs.getString("description"),
-                        rs.getLong("category_id"),
-                        rs.getLong("user_id")
-                ));
+        return jdbcTemplate.query(query.toString(), (rs, rowNum) -> mapTransaction(rs), parameters.toArray());
     }
 
     @Override
@@ -108,16 +102,24 @@ public class JdbcTransactionRepository implements TransactionRepository {
                        "JOIN " + schema + ".transaction_category tc ON t.category_id = tc.id " +
                        "JOIN " + schema + ".user u ON t.user_id = u.id " +
                        "WHERE t.id = ?";
-        return Optional.ofNullable(jdbcTemplate.queryForObject(query, new Object[]{id}, (rs, rowNum) ->
-                new Transaction(
-                        rs.getLong("id"),
-                        rs.getDate("date").toLocalDate(),
-                        TransactionType.valueOf(rs.getString("type")),
-                        rs.getBigDecimal("amount"),
-                        rs.getString("description"),
-                        rs.getLong("category_id"),
-                        rs.getLong("user_id")
-                )));
+        try {
+            Transaction transaction = jdbcTemplate.queryForObject(query, (rs, rowNum) -> mapTransaction(rs), id);
+            return Optional.ofNullable(transaction);
+        } catch (DataAccessException e) {
+            return Optional.empty();
+        }
+    }
+
+    private Transaction mapTransaction(ResultSet rs) throws SQLException {
+        return new Transaction(
+                rs.getLong("id"),
+                rs.getDate("date").toLocalDate(),
+                TransactionType.valueOf(rs.getString("type")),
+                rs.getBigDecimal("amount"),
+                rs.getString("description"),
+                rs.getLong("category_id"),
+                rs.getLong("user_id")
+        );
     }
 
     @Override
@@ -183,7 +185,7 @@ public class JdbcTransactionRepository implements TransactionRepository {
                        "AND EXTRACT(MONTH FROM t.date) = ? " +
                        "AND EXTRACT(YEAR FROM t.date) = ?";
 
-        return jdbcTemplate.queryForObject(query, new Object[]{userId, TransactionType.EXPENSE.name(), currentMonth, currentYear}, BigDecimal.class);
+        return jdbcTemplate.queryForObject(query, BigDecimal.class, userId, TransactionType.EXPENSE.name(), currentMonth, currentYear);
     }
 
     @Override
@@ -194,7 +196,7 @@ public class JdbcTransactionRepository implements TransactionRepository {
                        "FROM " + schema + ".transaction t " +
                        "WHERE t.user_id = ?";
 
-        return jdbcTemplate.queryForObject(query, new Object[]{TransactionType.INCOME.name(), userId}, BigDecimal.class);
+        return jdbcTemplate.queryForObject(query, BigDecimal.class, TransactionType.INCOME.name(), userId);
     }
 
     @Override
@@ -206,7 +208,7 @@ public class JdbcTransactionRepository implements TransactionRepository {
                        "WHERE t.user_id = ? AND t.type = ? " +
                        "AND t.date >= ? AND t.date <= ?";
 
-        return jdbcTemplate.queryForObject(query, new Object[]{userId, TransactionType.INCOME.name(), Date.valueOf(from), Date.valueOf(to)}, BigDecimal.class);
+        return jdbcTemplate.queryForObject(query, BigDecimal.class, userId, TransactionType.INCOME.name(), Date.valueOf(from), Date.valueOf(to));
     }
 
     @Override
@@ -218,13 +220,11 @@ public class JdbcTransactionRepository implements TransactionRepository {
                        "WHERE t.user_id = ? AND t.type = ? " +
                        "AND t.date >= ? AND t.date <= ?";
 
-        return jdbcTemplate.queryForObject(query, new Object[]{userId, TransactionType.EXPENSE.name(), Date.valueOf(from), Date.valueOf(to)}, BigDecimal.class);
+        return jdbcTemplate.queryForObject(query, BigDecimal.class, userId, TransactionType.EXPENSE.name(), Date.valueOf(from), Date.valueOf(to));
     }
 
     @Override
     public List<ExpenseAnalysisDto> analyzeExpensesByCategory(Long userId, LocalDate from, LocalDate to) {
-        List<ExpenseAnalysisDto> result = new ArrayList<>();
-
         String query = "SELECT tc.category_name, SUM(t.amount) AS total_expenses " +
                        "FROM " + schema + ".transaction t " +
                        "JOIN " + schema + ".transaction_category tc ON t.category_id = tc.id " +
@@ -232,11 +232,11 @@ public class JdbcTransactionRepository implements TransactionRepository {
                        "AND t.date >= ? AND t.date <= ? " +
                        "GROUP BY tc.category_name";
 
-        return jdbcTemplate.query(query, new Object[]{userId, TransactionType.EXPENSE.name(), Date.valueOf(from), Date.valueOf(to)},
+        return jdbcTemplate.query(query,
                 (rs, rowNum) -> new ExpenseAnalysisDto(
                         rs.getString("category_name"),
                         rs.getBigDecimal("total_expenses")
-                ));
+                ), userId, TransactionType.EXPENSE.name(), Date.valueOf(from), Date.valueOf(to));
     }
 
     @Override
@@ -247,6 +247,6 @@ public class JdbcTransactionRepository implements TransactionRepository {
                        "FROM " + schema + ".transaction t " +
                        "WHERE t.user_id = ? AND t.category_id = ? AND t.type = ?";
 
-        return jdbcTemplate.queryForObject(query, new Object[]{userId, transactionCategoryId, TransactionType.INCOME.name()}, BigDecimal.class);
+        return jdbcTemplate.queryForObject(query, BigDecimal.class, userId, transactionCategoryId, TransactionType.INCOME.name());
     }
 }

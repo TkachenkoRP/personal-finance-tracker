@@ -45,8 +45,7 @@ public class TransactionCategoryServiceImpl implements TransactionCategoryServic
         return categoryResponseDto;
     }
 
-    @Override
-    public TransactionCategory getEntityById(Long id) {
+    private TransactionCategory getEntityById(Long id) {
         TransactionCategory transactionCategory = transactionCategoryRepository.getById(id).orElseThrow(
                 () -> new EntityNotFoundException(MessageFormat.format(CATEGORY_NOT_FOUND, id))
         );

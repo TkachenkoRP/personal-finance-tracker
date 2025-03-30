@@ -1,7 +1,12 @@
 package com.my;
 
+import com.my.model.TransactionType;
 import com.my.model.User;
 import com.my.model.UserRole;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public class TestData {
 
@@ -10,6 +15,13 @@ public class TestData {
     public static final String API_URL_LOGOUT = "/api/auth/logout";
     public static final String API_URL_USER = "/api/user";
     public static final String API_URL_CATEGORY = "/api/category";
+    public static final String API_URL_TRANSACTION = "/api/transaction";
+    public static final String API_URL_TRANSACTION_BALANCE = "/api/transaction/balance";
+    public static final String API_URL_TRANSACTION_INCOME = "/api/transaction/income";
+    public static final String API_URL_TRANSACTION_TOTAL_EXPENSES = "/api/transaction/total-expenses";
+    public static final String API_URL_TRANSACTION_MONTH_EXPENSES = "/api/transaction/month-expenses";
+    public static final String API_URL_TRANSACTION_ANALYZE = "/api/transaction/analyze";
+    public static final String API_URL_TRANSACTION_REPORT = "/api/transaction/report";
 
     public static final Long WRONG_ID = Long.MAX_VALUE;
 
@@ -21,6 +33,7 @@ public class TestData {
 
     public static User getAdminRole() {
         User user = new User();
+        user.setId(1L);
         user.setRole(UserRole.ROLE_ADMIN);
         return user;
     }
@@ -49,7 +62,35 @@ public class TestData {
     public static final String CATEGORY_NAME = "Salary";
     public static final String NEW_CATEGORY_NAME = "New Category";
     public static final Long CATEGORY_ID_FOR_UPDATE = 2L;
-    public static final String CATEGORY_NAME_FOR_UPDATE = "Freelance";
     public static final Long CATEGORY_ID_FOR_DELETE = 4L;
 
+    public static final Long TRANSACTION_ID = 1L;
+    public static final TransactionType TRANSACTION_TYPE = TransactionType.INCOME;
+    public static final BigDecimal TRANSACTION_AMOUNT = new BigDecimal("300.00");
+    public static final String TRANSACTION_DESCRIPTION = "Salary for January";
+    public static final Long TRANSACTION_CATEGORY_ID = 1L;
+    public static final Long TRANSACTION_USER_ID = 2L;
+
+    public static final String NEW_TRANSACTION_DATE = LocalDate.now().format(DateTimeFormatter.ofPattern("d.M.yyyy"));
+    public static final String NEW_TRANSACTION_TYPE = TransactionType.INCOME.name();
+    public static final BigDecimal NEW_TRANSACTION_AMOUNT = new BigDecimal("0.01");
+    public static final String NEW_TRANSACTION_DESCRIPTION = "New description";
+    public static final Long NEW_TRANSACTION_CATEGORY_ID = 1L;
+
+    public static final Long TRANSACTION_ID_FOR_UPDATE = 5L;
+    public static final TransactionType TRANSACTION_TYPE_FOR_UPDATE = TransactionType.EXPENSE;
+    public static final String TRANSACTION_DATE_FOR_UPDATE = "10.1.2025";
+    public static final BigDecimal TRANSACTION_AMOUNT_FOR_UPDATE = new BigDecimal("50.00");
+    public static final String TRANSACTION_DESCRIPTION_FOR_UPDATE = "UtilitiesSalary for January";
+    public static final Long TRANSACTION_USER_ID_FOR_UPDATE = 2L;
+
+    public static final Long TRANSACTION_ID_6 = 6L;
+    public static final TransactionType TRANSACTION_TYPE_6 = TransactionType.EXPENSE;
+    public static final String TRANSACTION_DATE_6 = "15.1.2025";
+    public static final BigDecimal TRANSACTION_AMOUNT_6 = new BigDecimal("30.00");
+    public static final String TRANSACTION_DESCRIPTION_6 = "Transport";
+    public static final Long TRANSACTION_CATEGORY_ID_6 = 3L;
+    public static final Long TRANSACTION_USER_ID_6 = 2L;
+
+    public static final Long TRANSACTION_ID_FOR_DELETE = 4L;
 }

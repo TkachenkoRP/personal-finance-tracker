@@ -84,7 +84,6 @@ class UserControllerTest extends AbstractTestContainer {
     void whenUpdateUser_withWrongId_thenReturnNotFound() throws Exception {
         UserRequestDto request = new UserRequestDto(NEW_USER_EMAIL, NEW_USER_NAME);
         performRequest(HttpMethod.PATCH, API_URL_USER + "/" + WRONG_ID, request, HttpStatus.NOT_FOUND);
-
     }
 
     @Test
