@@ -2,8 +2,10 @@ package com.my.repository.impl;
 
 import com.my.annotation.Loggable;
 import com.my.model.Budget;
+import com.my.model.TransactionCategory;
 import com.my.repository.BudgetRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -39,7 +41,12 @@ public class JdbcBudgetRepositoryImpl implements BudgetRepository {
     @Override
     public Optional<Budget> getById(Long id) {
         String query = "SELECT * FROM " + schema + ".budget WHERE id = ?";
-        return Optional.ofNullable(jdbcTemplate.queryForObject(query, (rs, rowNum) -> mapBudget(rs), id));
+        try {
+            Budget budget = jdbcTemplate.queryForObject(query, (rs, rowNum) -> mapBudget(rs), id);
+            return Optional.ofNullable(budget);
+        } catch (DataAccessException e) {
+            return Optional.empty();
+        }
     }
 
     private Budget mapBudget(ResultSet rs) throws SQLException {
@@ -108,7 +115,12 @@ public class JdbcBudgetRepositoryImpl implements BudgetRepository {
     @Override
     public Optional<Budget> getActiveBudgetByUserIdAndCategoryId(Long userId, Long categoryId) {
         String query = "SELECT * FROM " + schema + ".budget WHERE user_id = ? AND category_id = ? AND is_active = true";
-        return Optional.ofNullable(jdbcTemplate.queryForObject(query, (rs, rowNum) -> mapBudget(rs), userId, categoryId));
+        try {
+            Budget budget = jdbcTemplate.queryForObject(query, (rs, rowNum) -> mapBudget(rs), userId, categoryId);
+            return Optional.ofNullable(budget);
+        } catch (DataAccessException e) {
+            return Optional.empty();
+        }
     }
 
     @Override

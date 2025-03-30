@@ -3,9 +3,11 @@ package com.my.mapper;
 import com.my.dto.BudgetRequestDto;
 import com.my.dto.BudgetResponseDto;
 import com.my.model.Budget;
+import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
@@ -24,6 +26,7 @@ public interface BudgetMapper {
      * @param sourceGoal объект BudgetRequestDto, содержащий данные для обновления
      * @param targetGoal объект Budget, который будет обновлен
      */
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "periodStart", source = "periodStart", dateFormat = "d.M.yyyy")
     @Mapping(target = "periodEnd", source = "periodEnd", dateFormat = "d.M.yyyy")
     @Mapping(target = "targetGoal.categoryId", source = "categoryId")

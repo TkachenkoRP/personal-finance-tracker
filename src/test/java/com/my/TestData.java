@@ -22,6 +22,7 @@ public class TestData {
     public static final String API_URL_TRANSACTION_MONTH_EXPENSES = "/api/transaction/month-expenses";
     public static final String API_URL_TRANSACTION_ANALYZE = "/api/transaction/analyze";
     public static final String API_URL_TRANSACTION_REPORT = "/api/transaction/report";
+    public static final String API_URL_BUDGET = "/api/budget";
 
     public static final Long WRONG_ID = Long.MAX_VALUE;
 
@@ -93,4 +94,19 @@ public class TestData {
     public static final Long TRANSACTION_USER_ID_6 = 2L;
 
     public static final Long TRANSACTION_ID_FOR_DELETE = 4L;
+
+    public static final Long BUDGET_ID = 1L;
+    public static final Long BUDGET_CATEGORY_ID = 1L;
+    public static final BigDecimal BUDGET_AMOUNT = new BigDecimal("101.00");
+
+    public static final BigDecimal NEW_BUDGET_AMOUNT = new BigDecimal("111.11");
+    public static final String NEW_BUDGET_DATE_FROM = "1.5.2025";
+    public static final String NEW_BUDGET_DATE_TO = "15.5.2025";
+    public static final Long NEW_BUDGET_CATEGORY_ID = 1L;
+
+    public static final Long BUDGET_ID_FOR_UPDATE = 2L;
+    public static final Long BUDGET_CATEGORY_ID_FOR_UPDATE = 2L;
+    public static final BigDecimal BUDGET_AMOUNT_FOR_UPDATE = new BigDecimal("201.00");
+
+    public static final Long BUDGET_ID_FOR_DELETE = 3L;
 }
