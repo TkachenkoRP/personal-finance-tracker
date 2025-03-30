@@ -1,6 +1,7 @@
 package com.my.controller;
 
 import com.my.annotation.Audition;
+import com.my.controller.doc.TransactionControllerDoc;
 import com.my.dto.BalanceResponseDto;
 import com.my.dto.ExpenseAnalysisDto;
 import com.my.dto.ExpensesResponseDto;
@@ -30,7 +31,7 @@ import java.util.List;
 @RequestMapping("/api/transaction")
 @RequiredArgsConstructor
 @Audition
-public class TransactionController {
+public class TransactionController implements TransactionControllerDoc {
     private final TransactionService transactionService;
 
     @GetMapping

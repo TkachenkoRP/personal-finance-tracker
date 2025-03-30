@@ -2,6 +2,7 @@ package com.my.controller;
 
 import com.my.annotation.Audition;
 import com.my.annotation.Loggable;
+import com.my.controller.doc.AuthControllerDoc;
 import com.my.dto.UserLoginRequestDto;
 import com.my.dto.UserRegisterRequestDto;
 import com.my.dto.UserResponseDto;
@@ -19,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Audition
 @Loggable
-public class AuthController {
+public class AuthController implements AuthControllerDoc {
     private final UserService userService;
 
     @PostMapping("/login")

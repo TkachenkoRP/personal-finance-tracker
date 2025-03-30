@@ -30,6 +30,7 @@ ext {
     glassfishVersion = '6.0.0-M1'
     logbackVersion = '1.5.18'
     aspectjVersion = '1.9.23'
+    springdocVersion = '2.8.6'
 }
 
 dependencies {
@@ -53,8 +54,9 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
     implementation "org.hibernate.validator:hibernate-validator:${hibernateVersion}"
     implementation "org.glassfish.expressly:expressly:${glassfishVersion}"
-    runtimeOnly("org.aspectj:aspectjweaver:${aspectjVersion}")
-    implementation("org.aspectj:aspectjtools:${aspectjVersion}")
+    runtimeOnly "org.aspectj:aspectjweaver:${aspectjVersion}"
+    implementation "org.aspectj:aspectjtools:${aspectjVersion}"
+    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}"
     testImplementation platform("org.junit:junit-bom:${junitVersion}")
     testImplementation "org.junit.jupiter:junit-jupiter"
     testImplementation "org.assertj:assertj-core:${assertjVersion}"

@@ -1,6 +1,7 @@
 package com.my.controller;
 
 import com.my.annotation.Audition;
+import com.my.controller.doc.UserControllerDoc;
 import com.my.dto.UserRequestDto;
 import com.my.dto.UserResponseDto;
 import com.my.service.UserService;
@@ -21,7 +22,7 @@ import java.util.List;
 @RequestMapping("/api/user")
 @RequiredArgsConstructor
 @Audition
-public class UserController {
+public class UserController implements UserControllerDoc {
     private final UserService userService;
 
     @GetMapping
