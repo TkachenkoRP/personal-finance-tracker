@@ -12,4 +12,5 @@
     <include file="011-remove-spent-from-budget.xml" relativeToChangelogFile="true"/>
     <include file="012-add-data-for-test.xml" relativeToChangelogFile="true"/>
     <include file="013-add-user-data-for-test.xml" relativeToChangelogFile="true"/>
+    <include file="014-add-goal-data-for-test.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

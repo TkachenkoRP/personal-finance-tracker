@@ -2,7 +2,6 @@ package com.my.repository.impl;
 
 import com.my.annotation.Loggable;
 import com.my.model.Goal;
-import com.my.model.TransactionCategory;
 import com.my.repository.GoalRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
@@ -13,6 +12,8 @@ import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
@@ -32,25 +33,27 @@ public class JdbcGoalRepositoryImpl implements GoalRepository {
     @Override
     public List<Goal> getAll() {
         String query = "SELECT * FROM " + schema + ".goal";
-        return jdbcTemplate.query(query, (rs, rowNum) ->
-                new Goal(
-                        rs.getLong("id"),
-                        rs.getBigDecimal("amount"),
-                        rs.getLong("category_id"),
-                        rs.getBoolean("is_active")
-                ));
+        return jdbcTemplate.query(query, (rs, rowNum) -> mapGoal(rs));
     }
 
     @Override
     public Optional<Goal> getById(Long id) {
         String query = "SELECT * FROM " + schema + ".goal WHERE id = ?";
-        return Optional.ofNullable(jdbcTemplate.queryForObject(query, new Object[]{id}, (rs, rowNum) ->
-                new Goal(
-                        rs.getLong("id"),
-                        rs.getBigDecimal("amount"),
-                        rs.getLong("category_id"),
-                        rs.getBoolean("is_active")
-                )));
+        try {
+            Goal goal = jdbcTemplate.queryForObject(query, (rs, rowNum) -> mapGoal(rs), id);
+            return Optional.ofNullable(goal);
+        } catch (DataAccessException e) {
+            return Optional.empty();
+        }
+    }
+
+    private Goal mapGoal(ResultSet rs) throws SQLException {
+        return new Goal(
+                rs.getLong("id"),
+                rs.getBigDecimal("amount"),
+                rs.getLong("category_id"),
+                rs.getBoolean("is_active")
+        );
     }
 
     @Override
@@ -61,7 +64,7 @@ public class JdbcGoalRepositoryImpl implements GoalRepository {
             PreparedStatement ps = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             ps.setBigDecimal(1, entity.getTargetAmount());
             ps.setLong(2, entity.getCategoryId());
-            ps.setLong(3, entity.getId());
+            ps.setLong(3, userId);
             return ps;
         }, keyHolder);
         if (update > 0) {
@@ -99,26 +102,14 @@ public class JdbcGoalRepositoryImpl implements GoalRepository {
     @Override
     public List<Goal> getAllByUserId(Long userId) {
         String query = "SELECT * FROM " + schema + ".goal WHERE user_id = ?";
-        return jdbcTemplate.query(query, new Object[]{userId}, (rs, rowNum) ->
-                new Goal(
-                        rs.getLong("id"),
-                        rs.getBigDecimal("amount"),
-                        rs.getLong("category_id"),
-                        rs.getBoolean("is_active")
-                ));
+        return jdbcTemplate.query(query, (rs, rowNum) -> mapGoal(rs), userId);
     }
 
     @Override
     public Optional<Goal> getActiveGoalByUserIdAndCategoryId(Long userId, Long categoryId) {
         String query = "SELECT * FROM " + schema + ".goal WHERE user_id = ? AND category_id = ? AND is_active = true";
         try {
-            return Optional.ofNullable(jdbcTemplate.queryForObject(query, new Object[]{userId, categoryId}, (rs, rowNum) ->
-                    new Goal(
-                            rs.getLong("id"),
-                            rs.getBigDecimal("amount"),
-                            rs.getLong("category_id"),
-                            rs.getBoolean("is_active")
-                    )));
+            return Optional.ofNullable(jdbcTemplate.queryForObject(query, (rs, rowNum) -> mapGoal(rs), userId, categoryId));
         } catch (DataAccessException e) {
             return Optional.empty();
         }

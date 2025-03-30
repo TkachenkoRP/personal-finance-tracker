@@ -23,6 +23,7 @@ public class TestData {
     public static final String API_URL_TRANSACTION_ANALYZE = "/api/transaction/analyze";
     public static final String API_URL_TRANSACTION_REPORT = "/api/transaction/report";
     public static final String API_URL_BUDGET = "/api/budget";
+    public static final String API_URL_GOAL = "/api/goal";
 
     public static final Long WRONG_ID = Long.MAX_VALUE;
 
@@ -109,4 +110,17 @@ public class TestData {
     public static final BigDecimal BUDGET_AMOUNT_FOR_UPDATE = new BigDecimal("201.00");
 
     public static final Long BUDGET_ID_FOR_DELETE = 3L;
+
+    public static final Long GOAL_ID = 1L;
+    public static final Long GOAL_CATEGORY_ID = 1L;
+    public static final BigDecimal GOAL_AMOUNT = new BigDecimal("101.00");
+
+    public static final BigDecimal NEW_GOAL_AMOUNT = new BigDecimal("111.11");
+    public static final Long NEW_GOAL_CATEGORY_ID = 1L;
+
+    public static final Long GOAL_ID_FOR_UPDATE = 2L;
+    public static final Long GOAL_CATEGORY_ID_FOR_UPDATE = 2L;
+    public static final BigDecimal GOAL_AMOUNT_FOR_UPDATE = new BigDecimal("55.55");
+
+    public static final Long GOAL_ID_FOR_DELETE = 3L;
 }

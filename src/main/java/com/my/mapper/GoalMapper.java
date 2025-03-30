@@ -3,9 +3,11 @@ package com.my.mapper;
 import com.my.dto.GoalRequestDto;
 import com.my.dto.GoalResponseDto;
 import com.my.model.Goal;
+import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
@@ -23,6 +25,7 @@ public interface GoalMapper {
      * @param sourceGoal объект GoalRequestDto, содержащий данные для обновления
      * @param targetGoal объект Goal, который будет обновлен
      */
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateGoal(GoalRequestDto sourceGoal, @MappingTarget Goal targetGoal);
 
     /**
