@@ -10,16 +10,17 @@
 
 * Java 17
 * Gradle
-* Spring MVC
-* Spring AOP
+* Spring Boot
 * MapStruct
 * Lombok
 * JDBC
 * PostgreSQL
+* Springdoc
 * Docker
 * Liquibase
 * AssertJ
 * Testcontainers
+* [Собственный стартер для логирования и аудита приложения](https://github.com/TkachenkoRP/my-audit-logging-starter)
 
 ## Функциональность
 
@@ -36,22 +37,16 @@
 
 ## Инструкции по запуску
 
-1. Клонируйте репозиторий на ваш компьютер.
-2. Выполните команду `gradle build`, чтобы собрать WAR файл вашего приложения.
-3. Установите Apache Tomcat.
-4. Установите и сконфигурируйте PostgreSQL на вашем сервере.
-5. В Java приложении настройте файл конфигурации (application.yml) для подключения к вашей базе данных
-   PostgreSQL.
-6. Скопируйте собранный WAR файл из `build/libs` в директорию `webapps/personal-finance-tracker` вашего сервера
-   приложений (Tomcat).
-7. Запустите Tomcat, чтобы развернуть ваше приложение.
-8. Перейдите по адресу [http://localhost:8080/personal-finance-tracker](http://localhost:8080/personal-finance-tracker)
-   в вашем браузере и убедитесь, что приложение успешно запустилось.
+1. Клонировать репозиторий из GitHub.
+2. Убедитесь, что у вас установлен Docker.
+3. Запустите `docker-compose -f docker/docker-compose.yml up` в директории проекта.
+4. Запустите приложение.
+5. Приложение будет доступно по адресу [http://localhost:8080](http://localhost:8080).
 
 ### Документация API
 
 Документацию API можно найти по
-ссылке [http://localhost:8080/personal-finance-tracker/swagger-ui/index.html](http://localhost:8080/personal-finance-tracker/swagger-ui/index.html)
+ссылке [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
 
 ## Дополнительная информация
 
