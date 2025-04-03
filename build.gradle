@@ -14,6 +14,7 @@ java {
 }
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
@@ -22,9 +23,11 @@ ext {
     springdocVersion = '2.5.0'
     lombokVersion = '1.18.36'
     lombokMapstructVersion = '0.2.0'
+    janinoVersion = '3.1.12'
 }
 
 dependencies {
+    implementation 'com.my:my-audit-logging-starter:0.0.1-SNAPSHOT'
     implementation "org.mapstruct:mapstruct:${mapstructVersion}"
     annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}"
@@ -36,6 +39,7 @@ dependencies {
     runtimeOnly "org.postgresql:postgresql"
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
     annotationProcessor "org.projectlombok:lombok-mapstruct-binding:${lombokMapstructVersion}"
+    implementation "org.codehaus.janino:janino:${janinoVersion}"
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("org.testcontainers:junit-jupiter")

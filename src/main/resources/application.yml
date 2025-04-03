@@ -10,3 +10,5 @@ spring:
     change-log: db/changelog/db.changelog-master.xml
     contexts: dev
     default-schema: service
+  audition:
+    enabled: true
