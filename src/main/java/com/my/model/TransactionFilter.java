@@ -1,24 +1,19 @@
 package com.my.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDate;
 
-public record TransactionFilter(
-        Long userId,
-        LocalDate date,
-        LocalDate from,
-        LocalDate to,
-        Long categoryId,
-        TransactionType type) {
-
-    public TransactionFilter() {
-        this(null, null, null, null, null, null);
-    }
-
-    public TransactionFilter(Long userId) {
-        this(userId, null, null, null, null, null);
-    }
-
-    public TransactionFilter withUserId(Long newUserId) {
-        return new TransactionFilter(newUserId, date, from, to, categoryId, type);
-    }
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class TransactionFilter {
+    private Long userId;
+    private LocalDate date;
+    private LocalDate from;
+    private LocalDate to;
+    private Long categoryId;
+    private TransactionType type;
 }

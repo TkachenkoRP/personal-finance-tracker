@@ -55,7 +55,6 @@ public class JdbcTransactionRepository implements TransactionRepository {
 
     @Override
     public List<Transaction> getAll(TransactionFilter filter) {
-        List<Transaction> transactions = new ArrayList<>();
         StringBuilder query = new StringBuilder("SELECT t.id, t.amount, t.description, t.date, t.type, tc.id AS category_id, u.id AS user_id " +
                                                 "FROM " + schema + ".transaction t " +
                                                 "JOIN " + schema + ".transaction_category tc ON t.category_id = tc.id " +
@@ -64,29 +63,29 @@ public class JdbcTransactionRepository implements TransactionRepository {
         List<Object> parameters = new ArrayList<>();
 
         if (filter != null) {
-            if (filter.userId() != null) {
+            if (filter.getUserId() != null) {
                 query.append(" AND t.user_id = ?");
-                parameters.add(filter.userId());
+                parameters.add(filter.getUserId());
             }
-            if (filter.categoryId() != null) {
+            if (filter.getCategoryId() != null) {
                 query.append(" AND t.category_id = ?");
-                parameters.add(filter.categoryId());
+                parameters.add(filter.getCategoryId());
             }
-            if (filter.date() != null) {
+            if (filter.getDate() != null) {
                 query.append(" AND t.date = ?");
-                parameters.add(Date.valueOf(filter.date()));
+                parameters.add(Date.valueOf(filter.getDate()));
             }
-            if (filter.from() != null) {
+            if (filter.getFrom() != null) {
                 query.append(" AND t.date >= ?");
-                parameters.add(Date.valueOf(filter.from()));
+                parameters.add(Date.valueOf(filter.getFrom()));
             }
-            if (filter.to() != null) {
+            if (filter.getTo() != null) {
                 query.append(" AND t.date <= ?");
-                parameters.add(Date.valueOf(filter.to()));
+                parameters.add(Date.valueOf(filter.getTo()));
             }
-            if (filter.type() != null) {
+            if (filter.getType() != null) {
                 query.append(" AND t.type = ?");
-                parameters.add(filter.type().name());
+                parameters.add(filter.getType().name());
             }
         }
 
@@ -172,7 +171,6 @@ public class JdbcTransactionRepository implements TransactionRepository {
 
     @Override
     public BigDecimal getMonthExpense(Long userId) {
-        BigDecimal totalExpense = BigDecimal.ZERO;
         LocalDate currentDate = LocalDate.now();
         int currentMonth = currentDate.getMonthValue();
         int currentYear = currentDate.getYear();
@@ -188,8 +186,6 @@ public class JdbcTransactionRepository implements TransactionRepository {
 
     @Override
     public BigDecimal getBalance(Long userId) {
-        BigDecimal balance = BigDecimal.ZERO;
-
         String query = "SELECT SUM(CASE WHEN t.type = ? THEN t.amount ELSE -t.amount END) AS balance " +
                        "FROM " + schema + ".transaction t " +
                        "WHERE t.user_id = ?";
@@ -199,8 +195,6 @@ public class JdbcTransactionRepository implements TransactionRepository {
 
     @Override
     public BigDecimal getTotalIncome(Long userId, LocalDate from, LocalDate to) {
-        BigDecimal totalIncome = BigDecimal.ZERO;
-
         String query = "SELECT SUM(amount) AS total_income " +
                        "FROM " + schema + ".transaction t " +
                        "WHERE t.user_id = ? AND t.type = ? " +
@@ -211,8 +205,6 @@ public class JdbcTransactionRepository implements TransactionRepository {
 
     @Override
     public BigDecimal getTotalExpenses(Long userId, LocalDate from, LocalDate to) {
-        BigDecimal totalExpenses = BigDecimal.ZERO;
-
         String query = "SELECT SUM(amount) AS total_expenses " +
                        "FROM " + schema + ".transaction t " +
                        "WHERE t.user_id = ? AND t.type = ? " +
@@ -239,8 +231,6 @@ public class JdbcTransactionRepository implements TransactionRepository {
 
     @Override
     public BigDecimal getGoalExceeded(Long userId, Long transactionCategoryId) {
-        BigDecimal totalIncome = BigDecimal.ZERO;
-
         String query = "SELECT SUM(amount) AS total_income " +
                        "FROM " + schema + ".transaction t " +
                        "WHERE t.user_id = ? AND t.category_id = ? AND t.type = ?";
