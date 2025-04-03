@@ -1,6 +1,5 @@
 package com.my.service.impl;
 
-import com.my.annotation.Loggable;
 import com.my.dto.BalanceResponseDto;
 import com.my.dto.ExpenseAnalysisDto;
 import com.my.dto.ExpensesResponseDto;
@@ -27,7 +26,6 @@ import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.List;
 
-@Loggable
 @Service
 @RequiredArgsConstructor
 @Slf4j

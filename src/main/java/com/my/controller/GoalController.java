@@ -1,6 +1,5 @@
 package com.my.controller;
 
-import com.my.annotation.Audition;
 import com.my.controller.doc.GoalControllerDoc;
 import com.my.dto.GoalRequestDto;
 import com.my.dto.GoalResponseDto;
@@ -22,7 +21,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/goal")
 @RequiredArgsConstructor
-@Audition
 public class GoalController implements GoalControllerDoc {
     private final GoalService goalService;
 

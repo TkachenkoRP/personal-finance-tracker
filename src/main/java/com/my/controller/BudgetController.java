@@ -1,6 +1,5 @@
 package com.my.controller;
 
-import com.my.annotation.Audition;
 import com.my.controller.doc.BudgetControllerDoc;
 import com.my.dto.BudgetRequestDto;
 import com.my.dto.BudgetResponseDto;
@@ -22,7 +21,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/budget")
 @RequiredArgsConstructor
-@Audition
 public class BudgetController implements BudgetControllerDoc {
     private final BudgetService budgetService;
 

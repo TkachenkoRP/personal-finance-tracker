@@ -1,6 +1,5 @@
 package com.my.repository.impl;
 
-import com.my.annotation.Loggable;
 import com.my.model.User;
 import com.my.model.UserRole;
 import com.my.repository.BudgetRepository;
@@ -23,11 +22,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-@Loggable
 @Repository
 public class JdbcUserRepository implements UserRepository {
     private final JdbcTemplate jdbcTemplate;
-    @Value("${datasource.schema}")
+    @Value("${spring.datasource.hikari.schema}")
     private String schema;
     private final BudgetRepository budgetRepository;
     private final GoalRepository goalRepository;

@@ -1,6 +1,5 @@
 package com.my.service.impl;
 
-import com.my.annotation.Loggable;
 import com.my.dto.BudgetRequestDto;
 import com.my.dto.BudgetResponseDto;
 import com.my.dto.ReportResponseDto;
@@ -23,7 +22,6 @@ import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.List;
 
-@Loggable
 @Service
 @RequiredArgsConstructor
 @Slf4j

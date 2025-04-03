@@ -1,6 +1,5 @@
 package com.my.service.impl;
 
-import com.my.annotation.Loggable;
 import com.my.dto.UserRequestDto;
 import com.my.dto.UserResponseDto;
 import com.my.exception.EntityNotFoundException;
@@ -18,7 +17,6 @@ import org.springframework.stereotype.Service;
 import java.text.MessageFormat;
 import java.util.List;
 
-@Loggable
 @Service
 @RequiredArgsConstructor
 @Slf4j

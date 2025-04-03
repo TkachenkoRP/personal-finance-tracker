@@ -1,6 +1,5 @@
 package com.my.repository.impl;
 
-import com.my.annotation.Loggable;
 import com.my.model.Budget;
 import com.my.repository.BudgetRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,11 +19,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-@Loggable
 @Repository
 public class JdbcBudgetRepositoryImpl implements BudgetRepository {
     private final JdbcTemplate jdbcTemplate;
-    @Value("${datasource.schema}")
+    @Value("${spring.datasource.hikari.schema}")
     private String schema;
 
     public JdbcBudgetRepositoryImpl(DataSource dataSource) {

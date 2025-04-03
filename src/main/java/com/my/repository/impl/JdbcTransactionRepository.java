@@ -1,6 +1,5 @@
 package com.my.repository.impl;
 
-import com.my.annotation.Loggable;
 import com.my.dto.ExpenseAnalysisDto;
 import com.my.model.Transaction;
 import com.my.model.TransactionFilter;
@@ -26,11 +25,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-@Loggable
 @Repository
 public class JdbcTransactionRepository implements TransactionRepository {
     private final JdbcTemplate jdbcTemplate;
-    @Value("${datasource.schema}")
+    @Value("${spring.datasource.hikari.schema}")
     private String schema;
 
     public JdbcTransactionRepository(DataSource dataSource) {

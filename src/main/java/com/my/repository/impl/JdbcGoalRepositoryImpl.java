@@ -1,6 +1,5 @@
 package com.my.repository.impl;
 
-import com.my.annotation.Loggable;
 import com.my.model.Goal;
 import com.my.repository.GoalRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,11 +18,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-@Loggable
 @Repository
 public class JdbcGoalRepositoryImpl implements GoalRepository {
     private final JdbcTemplate jdbcTemplate;
-    @Value("${datasource.schema}")
+    @Value("${spring.datasource.hikari.schema}")
     private String schema;
 
     public JdbcGoalRepositoryImpl(DataSource dataSource) {

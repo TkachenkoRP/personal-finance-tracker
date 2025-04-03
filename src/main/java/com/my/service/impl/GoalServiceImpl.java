@@ -1,6 +1,5 @@
 package com.my.service.impl;
 
-import com.my.annotation.Loggable;
 import com.my.dto.GoalRequestDto;
 import com.my.dto.GoalResponseDto;
 import com.my.exception.AccessDeniedException;
@@ -22,7 +21,6 @@ import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.List;
 
-@Loggable
 @Service
 @RequiredArgsConstructor
 @Slf4j
